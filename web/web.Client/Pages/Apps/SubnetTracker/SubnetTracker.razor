@@ -59,7 +59,7 @@
 
 @if (null != _editingSubnet)
 {
-    <SubnetEditor @bind-EditorVisible="@_subnetEditorVisible" Subnet="_editingSubnet" @bind-IsNewSubnet="@_isNewSubnet"/>
+    <SubnetEditor @bind-EditorVisible="@_subnetEditorVisible" Subnet="_editingSubnet" @bind-IsNewSubnet="@_isNewSubnet" SubnetSaved="@OnSubnetSaved"/>
 }
 
 @if (null != _editingIP)
@@ -110,23 +110,10 @@
     {
         _advancedViewEnabled = !_advancedViewEnabled;
     }
-}
 
-@code {
-
-    // async Task OnClickDiscovery(Subnet subnet) 
-    // {
-    //     Task task = InvokeAsync(async () =>
-    //     {
-    //         var update = await SubnetsAPI.RunDiscoveryTask(subnet);
-    //         await SubnetsAPI.DiscoveryUpdate(update);
-    //         await RefreshSubnetList();
-    //         StateHasChanged();
-
-    //         DialogService.Close();
-    //     });
-
-    //     await BusyDialog($"Running discovery task on {IP.ConvertToString(subnet.Address)}");
-    // }
-
+    private async void OnSubnetSaved(Subnet subnet)
+    {
+        await Task.Delay(500);
+        await OnInitializedAsync();
+    }
 }

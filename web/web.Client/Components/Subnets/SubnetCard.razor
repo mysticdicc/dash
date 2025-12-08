@@ -1,5 +1,6 @@
 ﻿@using web.Client.Services
 @inject ISubnetsAPI SubnetService
+@inject NotificationService NotificationService
 
 @*filter controls here*@
 <tr class="subnet_card">
@@ -32,7 +33,7 @@
                 <span class="material-icons" title="Delete Subnet">delete</span>
             </button>
             <button onclick="@OnClickDiscovery">
-                <span class="material-icons" title="Rediscover Subnet">refresh</span> @*subnet discovery*@
+                <span class="material-icons" title="Rediscover Subnet">refresh</span>
             </button>
         </div>
     </td>
@@ -122,7 +123,16 @@
     {
         if (null != _subnet)
         {
-            await SubnetService.RunDiscoveryTaskAsync(_subnet);
+            try
+            {
+                await SubnetService.RunDiscoveryTaskAsync(_subnet);
+                NotificationService.ShowAsync("Discovery Task Running", "Please come back in a few minutes to see discovery results.");
+            }
+            catch (Exception ex)
+            {
+                NotificationService.ShowAsync("Error Running Discovery Task", ex.Message);
+            }
+            
         }
     }
 

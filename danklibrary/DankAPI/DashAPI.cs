@@ -92,7 +92,7 @@ namespace danklibrary.DankAPI
 
                 try
                 {
-                    var response = await RequestHandler.DeleteAsJsonAsync(_httpClient, endpoint, dto);
+                    await RequestHandler.DeleteAsJsonAsync(_httpClient, endpoint, dto);
                     return true;
                 }
                 catch
@@ -111,11 +111,11 @@ namespace danklibrary.DankAPI
             if (item is ShortcutItem shortcutSend)
             {
                 var dto = ShortcutItemDto.FromEntity(shortcutSend);
-                string endpoint = $"{_shortcutBase}/delete/byobject";
+                string endpoint = $"{_shortcutBase}/post/new";
 
                 try
                 {
-                    var response = await RequestHandler.PostJsonAsync(_httpClient, endpoint, dto);
+                    await RequestHandler.PostJsonAsync(_httpClient, endpoint, dto);
                     return true;
                 }
                 catch
@@ -126,11 +126,11 @@ namespace danklibrary.DankAPI
             else if (item is DirectoryItem directorySend)
             {
                 var dto = DirectoryItemDto.FromEntity(directorySend);
-                string endpoint = $"{_directoryBase}/delete/byobject";
+                string endpoint = $"{_directoryBase}/post/new";
 
                 try
                 {
-                    var response = await RequestHandler.PostJsonAsync(_httpClient, endpoint, dto);
+                    await RequestHandler.PostJsonAsync(_httpClient, endpoint, dto);
                     return true;
                 }
                 catch

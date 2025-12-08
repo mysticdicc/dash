@@ -93,6 +93,7 @@
 
     [Parameter] public required bool IsNewSubnet { get; set; }
     [Parameter] public required EventCallback<bool> IsNewSubnetChanged { get; set; }
+    [Parameter] public required EventCallback<Subnet> SubnetSaved { get; set; }
 
     [Parameter] public required Subnet Subnet { get; set; }
     private Subnet? _subnet;
@@ -147,6 +148,7 @@
             }
 
             await EditorVisibleChanged.InvokeAsync(false);
+            await SubnetSaved.InvokeAsync(_subnet);
         }
     }
 }

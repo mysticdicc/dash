@@ -27,15 +27,47 @@ namespace web.Controllers
         [Route("[controller]/v2/startdiscovery")]
         public async Task<Results<BadRequest<string>, Ok<Subnet>>> StartSubnetDiscovery(Subnet subnet)
         {
+
+            using var context = _DbFactory.CreateDbContext();
             var _subnet = await _discoveryService.StartDiscovery(subnet);
 
             if (null != _subnet) 
             {
-                return TypedResults.Ok(_subnet);
+                var dbSubnet = context.Subnets.Include(x => x.List).FirstOrDefault(x => x.ID == _subnet.ID);
+
+                if (null != dbSubnet)
+                {
+                    try
+                    {
+                        dbSubnet = _subnet;
+
+                        foreach (var ip in _subnet.List)
+                        {
+                            var dbIp = context.IPs.Find(ip.ID);
+
+                            if (null != dbIp)
+                            {
+                                dbIp = ip;
+                            }
+                        }
+
+                        await context.SaveChangesAsync();
+                        return TypedResults.Ok(_subnet);
+                    }
+                    catch(Exception ex)
+                    {
+                        return TypedResults.BadRequest(ex.Message);
+                    }
+
+                }
+                else
+                {
+                    return TypedResults.BadRequest("Unable to find db object");
+                }
             } 
             else
             {
-                return TypedResults.BadRequest("Null object return");
+                return TypedResults.BadRequest("Null object return from discovery service");
             }
         }
 
@@ -128,7 +160,7 @@ namespace web.Controllers
         }
 
         [HttpPost]
-        [Route("[controller]/ip/post/new")]
+        [Route("[controller]/v2/ip/post/new")]
         public async Task<Results<BadRequest<string>, Created<IP>>> AddIP(IP ip)
         {
             using var context = _DbFactory.CreateDbContext();
@@ -162,7 +194,7 @@ namespace web.Controllers
         }
 
         [HttpGet]
-        [Route("[controller]/ip/get/all")]
+        [Route("[controller]/v2/ip/get/all")]
         public string GetAllIP()
         {
             using var context = _DbFactory.CreateDbContext();
@@ -170,7 +202,7 @@ namespace web.Controllers
         }
 
         [HttpPut]
-        [Route("[controller]/ip/put/update")]
+        [Route("[controller]/v2/ip/put/update")]
         public async Task<Results<BadRequest<string>, Ok<IP>>> UpdateIP(IP ip)
         {
             using var context = _DbFactory.CreateDbContext();
@@ -200,7 +232,7 @@ namespace web.Controllers
         }
 
         [HttpPost]
-        [Route("[controller]/subnet/post/discoveryupdate")]
+        [Route("[controller]/v2/subnet/post/discoveryupdate")]
         public async Task<Results<Ok<List<int>>, Ok<Subnet>>> UpdateSubnet(Subnet subnet)
         {
             using var context = _DbFactory.CreateDbContext();

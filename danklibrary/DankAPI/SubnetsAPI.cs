@@ -14,7 +14,7 @@ namespace danklibrary.DankAPI
         public SubnetsAPI(HttpClient httpClient)
         {
             _httpClient = httpClient;
-            _baseEndpoint = $"{httpClient.BaseAddress}subnets";
+            _baseEndpoint = $"{httpClient.BaseAddress}subnets/v2";
         }
 
         public async Task<bool> RunDiscoveryTaskAsync(Subnet subnet)
@@ -65,7 +65,7 @@ namespace danklibrary.DankAPI
 
         public async Task<List<Subnet>> GetAllAsync()
         {
-            string endpoint = $"{_baseEndpoint}/v2/get/all";
+            string endpoint = $"{_baseEndpoint}/get/all";
             try
             {
                 var result = await RequestHandler.GetFromJsonAsync<List<Subnet>>(_httpClient, endpoint);
@@ -145,7 +145,7 @@ namespace danklibrary.DankAPI
 
         public async Task<Subnet> GetSubnetByIdAsync(int ID)
         {
-            string endpoint = $"{_baseEndpoint}/v2/get/byid?id={ID}";
+            string endpoint = $"{_baseEndpoint}/get/byid?id={ID}";
 
             try
             {

@@ -30,7 +30,16 @@ namespace web.Services
             _logger = logger;
             _cancellationToken = new();
             _monitoringApi = monitoringApi;
-            _currentSettings = AllSettings.GetCurrentSettingsFile(Path.Combine(AppContext.BaseDirectory, "settings.json"));
+            try
+            {
+                _currentSettings = AllSettings.GetCurrentSettingsFile(Path.Combine(AppContext.BaseDirectory, "settings.json"));
+            }
+            catch
+            {
+                AllSettings.CreateNewSettingsFile(Path.Combine(AppContext.BaseDirectory, "settings.json"));
+                _currentSettings = AllSettings.GetCurrentSettingsFile(Path.Combine(AppContext.BaseDirectory, "settings.json"));
+            }
+            
             _delay = _currentSettings.MonitoringSettings.PollingIntervalInSeconds;
         }
 
@@ -40,7 +49,7 @@ namespace web.Services
             {
                 while (!token.IsCancellationRequested)
                 {
-                    _logger.LogInformation($"Entered execution action, task delay is {_delay}ms");
+                    _logger.LogInformation($"Entered execution action, task delay is {(_delay * 1000)}s");
                     await Task.Delay(1500);
 
                     DateTime submit = DateTime.UtcNow;
@@ -110,7 +119,7 @@ namespace web.Services
                         _logger.LogError("Could not fetch IP list from api endpoint");
                     }
 
-                    await Task.Delay((_delay / 1000), token);
+                    await Task.Delay((_delay * 1000), token);
                 }
             }
             catch (OperationCanceledException)
