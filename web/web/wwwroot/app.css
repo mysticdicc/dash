@@ -407,6 +407,9 @@ textarea {
     display: flex;
     flex-direction: column;
     overflow: hidden;
+    border-style: solid;
+    border-width: 2px;
+    border-color: var(--black);
 
     > header {
         display: flex;

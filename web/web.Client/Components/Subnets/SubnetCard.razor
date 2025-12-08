@@ -85,7 +85,7 @@
     protected override Task OnParametersSetAsync()
     {
         _subnet = Subnet;
-        
+
         if (null != _subnet && null != _subnet.List)
         {
             _ipList = _subnet.List;
@@ -94,7 +94,7 @@
         {
             _ipList = [];
         }
-        
+
         return base.OnParametersSetAsync();
     }
 
@@ -121,6 +121,8 @@
                 .Where(x => IP.ConvertToString(x.Address).Contains(_searchString, StringComparison.OrdinalIgnoreCase) ||
                             (x.Hostname != null && x.Hostname.Contains(_searchString, StringComparison.OrdinalIgnoreCase)))
                 .ToList();
+
+            _searchString = string.Empty;
         }
         StateHasChanged();
     }
