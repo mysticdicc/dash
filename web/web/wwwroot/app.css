@@ -28,7 +28,7 @@
     flex-direction: column;
 }
 
-.body > header {
+    .body > header {
     display: flex;
     justify-content: center;
     background-color: var(--light-grey);
@@ -90,7 +90,7 @@ button {
     }
 }
 
-button:hover {
+    button:hover {
     transform: scale(1.02);
     color: white;
 }
@@ -99,7 +99,7 @@ button#green {
     color: green;
 }
 
-button#green:hover {
+    button#green:hover {
     transform: scale(1.02);
     color: limegreen;
 }
@@ -108,12 +108,12 @@ button#red {
     color: darkred;
 }
 
-button#red:hover {
+    button#red:hover {
     transform: scale(1.02);
     color: red;
 }
 
-a:link {
+    a:link {
     color: rgba(0,0,0,0);
 }
 
@@ -136,7 +136,7 @@ input::placeholder {
     color: var(--white);
 }
 
-input:focus {
+    input:focus {
     outline-color: var(--light-grey);
     background-color: var(--grey);
     color: var(--white);
@@ -166,7 +166,7 @@ textarea {
     resize: vertical;
 }
 
-textarea:focus {
+    textarea:focus {
     outline-color: var(--light-grey);
     background-color: var(--grey);
 }
@@ -194,7 +194,7 @@ textarea:focus {
     position: relative;
 }
 
-.dashboard_card > div#img {
+    .dashboard_card > div#img {
     flex-grow: 0;
     max-width: 25%;
     display: flex;
@@ -210,11 +210,11 @@ textarea:focus {
     }
 }
 
-.dashboard_card > upload_item_box {
+    .dashboard_card > upload_item_box {
     float: left;
 }
 
-.dashboard_card > article {
+    .dashboard_card > article {
     float: right;
     flex-grow: 1;
 
@@ -255,7 +255,7 @@ textarea:focus {
     }
 }
 
-.dashboard_card:hover {
+    .dashboard_card:hover {
     transform: scale(1.02);
 }
 
@@ -279,7 +279,7 @@ textarea:focus {
     max-height: 80vh;
 }
 
-.dashboard_card_editor > div {
+    .dashboard_card_editor > div {
     max-width: 30%;
     position: relative;
 
@@ -288,25 +288,25 @@ textarea:focus {
     }
 }
 
-.dashboard_card_editor > div > button {
+    .dashboard_card_editor > div > button {
     top: 1rem;
     right: 1rem;
     position: absolute;
 }
 
-.dashboard_card_editor > img {
+    .dashboard_card_editor > img {
     height: 10rem;
     width: auto;
     flex-grow: 0;
     flex-shrink: 0;
 }
 
-.dashboard_card_editor > upload_item_box {
+    .dashboard_card_editor > upload_item_box {
     flex-grow: 0;
     flex-shrink: 0;
 }
 
-.dashboard_card_editor > article {
+    .dashboard_card_editor > article {
     flex-grow: 1;
     display: flex;
     flex-direction: column;
@@ -385,11 +385,9 @@ textarea:focus {
 
 .notification {
     z-index: 1000;
-    position: fixed;
+    position: absolute;
     bottom: 2rem;
     right: 2rem;
-    left: auto;
-    top: auto;
     background-color: var(--primary);
     border-radius: 10px;
     display: flex;
@@ -399,8 +397,9 @@ textarea:focus {
     > header {
         display: flex;
         justify-content: center;
-        margin-top: 5px;
-        margin-bottom: 5px;
+        padding: 5px;
+        background-color: var(--black);
+        color: var(--white);
 
         > span {
             display: inline-block;
@@ -413,10 +412,9 @@ textarea:focus {
     }
 
     > content {
-        display: flex;
+        flex: 1;
         justify-content: center;
-        margin-top: 0;
-        margin-bottom: 5px;
+        padding: 5px;
 
         > span {
             display: inline-block;
@@ -445,7 +443,7 @@ textarea:focus {
     align-content: center;
 }
 
-.upload_item_box:hover {
+    .upload_item_box:hover {
     background-color: var(--primary);
     border-color: var(--grey);
     transform: scale(1.02);
@@ -511,7 +509,7 @@ textarea:focus {
     padding: 10px;
 }
 
-.subnet_layout > table {
+    .subnet_layout > table {
     width: 100%;
     text-align: center;
 
@@ -541,12 +539,13 @@ textarea:focus {
             > input[type="text"] {
                 flex: 1;
                 max-width: 30rem;
+                margin: 2px;
             }
         }
     }
 }
 
-.subnet_card:hover {
+    .subnet_card:hover {
     transform: scale(1.002);
     color: white;
 }
@@ -576,7 +575,7 @@ textarea:focus {
     }
 }
 
-.subnet_editor > article {
+    .subnet_editor > article {
     overflow: auto;
 
     > table {

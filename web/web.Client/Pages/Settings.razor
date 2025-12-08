@@ -17,7 +17,7 @@
                 </span>
             </header>
             <content>
-                @if (null != _currentSettings)
+                @if (null != _currentSettings && null != _currentSettings.MonitoringSettings)
                 {
                     <table>
                         <tr>
@@ -25,7 +25,7 @@
                                 Polling Interval (Seconds):
                             </td>
                             <td>
-                                <input type="number" @bind-Value:event="onchange" @bind-Value="@_currentSettings.MonitoringSettings.PollingIntervalInSeconds"/>
+                                <input type="number" @bind="@_currentSettings.MonitoringSettings.PollingIntervalInSeconds"/>
                             </td>
                         </tr>
                     </table>
@@ -41,7 +41,7 @@
                 </span>
             </header>
             <content>
-                @if (null != _currentSettings)
+                @if (null != _currentSettings && null != _currentSettings.DashboardSettings)
                 {
                     <table>
                     </table>
@@ -57,7 +57,7 @@
                 </span>
             </header>
             <content>
-                @if (null != _currentSettings)
+                @if (null != _currentSettings && null != _currentSettings.SubnetSettings)
                 {
                     <table>
                     </table>

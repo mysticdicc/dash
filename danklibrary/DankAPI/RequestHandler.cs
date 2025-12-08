@@ -8,7 +8,7 @@ namespace danklibrary.DankAPI
     public static class RequestHandler
     {
         private const int maxRetries = 3;
-        private const int delayMs = 500;
+        private const int delayMs = 1000;
 
         public static async Task<HttpResponseMessage> SendWithRetryAsync(
             HttpClient httpClient,

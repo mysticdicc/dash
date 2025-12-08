@@ -30,13 +30,20 @@ namespace web.Client.Services
             try
             {
                 var response = await _settingsAPI.GetCurrentSettingsAsync();
+
+                if (null == response.MonitoringSettings || null == response.SubnetSettings || null == response.DashboardSettings)
+                {
+                    _notification.ShowAsync("Settings Corrupted", "Settings object is missing key child objects");
+                    return new AllSettings(true);
+                }
+
                 _currentSettings = response;
                 return response;
             }
             catch (Exception ex)
             {
-                _notification.ShowAsync("Failed to create settings", ex.Message);
-                return new AllSettings();
+                _notification.ShowAsync("Failed to get current settings", ex.Message);
+                return new AllSettings(true);
             }
         }
     }

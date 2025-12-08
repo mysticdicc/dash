@@ -1,16 +1,12 @@
-﻿using danklibrary.DankAPI;
-using danklibrary.Settings;
-using dankweb.API;
+﻿using danklibrary.Settings;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using System.IO;
 using System.Text.Json;
-using System.Text.Json.Serialization;
 using web.Services;
 
 namespace web.Controllers
 {
+    [ApiController]
     public class SettingsController : Controller
     {
         private static string _settingsLocation = string.Empty;
@@ -35,21 +31,29 @@ namespace web.Controllers
         [Route("[controller]/v2/get/current")]
         public string GetCurrentSettings()
         {
-            string content = System.IO.File.ReadAllText(_settingsLocation);
-            return content;
+            var content = AllSettings.GetCurrentSettingsFile(_settingsLocation);
+            return JsonSerializer.Serialize(content, AllSettings.JsonOptions);
         }
 
         [HttpPost]
         [Route("[controller]/v2/post/new")]
-        public async Task<Results<BadRequest<string>, Ok<AllSettings>>> CreateNewSettings(AllSettings newSettings)
+        public async Task<Results<BadRequest<string>, Ok<AllSettings>>> CreateNewSettings(AllSettings settings)
         {
             try
             {
-                AllSettings.UpdateExistingSettingsFile(_settingsLocation, newSettings);
+                if (settings == null ||
+                    settings.DashboardSettings == null ||
+                    settings.MonitoringSettings == null ||
+                    settings.SubnetSettings == null)
+                {
+                    return TypedResults.BadRequest("One or more child objects is missing from settings.");
+                }
+
+                AllSettings.UpdateExistingSettingsFile(_settingsLocation, settings);
                 _monitorService.Restart();
-                return TypedResults.Ok(newSettings);
+                return TypedResults.Ok(settings);
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 return TypedResults.BadRequest(ex.Message);
             }

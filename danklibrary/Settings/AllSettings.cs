@@ -15,52 +15,82 @@ namespace danklibrary.Settings
         public MonitoringSettings MonitoringSettings { get; set; }
         public SubnetSettings SubnetSettings { get; set; }
 
-        private static readonly JsonSerializerOptions JsonOptions = new()
+        [JsonIgnore]
+        public static readonly JsonSerializerOptions JsonOptions = new()
         {
             ReferenceHandler = ReferenceHandler.IgnoreCycles,
-            PropertyNamingPolicy = null,
-            WriteIndented = true
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+            WriteIndented = true,
+            PropertyNameCaseInsensitive = true
         };
 
-        public AllSettings()
+        public AllSettings() { }
+
+        public AllSettings(bool isDefault)
         {
-            Id = new Guid();
-            DashboardSettings = new();
-            MonitoringSettings = new();
-            SubnetSettings = new();
+            Id = Guid.NewGuid();
+            DashboardSettings = new DashboardSettings();
+            MonitoringSettings = new MonitoringSettings(true);
+            SubnetSettings = new SubnetSettings();
+
         }
 
         static public void CreateNewSettingsFile(string path)
         {
-            if (File.Exists(path))
+            try
             {
-                File.Delete(path);
+                if (File.Exists(path))
+                {
+                    File.Delete(path);
+                }
+                var settings = new AllSettings(true);
+                var json = JsonSerializer.Serialize(settings, JsonOptions);
+                File.WriteAllText(path, json);
             }
-            
-            var settings = new AllSettings();
-            var json = JsonSerializer.Serialize(settings, JsonOptions);
-            File.WriteAllText(path, json);
-
+            catch
+            {
+                throw;
+            }
         }
 
         static public void UpdateExistingSettingsFile(string path, AllSettings newSettings)
         {
-            var json = JsonSerializer.Serialize(newSettings, JsonOptions);
-            File.WriteAllText(path, json);
+            try
+            {
+                if (null != newSettings.MonitoringSettings && null != newSettings.DashboardSettings && null != newSettings.SubnetSettings)
+                {
+                    var json = JsonSerializer.Serialize(newSettings, JsonOptions);
+                    File.WriteAllText(path, json);
+                }
+                else
+                {
+                    throw new InvalidCastException("One or more child objects is missing from settings");
+                }
+            }
+            catch
+            {
+                throw;
+            }
         }
 
         static public AllSettings GetCurrentSettingsFile(string path)
         {
-            string content = File.ReadAllText(path);
-            var settings = JsonSerializer.Deserialize<AllSettings>(content, JsonOptions);
-
-            if (null != settings)
+            try
             {
-                return settings;
+                string content = File.ReadAllText(path);
+                var settings = JsonSerializer.Deserialize<AllSettings>(content, JsonOptions);
+                if (settings != null)
+                {
+                    return settings;
+                }
+                else
+                {
+                    throw new FileLoadException("Json deserialization on settings file failed.");
+                }
             }
-            else
+            catch
             {
-                throw new FileLoadException("Json deserialization on settings file failed.");
+                throw;
             }
         }
     }

@@ -30,17 +30,41 @@ namespace web.Services
             _logger = logger;
             _cancellationToken = new();
             _monitoringApi = monitoringApi;
+
             try
             {
+                _logger.LogInformation("Fetching current settings");
                 _currentSettings = AllSettings.GetCurrentSettingsFile(Path.Combine(AppContext.BaseDirectory, "settings.json"));
             }
-            catch
+            catch(Exception ex)
             {
-                AllSettings.CreateNewSettingsFile(Path.Combine(AppContext.BaseDirectory, "settings.json"));
-                _currentSettings = AllSettings.GetCurrentSettingsFile(Path.Combine(AppContext.BaseDirectory, "settings.json"));
+                _logger.LogError("Failed to fetch current settings: ");
+                _logger.LogError(ex.Message);
+                _logger.LogInformation("Creating new settings file");
+
+                try
+                {
+                    AllSettings.CreateNewSettingsFile(Path.Combine(AppContext.BaseDirectory, "settings.json"));
+                    _currentSettings = AllSettings.GetCurrentSettingsFile(Path.Combine(AppContext.BaseDirectory, "settings.json"));
+                }
+                catch(Exception ex2)
+                {
+                    _logger.LogError("Failed to create new settings:");
+                    _logger.LogError(ex2.Message);
+
+                    _logger.LogInformation("Using default settings");
+                    _currentSettings = new AllSettings(true);
+                }
             }
-            
-            _delay = _currentSettings.MonitoringSettings.PollingIntervalInSeconds;
+
+            if (null != _currentSettings.MonitoringSettings)
+            {
+                _delay = _currentSettings.MonitoringSettings.PollingIntervalInSeconds;
+            }
+            else
+            {
+                _delay = 600;
+            }
         }
 
         private async Task RunServiceAsync(CancellationToken token)
@@ -209,6 +233,18 @@ namespace web.Services
         {
             _logger.LogInformation("Monitoring service restart initiated");
             _currentSettings = AllSettings.GetCurrentSettingsFile(Path.Combine(AppContext.BaseDirectory, "settings.json"));
+
+            if (null == _currentSettings.MonitoringSettings)
+            {
+                do
+                {
+                    _currentSettings = AllSettings.GetCurrentSettingsFile(Path.Combine(AppContext.BaseDirectory, "settings.json"));
+                    _logger.LogError("Failed to fetch monitoring settings on servivce restart, retrying in 20 seconds.");
+                    await Task.Delay(20000);
+                } 
+                while (null == _currentSettings.MonitoringSettings);
+            }
+
             _delay = _currentSettings.MonitoringSettings.PollingIntervalInSeconds;
             _cancellationToken.Cancel();
             _cancellationToken = new();

@@ -2,11 +2,16 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 namespace danklibrary.Settings
 {
     public class SubnetSettings
     {
+        public SubnetSettings()
+        {
+            
+        }
     }
 }

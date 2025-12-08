@@ -2,6 +2,7 @@ using danklibrary.Monitoring;
 using dankweb.API;
 using Microsoft.AspNetCore.Components;
 using Microsoft.EntityFrameworkCore;
+using System.Text.Json;
 using web.Client.Services;
 using web.Components;
 using web.Services;
@@ -17,6 +18,7 @@ var baseAddress = new Uri(builder.Configuration.GetValue<string>("WorkerApiAddre
 SharedServices.Register(builder.Services, baseAddress);
 
 builder.Services.AddControllers();
+
 builder.Services.AddDbContextFactory<danknetContext>(options =>
     options.UseSqlite(builder.Configuration.GetConnectionString("SQLite")));
 
