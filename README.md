@@ -27,44 +27,6 @@ docker run -d \
 
 Once running you can access the website at http://dockerip:8080 by default, if you have changed the port you will need to reflect this in the URL.
 
-## Change Log
-### **v2 (December 2025)**:
-- **GUI Makeover**:
-  - All Radzen components removed and replaced with pure html and css components, created css from scratch.
-  - Flat modern aesthetic, dark colour scheme.
-  - Lots of custom components created.
-  - Lots of work to improve scaling across screen sizes.
-  - Tool tips added to a lot of buttons.
-    
-- **Dashboard Rework**:
-  - Standardised size of the icons.
-  - Added the ability to create folders and assign shortcuts to them.
-     
-- **Better Error Handling**:
-  - Custom HTTP Request Handler class added with retry logic and standardized json handling.
-  - Created notification pop up and service that displays errors for api events.
-
-- **Monitoring Rework**:
-  - Replaced Radzen Charts with ApexCharts.
-  - Added more charts for viewing uptime vs downtime overtime and total uptime.
-  
-- **Other**:
-  - Removed Newtonsoft.Json, replaced with standard .net json implementations.
-  - Updated from .NET 9 to 10.
-  - Seperation of a lot of code into relevent and maintainable classes and folder structure.
-  - Added settings screen to update monitor polling interval.
-  - Added "dash" branding.
-  - Removed a lot of unused code.
-
-- **Bug Fixes**:
-  - Fixed lot of css issues.
-  - Fixed issues with charts rendering.
-
-
-### **v1 (May 2025)**: 
-- Dashboard, Subnet Tracker and Monitoring pages and api endpoints created. 
-- Implemented with Radzen Blazor components
-
 ## Gallery:
 ### Home:
 
