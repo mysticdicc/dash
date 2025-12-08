@@ -54,7 +54,7 @@
                     }
                     <th />
                 </tr>
-                @if (null != _ipList)
+                @if (null != _ipList && _ipList.Count > 0)
                 {
                     <Virtualize Items="@_ipList">
                         <ItemContent>
@@ -69,13 +69,14 @@
 
 @code {
     [Parameter] public required Subnet Subnet { get; set; }
-    private Subnet? _subnet;
+    private Subnet _subnet = default!;
 
     [Parameter] public bool AdvancedViewEnabled { get; set; }
     [Parameter] public EventCallback<bool> AdvancedViewEnabledChanged { get; set; }
 
     [Parameter] public EventCallback<IP> OnEditIp { get; set; }
     [Parameter] public EventCallback<Subnet> OnEditSubnet { get; set; }
+    [Parameter] public EventCallback<bool> OnDeleteClicked { get; set;  }
 
     private IList<IP> _ipList = [];
     private bool _ipListVisible { get; set; } = false;
@@ -83,20 +84,24 @@
 
     protected override Task OnParametersSetAsync()
     {
-        if (null != _subnet)
+        _subnet = Subnet;
+        
+        if (null != _subnet && null != _subnet.List)
         {
             _ipList = _subnet.List;
         }
-
-        _subnet = Subnet;
-        _searchString = string.Empty;
-
+        else
+        {
+            _ipList = [];
+        }
+        
         return base.OnParametersSetAsync();
     }
 
     private void OnClickExpand()
     {
         _ipListVisible = !_ipListVisible;
+        StateHasChanged();
     }
 
     private void OnClickEditSubnet()
@@ -108,18 +113,19 @@
     {
         if (string.IsNullOrEmpty(_searchString))
         {
-            _ipList = _subnet.List;
+            _ipList = _subnet.List ?? [];
         }
         else
         {
-            _ipList = _subnet.List
+            _ipList = (_subnet.List ?? [])
                 .Where(x => IP.ConvertToString(x.Address).Contains(_searchString, StringComparison.OrdinalIgnoreCase) ||
                             (x.Hostname != null && x.Hostname.Contains(_searchString, StringComparison.OrdinalIgnoreCase)))
                 .ToList();
         }
+        StateHasChanged();
     }
 
-    private async void OnClickDiscovery()
+    private async Task OnClickDiscovery()
     {
         if (null != _subnet)
         {
@@ -132,15 +138,15 @@
             {
                 NotificationService.ShowAsync("Error Running Discovery Task", ex.Message);
             }
-            
         }
     }
 
-    private async void OnClickDelete()
+    private async Task OnClickDelete()
     {
         if (null != _subnet)
         {
             await SubnetService.DeleteSubnetByObjectAsync(_subnet);
+            await OnDeleteClicked.InvokeAsync(true);
         }
     }
 }

@@ -51,7 +51,7 @@
             </tr>
             @foreach (Subnet subnet in SubnetList)
             {
-                <SubnetCard Subnet="subnet" OnEditIp="@OnClickEditIP" OnEditSubnet="@OnClickEditSubnet" @bind-AdvancedViewEnabled="@_advancedViewEnabled" />
+                <SubnetCard Subnet="subnet" OnEditIp="@OnClickEditIP" OnEditSubnet="@OnClickEditSubnet" @bind-AdvancedViewEnabled="@_advancedViewEnabled" OnDeleteClicked="@OnDeleteSubnetClicked"/>
             }
         </table>
     </content>
@@ -113,7 +113,16 @@
 
     private async void OnSubnetSaved(Subnet subnet)
     {
-        await Task.Delay(500);
+        await Task.Delay(100);
         await OnInitializedAsync();
+    }
+
+    private async void OnDeleteSubnetClicked(bool clicked)
+    {
+        if (clicked)
+        {
+            await Task.Delay(100);
+            await OnInitializedAsync();
+        }
     }
 }
