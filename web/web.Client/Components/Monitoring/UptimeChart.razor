@@ -9,37 +9,38 @@
     <article>
         <div id="uptime_chart">
             <div id="left">
-                @if (_chartReady)
+                @if (_chartsReady)
                 {
-
-                    <ApexChart TItem="UptimePoint" Options="RadialBarOptions">
+                    <ApexChart TItem="UptimePoint" Options="RadialBarOptions" @ref="radialChart">
                         <ApexPointSeries TItem="UptimePoint"
                                          Items="UptimePoints"
                                          SeriesType="SeriesType.RadialBar"
                                          YValue="point => point.Percentage"
-                                         XValue="point => point.DeviceLabel"
-                                         PointColor="point => point.FillColor" />
+                                         XValue="point => point.DeviceLabel" />
                     </ApexChart>
                 }
             </div>
             <div>
-                @if (_chartReady)
+                @if (_chartsReady)
                 {
-                    <ApexChart TItem="HeatMapPoint" Options="HeatMapOptions">
+                    <ApexChart TItem="HeatMapPoint" 
+                               Title="Device Status Over Time"
+                               Options="HeatMapOptions" 
+                               @ref="heatMapChart">
                         <ApexPointSeries TItem="HeatMapPoint"
-                                         Items="HeatMapPoints"
-                                         Name="Online Devices"
+                                         Items="OnlineHeatMapPoints"
+                                         Name="Online"
                                          SeriesType="SeriesType.Heatmap"
-                                         XValue="point => point.SubmitTime"
-                                         YValue="point => point.OnlineCount"
-                                         PointColor="point => point.FillColor" />
+                                         XValue="point => point.TimeLabel"
+                                         YValue="point => point.Count"
+                                         OrderBy="e => e.X" />
                         <ApexPointSeries TItem="HeatMapPoint"
-                                         Items="HeatMapPoints"
-                                         Name="Offline Devices"
+                                         Items="OfflineHeatMapPoints"
+                                         Name="Offline"
                                          SeriesType="SeriesType.Heatmap"
-                                         XValue="point => point.SubmitTime"
-                                         YValue="point => point.OfflineCount"
-                                         PointColor="point => point.FillColor" />
+                                         XValue="point => point.TimeLabel"
+                                         YValue="point => point.Count"
+                                         OrderBy="e => e.X" />
                     </ApexChart>
                 }
             </div>
@@ -49,41 +50,35 @@
 
 @code {
     [Parameter] public required List<IP>? IPAddresses { get; set; }
-    private bool _chartReady = false;
-    static private List<string> _palette = new(){ "#008FFB", "#00E396", "#FEB019", "#FF4560", "#775DD0", "#3F51B5", "#546E7A", "#D4526E", "#8D5B4C", "#F86624" };
+    private static List<string> _palette = new() { "#008FFB", "#00E396", "#FEB019", "#FF4560", "#775DD0", "#3F51B5", "#546E7A", "#D4526E", "#8D5B4C", "#F86624" };
+
+    private bool _chartsReady = false;
+    private ApexChart<UptimePoint>? radialChart;
+    private ApexChart<HeatMapPoint>? heatMapChart;
 
     public class UptimePoint
     {
         public decimal Percentage { get; set; }
         public string DeviceLabel { get; set; } = string.Empty;
-        public string FillColor { get; set; } = string.Empty;
     }
 
     public class HeatMapPoint
     {
-        public string SubmitTime { get; set; } = string.Empty;
-        public int OnlineCount { get; set; }
-        public int OfflineCount { get; set; }
-        public string FillColor { get; set; } = string.Empty;
-    }
-
-    public class RadarStatPoint
-    {
-        public string Label { get; set; } = string.Empty;
-        public int Value { get; set; }
-        public string FillColor { get; set; } = string.Empty;
+        public string TimeLabel { get; set; } = string.Empty;
+        public int Count { get; set; }
     }
 
     List<UptimePoint> UptimePoints = new();
-    List<HeatMapPoint> HeatMapPoints = new();
-    List<RadarStatPoint> RadarStats = new();
+    List<HeatMapPoint> OnlineHeatMapPoints = new();
+    List<HeatMapPoint> OfflineHeatMapPoints = new();
 
     ApexChartOptions<UptimePoint> RadialBarOptions = new()
     {
         Chart = new Chart
         {
-            Width = "50%",
-            Height = "100%"
+            Width = "100%",
+            Height = "100%",
+            Type = ChartType.RadialBar
         },
         PlotOptions = new PlotOptions
         {
@@ -108,38 +103,49 @@
                 }
             }
         },
-        Colors = _palette
+        Colors = _palette,
+        Stroke = new Stroke
+        {
+            LineCap = LineCap.Round
+        }
     };
 
     ApexChartOptions<HeatMapPoint> HeatMapOptions = new()
     {
         Chart = new Chart
         {
-            Width = "50%",
-            Height = "100%"
+            Width = "100%",
+            Height = "100%",
+            Type = ChartType.Heatmap
         },
         Xaxis = new XAxis
         {
-            Type = XAxisType.Category,
-            Labels = new XAxisLabels
+            Type = XAxisType.Category
+        },
+        DataLabels = new DataLabels
+        {
+            Enabled = true
+        },
+        PlotOptions = new PlotOptions
+        {
+            Heatmap = new PlotOptionsHeatmap
             {
-                Rotate = -45
+                Radius = 0,
+                EnableShades = true
             }
         },
-        Colors = _palette
+        Colors = new List<string>() { "#AFE1AF", "#D22B2B" }
     };
 
     protected override async Task OnParametersSetAsync()
     {
-        _chartReady = false;
+        _chartsReady = false;
         UptimePoints.Clear();
-        HeatMapPoints.Clear();
-        RadarStats.Clear();
+        OnlineHeatMapPoints.Clear();
+        OfflineHeatMapPoints.Clear();
 
         if (IPAddresses == null)
             return;
-
-        int colorIndex = 0;
 
         foreach (var ip in IPAddresses.Where(ip => (ip.IsMonitoredTCP || ip.IsMonitoredICMP) && ip.Address != null))
         {
@@ -155,16 +161,11 @@
             if (!string.IsNullOrWhiteSpace(ip.Hostname))
                 label += $" ({ip.Hostname})";
 
-            if (colorIndex >= _palette.Count)
-                colorIndex = 0;
-
             UptimePoints.Add(new UptimePoint
             {
                 Percentage = percent,
-                DeviceLabel = label,
-                FillColor = _palette[colorIndex]
+                DeviceLabel = label
             });
-            colorIndex++;
         }
 
         var allStates = IPAddresses
@@ -177,23 +178,24 @@
             .GroupBy(ms => ms.SubmitTime)
             .OrderBy(g => g.Key);
 
-        int heatMapColorIndex = 0;
         foreach (var group in grouped)
         {
-            if (heatMapColorIndex >= _palette.Count)
-                heatMapColorIndex = 0;
-
-            HeatMapPoints.Add(new HeatMapPoint
+            string timeLabel = group.Key.ToString("dd/MM HH:mm");
+            
+            OnlineHeatMapPoints.Add(new HeatMapPoint
             {
-                SubmitTime = group.Key.ToString("dd/MM/yy HH:mm"),
-                OnlineCount = group.Count(ms => ms.PingState!.Response),
-                OfflineCount = group.Count(ms => !ms.PingState!.Response),
-                FillColor = _palette[heatMapColorIndex]
+                TimeLabel = timeLabel,
+                Count = group.Count(ms => ms.PingState!.Response)
             });
-            heatMapColorIndex++;
+            
+            OfflineHeatMapPoints.Add(new HeatMapPoint
+            {
+                TimeLabel = timeLabel,
+                Count = group.Count(ms => !ms.PingState!.Response)
+            });
         }
 
-        await Task.Delay(1000);
-        _chartReady = true;
+        await Task.Delay(500);
+        _chartsReady = true;
     }
 }

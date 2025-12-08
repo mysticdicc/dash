@@ -51,7 +51,7 @@
     </header>
     <article>
         <div id="apex_chart">
-            @if (_chartReady)
+            @if (_chartsReady)
             {
                 <ApexChart TItem="ChartPoint" Options="ChartOptions" @ref="chart">
                     @if (!_onlineHidden)
@@ -96,8 +96,10 @@
     private bool _onlineHidden = false;
     private bool _offlineHidden = false;
     private bool _monitoredHidden = false;
-    private bool _chartReady = false;
+    private bool _chartsReady = false;
     private TimeSpan _viewLength = TimeSpan.FromHours(4);
+
+    private readonly List<string> _lineColors = new() { "#00E396", "#FF4560", "#008FFB" };
 
     public class ChartPoint
     {
@@ -111,11 +113,10 @@
     ApexChartOptions<ChartPoint> ChartOptions = new();
     private ApexChart<ChartPoint>? chart;
 
-    private DateTime? _xAxisMin;
-    private DateTime? _xAxisMax;
-
-    protected override void OnParametersSet()
+    protected override async Task OnParametersSetAsync()
     {
+        _chartsReady = false;
+
         if (IPAddresses == null)
         {
             ChartData = [];
@@ -124,6 +125,9 @@
 
         CreateChartData(IPAddresses, _viewLength);
         ChartOptions = GenerateApexChartOptions();
+
+        await Task.Delay(500);
+        _chartsReady = true;
     }
 
     private void CreateChartData(List<IP> ipAddresses, TimeSpan viewLength)
@@ -164,8 +168,20 @@
             Chart = new ApexCharts.Chart
             {
                 Width = "100%",
-                Height = "100%"
+                Height = "100%",
+                Type = ChartType.Line,
+                Toolbar = new Toolbar
+                {
+                    Show = true
+                }
             },
+            Stroke = new ApexCharts.Stroke
+            {
+                Curve = Curve.Smooth,
+                Width = 3,
+                Colors = _lineColors
+            },
+            Colors = _lineColors,
             Xaxis = new ApexCharts.XAxis
             {
                 Type = ApexCharts.XAxisType.Datetime,
@@ -179,54 +195,66 @@
                         Hour = "HH:mm"
                     }
                 }
+            },
+            Yaxis = new List<ApexCharts.YAxis>
+            {
+                new()
+                {
+                    Title = new AxisTitle { Text = "Device Count" },
+                    Min = 0
+                }
+            },
+            Tooltip = new ApexCharts.Tooltip
+            {
+                Shared = true
+            },
+            Legend = new ApexCharts.Legend
+            {
+                Position = LegendPosition.Top
             }
         };
-    }
-
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        _chartReady = false;
-
-        await base.OnAfterRenderAsync(firstRender);
-
-        if (chart != null)
-        {
-            await Task.Delay(1000);
-        }
-
-        _chartReady = true;
-        StateHasChanged();
     }
 
     private async void OnClickOnlineVisible()
     {
         _onlineHidden = !_onlineHidden;
-        if (chart != null)
-            await chart.RenderAsync();
+        _chartsReady = false;
+        StateHasChanged();
+        await Task.Delay(100);
+        _chartsReady = true;
+        StateHasChanged();
     }
 
     private async void OnClickOfflineVisible()
     {
         _offlineHidden = !_offlineHidden;
-        if (chart != null)
-            await chart.RenderAsync();
+        _chartsReady = false;
+        StateHasChanged();
+        await Task.Delay(100);
+        _chartsReady = true;
+        StateHasChanged();
     }
 
     private async void OnClickMonitoredVisible()
     {
         _monitoredHidden = !_monitoredHidden;
-        if (chart != null)
-            await chart.RenderAsync();
+        _chartsReady = false;
+        StateHasChanged();
+        await Task.Delay(100);
+        _chartsReady = true;
+        StateHasChanged();
     }
 
     private async Task OnViewLengthChanged(ChangeEventArgs e)
     {
         if (TimeSpan.TryParse(e.Value?.ToString(), out var newSpan))
         {
+            _chartsReady = false;
             _viewLength = newSpan;
             CreateChartData(IPAddresses!, _viewLength);
-            if (chart != null)
-                await chart.RenderAsync();
+            StateHasChanged();
+            await Task.Delay(100);
+            _chartsReady = true;
             StateHasChanged();
         }
     }

@@ -600,7 +600,7 @@ textarea {
     }
 }
 
-table {
+    table {
     > tr#ip {
         > td {
             > span {
@@ -627,7 +627,7 @@ table {
     }
 }
 
-.subnet_editor > header {
+    .subnet_editor > header {
     display: flex;
     flex-direction: row;
     width: 100%;
@@ -646,7 +646,7 @@ table {
     }
 }
 
-.subnet_editor > footer {
+    .subnet_editor > footer {
     display: flex;
     flex-direction: row;
     justify-content: center;
@@ -661,7 +661,7 @@ table {
     }
 }
 
-.ip_layout > td > table {
+    .ip_layout > td > table {
     width: 100%;
     max-height: 25vh;
     overflow: auto;
@@ -682,7 +682,7 @@ table {
     }
 }
 
-.ip_row {
+    .ip_row {
     background-color: var(--primary);
     color: var(--black);
 
@@ -699,10 +699,10 @@ table {
     }
 }
 
-.ip_row:hover {
-    background-color: var(--secondary);
-    filter: drop-shadow(5px 5px 5px rgba(0,0,0,0.05));
-}
+    .ip_row:hover {
+        background-color: var(--secondary);
+        filter: drop-shadow(5px 5px 5px rgba(0,0,0,0.05));
+    }
 
 .ip_editor {
     background-color: var(--secondary);
@@ -724,7 +724,7 @@ table {
     max-height: 80vh;
 }
 
-.ip_editor > header {
+    .ip_editor > header {
     display: flex;
     flex-direction: row;
     width: 100%;
@@ -743,7 +743,7 @@ table {
     }
 }
 
-.ip_editor > article {
+    .ip_editor > article {
     > table {
         padding: 10px;
         display: flex;
@@ -775,11 +775,11 @@ table {
     }
 }
 
-.ip_editor > article > table > tr > td > div {
+    .ip_editor > article > table > tr > td > div {
     background-color: var(--primary);
 }
 
-.ip_editor > footer {
+    .ip_editor > footer {
     display: flex;
     flex-direction: row;
     justify-content: center;
@@ -793,7 +793,7 @@ table {
     margin: 10px;
 }
 
-.settings_layout > div {
+    .settings_layout > div {
     border-radius: 10px;
     filter: drop-shadow(5px 5px 5px rgba(0,0,0,0.15));
     background-color: var(--primary);
@@ -842,7 +842,7 @@ table {
     max-height: 88vh;
 }
 
-.monitoring_layout > div {
+    .monitoring_layout > div {
     flex: 1;
     background-color: var(--primary);
     border-radius: 10px;
@@ -852,7 +852,7 @@ table {
     flex-direction: column;
 }
 
-.monitoring_layout > div > header {
+    .monitoring_layout > div > header {
     display: flex;
     flex-direction: row;
     background-color: var(--light-grey);
@@ -867,13 +867,13 @@ table {
     }
 }
 
-.monitoring_layout > div > article {
+    .monitoring_layout > div > article {
     flex: 1;
     display: flex;
     height: auto;
 }
 
-article#monitor_states {
+        article#monitor_states {
     display: flex;
     flex-direction: column;
     min-height: 0;
@@ -887,7 +887,7 @@ article#monitor_states {
     }
 }
 
-article#monitor_states > div > table {
+        article#monitor_states > div > table {
     width: 100%;
     text-align: center;
 
@@ -910,25 +910,51 @@ article#monitor_states > div > table {
     }
 }
 
-.apexcharts-canvas svg * {
-    stroke: initial !important;
-}
+        .apexcharts-canvas {
+            margin: auto;
+        }
 
-.apexcharts-canvas {
-    margin: auto;
-}
-
-#apex_chart {
-    flex: 1;
-    margin: 20px;
-    background-color: var(--secondary);
-    border-radius: 10px;
-    padding: 20px;
-}
+        #apex_chart {
+            flex: 1;
+            margin: 20px;
+            background-color: var(--secondary);
+            border-radius: 10px;
+            padding: 20px;
+        }
 
 div#uptime_chart {
     display: flex;
     flex: 1;
+
+    .apexcharts-canvas {
+        margin: auto;
+
+        .apexcharts-heatmap-rect {
+            stroke: initial !important;
+        }
+    }
+
+    #apex_chart {
+        flex: 1;
+        margin: 20px;
+        background-color: var(--secondary);
+        border-radius: 10px;
+        padding: 20px;
+    }
+
+    > div {
+        border-radius: 10px;
+        flex: 1;
+        margin: 20px;
+    }
+
+        > div#left {
+            float: left;
+        }
+
+        > div:not(#left) {
+            float: right;
+        }
 
     > div {
         background: var(--secondary);
@@ -937,13 +963,13 @@ div#uptime_chart {
         margin: 20px;
     }
 
-    > div#left {
-        float: left;
-    }
+        > div#left {
+            float: left;
+        }
 
-    > div:not(#left) {
-        float: right;
-    }
+        > div:not(#left) {
+            float: right;
+        }
 }
 
 .monitoring_layout > div#stats_card {
@@ -1019,6 +1045,7 @@ div#stats_card > article > div > table {
 
 .popup_back#monitor_history > article {
     overflow-y: scroll;
+    overflow-x: hidden;
 
     > table {
         width: 100%;
