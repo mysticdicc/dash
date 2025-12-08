@@ -1,0 +1,152 @@
+﻿@using System.Threading.Tasks
+@inject ISubnetsAPI SubnetService
+
+@if (EditorVisible)
+{
+    @if (null != _subnet)
+    {
+        <div class="faded_background">
+            <div class="subnet_editor">
+                <header>
+                    @if (IsNewSubnet)
+                    {
+                        <span><strong>@IP.ConvertToString(_subnet.Address) - NEW! </strong></span>
+                    }
+                    else
+                    {
+                        <span><strong>@IP.ConvertToString(_subnet.Address)</strong></span>
+                    }
+                    <button onclick="@OnClickCancel">
+                        <span class="material-icons">cancel</span>
+                    </button>
+                </header>
+                <article>
+                    <table>
+                        <tr>
+                            <td>
+                                Generate Subnet
+                            </td>
+                        </tr>
+                        <tr id="cidr">
+                            <td colspan="10">
+                                <input type="text" @bind="_cidrString" placeholder="192.168.0.1/24"/>
+                                <button onclick="@OnClickCidrGenerate">
+                                    <span class="material-icons">start</span>
+                                </button>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                Start Address
+                            </td>
+                            <td>
+                                End Address
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <input type="text" @bind="_subnet.StartAddress" readonly="readonly" />
+                            </td>
+                            <td>
+                                <input type="text" @bind="_subnet.EndAddress" readonly="readonly" />
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="10">
+                                <button onclick="@OnClickIpListExpand">
+                                    <span class="material-icons">list</span>
+                                    <span><strong>IP List</strong></span>
+                                </button>
+                            </td>
+                        </tr>
+                        @if (_subnet.List.Count > 0 && _ipListVisible)
+                        {
+                            <Virtualize Items="_subnet.List">
+                                <ItemContent>
+                                    <tr id="ip">
+                                        <td colspan="10">
+                                            <span>@IP.ConvertToString(context.Address)</span>
+                                            <span>@context.Hostname</span>
+                                            <button onclick="@(() => OnClickDeleteIp(context))">
+                                                <span class="material-icons">delete</span>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                </ItemContent>
+                            </Virtualize>
+                        }
+                    </table>
+                </article>
+                <footer>
+                    <button onclick="@OnClickSave">
+                        <span class="material-icons">save</span>
+                    </button>
+                </footer>
+            </div>
+        </div>
+    }
+}
+
+@code {
+    [Parameter] public required bool EditorVisible { get; set; }
+    [Parameter] public required EventCallback<bool> EditorVisibleChanged { get; set; }
+
+    [Parameter] public required bool IsNewSubnet { get; set; }
+    [Parameter] public required EventCallback<bool> IsNewSubnetChanged { get; set; }
+
+    [Parameter] public required Subnet Subnet { get; set; }
+    private Subnet? _subnet;
+
+    private string _cidrString = string.Empty;
+    private bool _ipListVisible = false;
+
+    override protected async Task OnParametersSetAsync()
+    {
+        _subnet = Subnet;
+        await base.OnParametersSetAsync();
+    }
+
+    void OnClickCancel()
+    {
+        EditorVisibleChanged.InvokeAsync(false);
+    }
+
+    void OnClickCidrGenerate()
+    {
+        _subnet = new Subnet(_cidrString);
+        StateHasChanged();
+    }
+
+    void OnClickIpListExpand()
+    {
+        _ipListVisible = !_ipListVisible;
+    }
+
+    void OnClickDeleteIp(IP ip)
+    {
+        if (_subnet != null)
+        {
+            _subnet.List.Remove(ip);
+            StateHasChanged();
+        }
+    }
+
+    async void OnClickSave()
+    {
+        if (null != _subnet)
+        {
+
+            if (IsNewSubnet)
+            {
+                await SubnetService.AddSubnetByObjectAsync(_subnet);
+                
+            }
+            else
+            {
+                await SubnetService.UpdateSubnetByObjectAsync(_subnet);
+            }
+
+            await EditorVisibleChanged.InvokeAsync(false);
+        }
+    }
+}

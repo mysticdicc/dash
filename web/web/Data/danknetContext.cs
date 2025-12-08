@@ -4,6 +4,9 @@ using System;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 using danklibrary;
+using danklibrary.Dashboard;
+using danklibrary.Network;
+using danklibrary.Monitoring;
 
 namespace dankweb.API;
 public partial class danknetContext : DbContext
@@ -20,7 +23,8 @@ public partial class danknetContext : DbContext
     }
 
     public virtual DbSet<Asset> Assets { get; set; }
-    public virtual DbSet<DashboardItem> DashboardItems { get; set; }
+    public virtual DbSet<ShortcutItem> ShortcutItems { get; set; }
+    public virtual DbSet<DirectoryItem> DirectoryItems { get; set; }
     public virtual DbSet<IP> IPs { get; set; }
     public virtual DbSet<Subnet> Subnets { get; set; }
     public virtual DbSet<MonitorState> MonitorStates { get; set; }
@@ -52,11 +56,11 @@ public partial class danknetContext : DbContext
             entity.Property(e => e.Picture).IsUnicode(false);
         });
 
-        modelBuilder.Entity<DashboardItem>(entity =>
+        modelBuilder.Entity<ShortcutItem>(entity =>
         {
-            entity.ToTable("dashboard_items");
+            entity.ToTable("shortcut_items");
 
-            entity.Property(e => e.ID);
+            entity.Property(e => e.Id);
             entity.Property(e => e.Description)
                 .HasMaxLength(300)
                 .IsUnicode(false);
@@ -65,10 +69,28 @@ public partial class danknetContext : DbContext
                 .HasMaxLength(50)
                 .IsUnicode(false);
             entity.Property(e => e.Icon).IsUnicode(false);
-            entity.Property(e => e.URL)
+            entity.Property(e => e.Url)
                 .IsRequired()
                 .HasMaxLength(150)
                 .IsUnicode(false);
+            entity.HasOne(e => e.Parent).WithMany(e => e.Children);
+        });
+
+        modelBuilder.Entity<DirectoryItem>(entity =>
+        {
+            entity.ToTable("directory_items");
+
+            entity.Property(e => e.Id);
+            entity.Property(e => e.Description)
+                .HasMaxLength(300)
+                .IsUnicode(false);
+            entity.Property(e => e.DisplayName)
+                .IsRequired()
+                .HasMaxLength(50)
+                .IsUnicode(false);
+            entity.Property(e => e.Icon)
+                .IsUnicode(false);
+            entity.HasMany<ShortcutItem>(e => e.Children).WithOne(e => e.Parent);
         });
 
         modelBuilder.Entity<IP>(entity =>

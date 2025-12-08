@@ -1,12 +1,15 @@
-using danklibrary;
+using danklibrary.DankAPI;
+using danklibrary.Monitoring;
+using danklibrary.Network;
+using danklibrary.Settings;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using Newtonsoft.Json;
+using System.Net;
+using System.Net.Http;
 using System.Net.Http.Json;
 using System.Net.NetworkInformation;
 using System.Net.Sockets;
-using System.Net;
-using Newtonsoft.Json;
-using System.Net.Http;
-using Microsoft.Extensions.Options;
-using danklibrary.DankAPI;
 
 namespace web.Services
 {
@@ -17,16 +20,18 @@ namespace web.Services
         public int _delay;
         private ILogger<MonitorService> _logger;
         CancellationTokenSource _cancellationToken;
-        Monitoring _monitoringApi;
+        MonitoringAPI _monitoringApi;
+        AllSettings _currentSettings;
 
-        public MonitorService(IOptions<MonitorSettings> options, ILogger<MonitorService> logger, HttpClient httpClient, Monitoring monitoringApi)
+        public MonitorService(ILogger<MonitorService> logger, HttpClient httpClient, MonitoringAPI monitoringApi)
         {
-            _delay = options.Value.MonitorDelay;
             _httpClient = httpClient;
             _timer = null;
             _logger = logger;
             _cancellationToken = new();
             _monitoringApi = monitoringApi;
+            _currentSettings = AllSettings.GetCurrentSettingsFile(Path.Combine(AppContext.BaseDirectory, "settings.json"));
+            _delay = _currentSettings.MonitoringSettings.PollingIntervalInSeconds;
         }
 
         private async Task RunServiceAsync(CancellationToken token)
@@ -51,7 +56,8 @@ namespace web.Services
 
                     List<IP>? ips = [];
 
-                    ips = await _httpClient.GetFromJsonAsync<List<IP>>("/monitoring/get/allmonitoreddevices", CancellationToken.None);
+                    _logger.LogInformation("Fetching monitored devices from API endpoint");
+                    ips = await _monitoringApi.GetMonitoredIpsAsync();
 
                     if (null != ips)
                     {
@@ -89,12 +95,14 @@ namespace web.Services
 
                         try
                         {
-                            await _httpClient.PostAsJsonAsync<List<IP>>("/monitoring/post/newpoll", ips, CancellationToken.None);
+                            await _monitoringApi.PostNewDevicePollAsync(ips);
                             _logger.LogInformation("Ips submitted to api endpoint");
                         }
                         catch (Exception ex)
                         {
                             _logger.LogError(ex.Message);
+                            _logger.LogError(ex.InnerException?.Message);
+                            _logger.LogError(ex.StackTrace);
                         }
                     }
                     else
@@ -102,16 +110,35 @@ namespace web.Services
                         _logger.LogError("Could not fetch IP list from api endpoint");
                     }
 
-                    await Task.Delay(_delay, token);
+                    await Task.Delay((_delay / 1000), token);
                 }
             }
             catch (OperationCanceledException)
             {
                 _logger.LogInformation("User intiated service end");
             }
+            catch (HttpRequestException ex)
+            {
+                _logger.LogError("=== HTTP REQUEST EXCEPTION ===");
+                _logger.LogError(ex.HttpRequestError.ToString());
+                _logger.LogError(ex.Message);
+                _logger.LogError(ex.InnerException?.Message);
+                _logger.LogError(ex.StackTrace);
+                _logger.LogError(ex.Data.ToString());
+                _logger.LogError(ex.HResult.ToString());
+                _logger.LogError(ex.Source);
+                
+            }
             catch (Exception ex)
             {
-                _logger.LogCritical(ex.Message);
+                _logger.LogError("=== EXCEPTION ===");
+                _logger.LogError(ex.Message);
+                _logger.LogError(ex.InnerException?.Message);
+                _logger.LogError(ex.StackTrace);
+                _logger.LogError(ex.Data.ToString());
+                _logger.LogError(ex.HResult.ToString());
+                _logger.LogError(ex.Source);
+
                 await Task.Delay(15000, token);
             }
         }
@@ -172,7 +199,8 @@ namespace web.Services
         async public void Restart()
         {
             _logger.LogInformation("Monitoring service restart initiated");
-            _delay = await _monitoringApi.GetTimer();
+            _currentSettings = AllSettings.GetCurrentSettingsFile(Path.Combine(AppContext.BaseDirectory, "settings.json"));
+            _delay = _currentSettings.MonitoringSettings.PollingIntervalInSeconds;
             _cancellationToken.Cancel();
             _cancellationToken = new();
         }

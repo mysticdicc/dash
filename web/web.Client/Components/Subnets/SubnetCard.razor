@@ -1,0 +1,136 @@
+﻿@using web.Client.Services
+@inject ISubnetsAPI SubnetService
+
+@*filter controls here*@
+<tr class="subnet_card">
+    <td>
+        @IP.ConvertToString(_subnet.Address)
+    </td>
+    <td>
+        @IP.ConvertToString(_subnet.StartAddress)
+    </td>
+    <td>
+        @IP.ConvertToString(_subnet.EndAddress)
+    </td>
+    <td>
+        <div>
+            <input type="text" @bind="@_searchString"/>
+            <button onclick="@OnClickSearch">
+                <span class="material-icons">search</span>
+            </button>
+        </div>
+    </td>
+    <td>
+        <div>
+            <button onclick="@OnClickExpand">
+                <span class="material-icons" title="Expand IP List">list</span>
+            </button>
+            <button onclick="@OnClickEditSubnet">
+                <span class="material-icons" title="Edit Subnet Information">edit</span>
+            </button>
+            <button onclick="@OnClickDelete">
+                <span class="material-icons" title="Delete Subnet">delete</span>
+            </button>
+            <button onclick="@OnClickDiscovery">
+                <span class="material-icons" title="Rediscover Subnet">refresh</span> @*subnet discovery*@
+            </button>
+        </div>
+    </td>
+</tr>
+@if (_ipListVisible)
+{
+    <tr class="ip_layout">
+        <td colspan="10">
+            <table>
+                <tr>
+                    <th>IP Address</th>
+                    <th>Hostname</th>
+                    @if (AdvancedViewEnabled)
+                    {
+                        <th>Monitored (ICMP)</th>
+                        <th>Monitored (TCP)</th>
+                        <th>Monitored Ports</th>
+                    }
+                    <th />
+                </tr>
+                @if (null != _ipList)
+                {
+                    <Virtualize Items="@_ipList">
+                        <ItemContent>
+                            <IpRow IpAddress="@context" @bind-AdvancedViewEnabled="AdvancedViewEnabled" OnEditIp="@OnEditIp" />
+                        </ItemContent>
+                    </Virtualize>
+                }
+            </table>
+        </td>
+    </tr>
+}
+
+@code {
+    [Parameter] public required Subnet Subnet { get; set; }
+    private Subnet? _subnet;
+
+    [Parameter] public bool AdvancedViewEnabled { get; set; }
+    [Parameter] public EventCallback<bool> AdvancedViewEnabledChanged { get; set; }
+
+    [Parameter] public EventCallback<IP> OnEditIp { get; set; }
+    [Parameter] public EventCallback<Subnet> OnEditSubnet { get; set; }
+
+    private IList<IP> _ipList = [];
+    private bool _ipListVisible { get; set; } = false;
+    private string _searchString = string.Empty;
+
+    protected override Task OnParametersSetAsync()
+    {
+        if (null != _subnet)
+        {
+            _ipList = _subnet.List;
+        }
+
+        _subnet = Subnet;
+        _searchString = string.Empty;
+
+        return base.OnParametersSetAsync();
+    }
+
+    private void OnClickExpand()
+    {
+        _ipListVisible = !_ipListVisible;
+    }
+
+    private void OnClickEditSubnet()
+    {
+        OnEditSubnet.InvokeAsync(Subnet);
+    }
+
+    private void OnClickSearch()
+    {
+        if (string.IsNullOrEmpty(_searchString))
+        {
+            _ipList = _subnet.List;
+        }
+        else
+        {
+            _ipList = _subnet.List
+                .Where(x => IP.ConvertToString(x.Address).Contains(_searchString, StringComparison.OrdinalIgnoreCase) ||
+                            (x.Hostname != null && x.Hostname.Contains(_searchString, StringComparison.OrdinalIgnoreCase)))
+                .ToList();
+        }
+    }
+
+    private async void OnClickDiscovery()
+    {
+        if (null != _subnet)
+        {
+            await SubnetService.RunDiscoveryTaskAsync(_subnet);
+        }
+    }
+
+    private async void OnClickDelete()
+    {
+        if (null != _subnet)
+        {
+            await SubnetService.DeleteSubnetByObjectAsync(_subnet);
+        }
+    }
+}

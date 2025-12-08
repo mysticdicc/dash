@@ -1,0 +1,51 @@
+﻿@implements IAsyncDisposable
+@inject NotificationService NotificationService
+
+@if (!Hidden)
+{
+    <div class="notification">
+        <header>
+            <span><strong>@_title</strong></span>
+        </header>
+        <content>
+            <span>@_message</span>
+        </content>
+    </div>
+}
+
+@code {
+    private string _title = string.Empty;
+    private string _message = string.Empty;
+
+    [Parameter] public TimeSpan CloseDelay { get; set; } = TimeSpan.FromSeconds(5);
+    private TimeSpan _closeDelay => CloseDelay;
+
+    [Parameter] public bool Hidden { get; set; }
+    [Parameter] public EventCallback<bool> HiddenChanged { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        NotificationService.RegisterNotification(ShowAsync);
+        await base.OnInitializedAsync();
+    }
+
+    public async Task ShowAsync(string title, string message)
+    {
+        _title = title;
+        _message = message;
+        await HiddenChanged.InvokeAsync(false);
+        StateHasChanged();
+
+        await Task.Delay(_closeDelay);
+
+        await HiddenChanged.InvokeAsync(true);
+        _title = string.Empty;
+        _message = string.Empty;
+        StateHasChanged();
+    }
+
+    async ValueTask IAsyncDisposable.DisposeAsync()
+    {
+        NotificationService.RegisterNotification(null!);
+    }
+}

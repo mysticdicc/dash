@@ -1,0 +1,76 @@
+﻿@inject ISubnetsAPI SubnetsAPI
+
+@if (IpViewVisible)
+{
+    <div class="faded_background">
+        <div class="popup_back" id="ip_view">
+            <header>
+                <button onclick="@OnClickEdit">
+                    <span class="material-icons">edit</span>
+                </button>
+                <button onclick="@OnClickCancel">
+                    <span class="material-icons">cancel</span>
+                </button>
+            </header>
+            <article>
+                <table>
+                    <tr>
+                        <td>
+                            Address:
+                        </td>
+                        <td>
+                            @IP.ConvertToString(IpAddress.Address)
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            Hostname:
+                        </td>
+                        <td>
+                            @IpAddress.Hostname
+                        </td>
+                    </tr>
+                    @if (_parent != null)
+                    {
+                        <tr>
+                            <td>
+                                Parent Subnet:
+                            </td>
+                            <td>
+                                @IP.ConvertToString(_parent.Address) : @IP.ConvertToString(_parent.SubnetMask)
+                            </td>
+                        </tr>
+                    }
+                </table>
+            </article>
+        </div>
+    </div>
+}
+
+
+
+@code {
+    [Parameter] public required IP IpAddress { get; set; }
+    [Parameter] public required bool IpViewVisible { get; set; }
+    [Parameter] public required EventCallback<bool> IpViewVisibleChanged { get; set; }
+    [Parameter] public required EventCallback<IP> EditClicked { get; set; }
+
+    private Subnet? _parent;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        _parent = await SubnetsAPI.GetSubnetByIdAsync(IpAddress.SubnetID);
+        await base.OnParametersSetAsync();
+    }
+
+    private async void OnClickCancel()
+    {
+        IpViewVisible = false;
+    }
+
+    private async void OnClickEdit()
+    {
+        await IpViewVisibleChanged.InvokeAsync(true);
+        await EditClicked.InvokeAsync(IpAddress);
+    }
+}

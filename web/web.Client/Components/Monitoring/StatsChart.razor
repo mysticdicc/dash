@@ -1,0 +1,233 @@
+﻿@using ApexCharts
+@using danklibrary.Monitoring
+@using danklibrary.Network
+
+<div>
+    <header>
+        @if (!_onlineHidden)
+        {
+            <button id="green" onclick="@OnClickOnlineVisible">
+                <span title="Toggle Online Devices" class="material-icons">cloud</span>
+            </button>
+        }
+        else
+        {
+            <button id="red" onclick="@OnClickOnlineVisible">
+                <span title="Toggle Online Devices" class="material-icons">cloud</span>
+            </button>
+        }
+
+        @if (!_offlineHidden)
+        {
+            <button id="green" onclick="@OnClickOfflineVisible">
+                <span title="Toggle Offline Devices" class="material-symbols-outlined">cloud_alert</span>
+            </button>
+        }
+        else
+        {
+            <button id="red" onclick="@OnClickOfflineVisible">
+                <span title="Toggle Offline Devices" class="material-symbols-outlined">cloud_alert</span>
+            </button>
+        }
+
+        @if (!_monitoredHidden)
+        {
+            <button id="green" onclick="@OnClickMonitoredVisible">
+                <span title="Toggle Monitored Devices" class="material-icons">visibility</span>
+            </button>
+        }
+        else
+        {
+            <button id="red" onclick="@OnClickMonitoredVisible">
+                <span title="Toggle Monitored Devices"  class="material-icons">visibility</span>
+            </button>
+        }
+        <select @onchange="OnViewLengthChanged" style="margin-left: 1rem;">
+            <option value="04:00:00" selected="@(_viewLength == TimeSpan.FromHours(4))">Last 4 hours</option>
+            <option value="12:00:00" selected="@(_viewLength == TimeSpan.FromHours(12))">Last 12 hours</option>
+            <option value="24:00:00" selected="@(_viewLength == TimeSpan.FromHours(24))">Last 24 hours</option>
+            <option value="72:00:00" selected="@(_viewLength == TimeSpan.FromDays(3))">Last 3 days</option>
+        </select>
+    </header>
+    <article>
+        <div id="apex_chart">
+            @if (_chartReady)
+            {
+                <ApexChart TItem="ChartPoint" Options="ChartOptions" @ref="chart">
+                    @if (!_onlineHidden)
+                    {
+                        <ApexPointSeries TItem="ChartPoint"
+                                         Items="ChartData"
+                                         Name="Online Devices"
+                                         SeriesType="SeriesType.Line"
+                                         XValue="@(point => point.Time)"
+                                         YValue="@(point => point.OnlineCount)"
+                                         ShowDataLabels />
+                    }
+                    @if (!_offlineHidden)
+                    {
+                        <ApexPointSeries TItem="ChartPoint"
+                                         Items="ChartData"
+                                         Name="Offline Devices"
+                                         SeriesType="SeriesType.Line"
+                                         XValue="@(point => point.Time)"
+                                         YValue="@(point => point.OfflineCount)"
+                                         ShowDataLabels />
+                    }
+                    @if (!_monitoredHidden)
+                    {
+                        <ApexPointSeries TItem="ChartPoint"
+                                         Items="ChartData"
+                                         Name="Monitored Devices"
+                                         SeriesType="SeriesType.Line"
+                                         XValue="@(point => point.Time)"
+                                         YValue="@(point => point.MonitoredCount)"
+                                         ShowDataLabels />
+                    }
+                </ApexChart>
+            }
+        </div>
+    </article>
+</div>
+
+@code {
+    [Parameter] public required List<IP>? IPAddresses { get; set; }
+
+    private bool _onlineHidden = false;
+    private bool _offlineHidden = false;
+    private bool _monitoredHidden = false;
+    private bool _chartReady = false;
+    private TimeSpan _viewLength = TimeSpan.FromHours(4);
+
+    public class ChartPoint
+    {
+        public DateTime Time { get; set; }
+        public int OnlineCount { get; set; }
+        public int OfflineCount { get; set; }
+        public int MonitoredCount { get; set; }
+    }
+
+    List<ChartPoint> ChartData = new();
+    ApexChartOptions<ChartPoint> ChartOptions = new();
+    private ApexChart<ChartPoint>? chart;
+
+    private DateTime? _xAxisMin;
+    private DateTime? _xAxisMax;
+
+    protected override void OnParametersSet()
+    {
+        if (IPAddresses == null)
+        {
+            ChartData = [];
+            return;
+        }
+
+        CreateChartData(IPAddresses, _viewLength);
+        ChartOptions = GenerateApexChartOptions();
+    }
+
+    private void CreateChartData(List<IP> ipAddresses, TimeSpan viewLength)
+    {
+        var allStates = ipAddresses
+            .Where(ip => ip.MonitorStateList != null)
+            .SelectMany(ip => ip.MonitorStateList!)
+            .Where(ms => ms.PingState != null)
+            .ToList();
+
+        var grouped = allStates
+            .GroupBy(ms => ms.SubmitTime)
+            .OrderBy(g => g.Key);
+
+        var allChartPoints = grouped
+            .Select(g => new ChartPoint
+            {
+                Time = g.Key,
+                OnlineCount = g.Count(ms => ms.PingState!.Response),
+                OfflineCount = g.Count(ms => !ms.PingState!.Response),
+                MonitoredCount = g.Count()
+            })
+            .OrderBy(point => point.Time)
+            .ToList();
+
+        var now = DateTime.UtcNow;
+        var minTime = now - viewLength;
+
+        ChartData = allChartPoints
+            .Where(point => point.Time >= minTime && point.Time <= now)
+            .ToList();
+    }
+
+    private ApexChartOptions<ChartPoint> GenerateApexChartOptions()
+    {
+        return new()
+        {
+            Chart = new ApexCharts.Chart
+            {
+                Width = "100%",
+                Height = "100%"
+            },
+            Xaxis = new ApexCharts.XAxis
+            {
+                Type = ApexCharts.XAxisType.Datetime,
+                Labels = new ApexCharts.XAxisLabels
+                {
+                    DatetimeFormatter = new()
+                    {
+                        Year = "yyyy",
+                        Month = "MM/yyyy",
+                        Day = "dd/MM/yy",
+                        Hour = "HH:mm"
+                    }
+                }
+            }
+        };
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        _chartReady = false;
+
+        await base.OnAfterRenderAsync(firstRender);
+
+        if (chart != null)
+        {
+            await Task.Delay(1000);
+        }
+
+        _chartReady = true;
+        StateHasChanged();
+    }
+
+    private async void OnClickOnlineVisible()
+    {
+        _onlineHidden = !_onlineHidden;
+        if (chart != null)
+            await chart.RenderAsync();
+    }
+
+    private async void OnClickOfflineVisible()
+    {
+        _offlineHidden = !_offlineHidden;
+        if (chart != null)
+            await chart.RenderAsync();
+    }
+
+    private async void OnClickMonitoredVisible()
+    {
+        _monitoredHidden = !_monitoredHidden;
+        if (chart != null)
+            await chart.RenderAsync();
+    }
+
+    private async Task OnViewLengthChanged(ChangeEventArgs e)
+    {
+        if (TimeSpan.TryParse(e.Value?.ToString(), out var newSpan))
+        {
+            _viewLength = newSpan;
+            CreateChartData(IPAddresses!, _viewLength);
+            if (chart != null)
+                await chart.RenderAsync();
+            StateHasChanged();
+        }
+    }
+}

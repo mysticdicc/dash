@@ -1,9 +1,11 @@
-﻿using danklibrary;
+﻿using danklibrary.Dashboard;
 using dankweb.API;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Newtonsoft.Json;
+using System.Text.Json;
+using System.Text.Json.Serialization;
+using System;
 
 namespace web.Controllers
 {
@@ -12,206 +14,204 @@ namespace web.Controllers
     {
         private readonly IDbContextFactory<danknetContext> _DbFactory = dbContext;
 
+        private static readonly JsonSerializerOptions JsonOptions = new()
+        {
+            ReferenceHandler = ReferenceHandler.IgnoreCycles,
+            PropertyNamingPolicy = null,
+            WriteIndented = true
+        };
 
         [HttpGet]
-        [Route("[controller]/get/all")]
-        public string GetAll()
+        [Route("[controller]/v2/shortcuts/get/noparent")]
+        public string GetShortcutsWithoutParent()
         {
             using var context = _DbFactory.CreateDbContext();
-
-            return JsonConvert.SerializeObject(context.DashboardItems.ToList());
+            List<ShortcutItem> items = [];
+            items.AddRange([.. context.ShortcutItems.Where(x => x.Parent == null)]);
+            return JsonSerializer.Serialize(items, JsonOptions);
         }
 
         [HttpGet]
-        [Route("[controller]/get/byid")]
-        public string GetById(int ID)
+        [Route("[controller]/v2/directories/get/all")]
+        public string GetAllDirectories()
         {
             using var context = _DbFactory.CreateDbContext();
-            return JsonConvert.SerializeObject(context.DashboardItems.Where(x => x.ID == ID).ToList());
-        }
-
-        [HttpGet]
-        [Route("[controller]/get/byname")]
-        public string GetByName(string name)
-        {
-            using var context = _DbFactory.CreateDbContext();
-            return JsonConvert.SerializeObject(context.DashboardItems.Where(x => x.DisplayName.Contains(name)).ToList());
+            List<DirectoryItem> items = [];
+            items.AddRange(context.DirectoryItems.Include(x => x.Children).ToList());
+            return JsonSerializer.Serialize(items, JsonOptions);
         }
 
         [HttpPost]
-        [Route("[controller]/post/new")]
-        public async Task<Results<BadRequest<string>, Created<DashboardItem>>> New(DashboardItem item)
+        [Route("[controller]/v2/shortcuts/post/new")]
+        public async Task<Results<BadRequest<string>, Created<ShortcutItemDto>>> NewShortcut(ShortcutItemDto dto)
         {
             using var context = _DbFactory.CreateDbContext();
-
-            bool validObject;
-
-            if (DashboardItem.IsValid(item))
+            var entity = new ShortcutItem
             {
-                validObject = true;
+                Id = dto.Id,
+                DisplayName = dto.DisplayName ?? string.Empty,
+                Description = dto.Description,
+                Icon = dto.Icon,
+                Url = dto.Url ?? string.Empty
+            };
+
+            if (dto.ParentId is Guid parentId)
+            {
+                var parent = await context.DirectoryItems.FindAsync(parentId);
+                if (parent != null) entity.Parent = parent;
             }
-            else
-            {
-                validObject = false;
-            }
 
-            if (validObject)
+            try
             {
-                try
-                {
-                    context.DashboardItems.Add(item);
-                    await context.SaveChangesAsync();
-
-                    return TypedResults.Created(item.ID.ToString(), item);
-                }
-                catch (Exception ex)
-                {
-                    return TypedResults.BadRequest(ex.Message);
-                }
+                context.ShortcutItems.Add(entity);
+                await context.SaveChangesAsync();
+                return TypedResults.Created(entity.Id.ToString(), dto);
             }
-            else
+            catch (Exception ex)
             {
-                return TypedResults.BadRequest("Object invalid.");
+                return TypedResults.BadRequest(ex.Message);
+            }
+        }
+
+        [HttpPost]
+        [Route("[controller]/v2/directories/post/new")]
+        public async Task<Results<BadRequest<string>, Created<DirectoryItemDto>>> NewDirectory(DirectoryItemDto dto)
+        {
+            using var ctx = _DbFactory.CreateDbContext();
+            var entity = new DirectoryItem
+            {
+                Id = dto.Id,
+                DisplayName = dto.DisplayName ?? string.Empty,
+                Description = dto.Description,
+                Icon = dto.Icon,
+                Children = []
+            };
+
+            try
+            {
+                ctx.DirectoryItems.Add(entity);
+                await ctx.SaveChangesAsync();
+                return TypedResults.Created(entity.Id.ToString(), dto);
+            }
+            catch (Exception ex)
+            {
+                return TypedResults.BadRequest(ex.Message);
             }
         }
 
         [HttpPut]
-        [Route("[controller]/put/update")]
-        public async Task<Results<BadRequest<string>, Ok<DashboardItem>>> Update(DashboardItem item)
+        [Route("[controller]/v2/shortcuts/put/update")]
+        public async Task<Results<BadRequest<string>, Ok<ShortcutItemDto>>> UpdateShortcut(ShortcutItemDto dto)
         {
             using var context = _DbFactory.CreateDbContext();
+            var entity = await context.ShortcutItems.Include(x => x.Parent)
+                                                .FirstOrDefaultAsync(x => x.Id == dto.Id);
+            if (entity == null) return TypedResults.BadRequest("Bad ID match");
 
-            //check object is valid
-            bool validObject;
+            dto.ApplyToEntity(entity);
 
-            if (DashboardItem.IsValid(item))
+            if (dto.ParentId is Guid parentId)
             {
-                validObject = true;
+                entity.Parent = await context.DirectoryItems.FindAsync(parentId);
             }
             else
             {
-                validObject = false;
+                entity.Parent = null;
             }
 
-            bool validID;
-            DashboardItem? updateItem;
-
-            if (context.DashboardItems.Where(x => x.ID == item.ID).ToList().Count == 1)
+            try
             {
-                validID = true;
-                updateItem = context.DashboardItems.Find(item.ID);
+                context.ShortcutItems.Update(entity);
+                await context.SaveChangesAsync();
+                return TypedResults.Ok(dto);
             }
-            else
+            catch (Exception ex)
             {
-                validID = false;
-                updateItem = null;
+                return TypedResults.BadRequest(ex.Message);
             }
+        }
 
-            if (validObject && validID)
+        [HttpPut]
+        [Route("[controller]/v2/directories/put/update")]
+        public async Task<Results<BadRequest<string>, Ok<DirectoryItemDto>>> UpdateDirectory(DirectoryItemDto dto)
+        {
+            using var context = _DbFactory.CreateDbContext();
+            var entity = await context.DirectoryItems.FirstOrDefaultAsync(x => x.Id == dto.Id);
+            if (entity == null) return TypedResults.BadRequest("Bad ID match");
+
+            dto.ApplyToEntity(entity);
+
+            try
             {
-                if (null != updateItem)
-                {
-                    //update object
-                    if (updateItem.DisplayName != item.DisplayName)
-                    {
-                        updateItem.DisplayName = item.DisplayName;
-                    }
-
-                    if (updateItem.Icon != item.Icon)
-                    {
-                        updateItem.Icon = item.Icon;
-                    }
-
-                    if (updateItem.URL != item.URL)
-                    {
-                        updateItem.URL = item.URL;
-                    }
-
-                    if (updateItem.Description != item.Description)
-                    {
-                        updateItem.Description = item.Description;
-                    }
-
-                    if (updateItem.Icon != item.Icon) 
-                    { 
-                        updateItem.Icon = item.Icon;
-                    }
-
-                    //submit to db
-                    try
-                    {
-                        context.DashboardItems.Update(updateItem);
-                        await context.SaveChangesAsync();
-
-                        return TypedResults.Ok(updateItem);
-                    }
-                    catch (Exception ex)
-                    {
-                        return TypedResults.BadRequest($"{ex.Message}");
-                    }
-                }
-                else
-                {
-                    return TypedResults.BadRequest("Unable to fetch object from db");
-                }
+                context.DirectoryItems.Update(entity);
+                await context.SaveChangesAsync();
+                return TypedResults.Ok(dto);
             }
-            else if (validID && (validObject == false))
+            catch (Exception ex)
             {
-                return TypedResults.BadRequest("Object invalid");
-            }
-            else if (validObject && (validID == false))
-            {
-                return TypedResults.BadRequest("ID doesn't exist in DB");
-            }
-            else if ((validObject == false) && (validID == false))
-            {
-                return TypedResults.BadRequest("Object invalid and ID doesn't exist in DB");
-            }
-            else
-            {
-                return TypedResults.BadRequest("Unknown error");
+                return TypedResults.BadRequest($"{ex.Message}");
             }
         }
 
         [HttpDelete]
-        [Route("[controller]/delete/byitem")]
-        public async Task<Results<BadRequest<string>, Ok<DashboardItem>>> Delete(DashboardItem item)
+        [Route("[controller]/v2/shortcuts/delete/byobject")]
+        public async Task<Results<BadRequest<string>, Ok<ShortcutItemDto>>> DeleteShortcut(ShortcutItemDto dto)
         {
             using var context = _DbFactory.CreateDbContext();
+            var delete = await context.ShortcutItems.Include(x => x.Parent).FirstOrDefaultAsync(x => x.Id == dto.Id);
 
-            if (DashboardItem.IsValid(item))
+            if (delete == null)
             {
-                if (context.DashboardItems.Where(x => x.ID == item.ID).ToList().Count == 1)
-                {
-                    DashboardItem? deleteItem = context.DashboardItems.Find(item.ID);
-                    
-                    if (null != deleteItem)
-                    {
-                        try
-                        {
-                            context.DashboardItems.Remove(deleteItem);
-                            await context.SaveChangesAsync();
+                return TypedResults.BadRequest("Unable to track db object");
+            }
 
-                            return TypedResults.Ok(deleteItem);
-                        } 
-                        catch (Exception ex)
-                        {
-                            return TypedResults.BadRequest($"{ex.Message}");
-                        }
-                    } 
-                    else
-                    {
-                        return TypedResults.BadRequest("Unable to track db object");
-                    }
-                } 
-                else
+            if (delete.Parent != null)
+            {
+                var parent = await context.DirectoryItems.Include(d => d.Children).FirstOrDefaultAsync(d => d.Id == delete.Parent.Id);
+                if (parent != null)
                 {
-                    return TypedResults.BadRequest("Invalid number of objects returned from db");
+                    parent.Children.Remove(delete);
                 }
-            } 
-            else
+            }
+
+            try
             {
-                return TypedResults.BadRequest("Invalid object");
+                context.ShortcutItems.Remove(delete);
+                await context.SaveChangesAsync();
+                return TypedResults.Ok(dto);
+            }
+            catch (Exception ex)
+            {
+                return TypedResults.BadRequest($"{ex.Message}");
+            }
+        }
+
+        [HttpDelete]
+        [Route("[controller]/v2/directories/delete/byobject")]
+        public async Task<Results<BadRequest<string>, Ok<DirectoryItemDto>>> DeleteDirectory(DirectoryItemDto dto)
+        {
+            using var context = _DbFactory.CreateDbContext();
+            var delete = await context.DirectoryItems.Include(d => d.Children).FirstOrDefaultAsync(x => x.Id == dto.Id);
+
+            if (delete == null)
+            {
+                return TypedResults.BadRequest("Unable to track db object");
+            }
+
+            try
+            {
+                foreach (var child in delete.Children)
+                {
+                    context.ShortcutItems.Remove(child);
+                }
+
+                context.DirectoryItems.Remove(delete);
+                await context.SaveChangesAsync();
+                return TypedResults.Ok(dto);
+            }
+            catch (Exception ex)
+            {
+                return TypedResults.BadRequest($"{ex.Message}");
             }
         }
     }

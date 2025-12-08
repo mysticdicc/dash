@@ -1,0 +1,236 @@
+﻿@using danklibrary.DankAPI
+@using danklibrary.Dashboard
+@inject IDashAPI DashboardService
+
+@if (!Hidden)
+{
+    <div class="faded_background">
+        <div class="dashboard_card_editor">
+            @if (_dashboardItem.Icon != null)
+            {
+                <div>
+                    <img src="@_dashboardItem.Icon"/>
+                    <button onclick="@OnClickDeleteIcon">
+                        <span class="material-icons">delete</span>
+                    </button>
+                </div>
+            }
+            else
+            {
+                <div class="upload_item_box">
+                    <label for="upload_new_pic">
+                        <span class="material-icons" style="margin: auto;">add</span>
+                    </label>
+
+                    <InputFile onchange="@(args => OnUploadItem(args))" id="upload_new_pic" style="width: 0%; height: 0; overflow: hidden;" accept="*.png, *.jpg, *.jpeg" />
+                </div>
+            }
+            <article>
+                <header>
+                    <p>@_dashboardItem.Id</p>
+                </header>
+                <content>
+                    <table>
+                        <tr>
+                            <input type="radio" name="itemtype" checked="@(_dashboardItem.Type == DashboardItemBase.DashboardItemType.Directory)" @onchange="@(() => OnChangeItemType(DashboardItemBase.DashboardItemType.Directory))"/> 
+                            Folder
+                        </tr>
+                        <tr>
+                            <input type="radio" name="itemtype" checked="@(_dashboardItem.Type == DashboardItemBase.DashboardItemType.Shortcut)" @onchange="@(() => OnChangeItemType(DashboardItemBase.DashboardItemType.Shortcut))" />
+                            Shortcut
+                        </tr>
+                        <tr>
+                            <input type="text" @bind="@_dashboardItem.DisplayName" />
+                        </tr>
+                        @if (_dashboardItem is ShortcutItem shortcut)
+                        {
+                            <tr>
+                                <input type="text" @bind="@shortcut.Url"/>
+                                <span class="material-icons">add_link</span>
+                            </tr>
+
+                            <tr>
+                                <select @bind="@_selectedDirectory" @bind:after="() => OnDirectoryChanged()">
+                                    <option value="">No Folder</option>
+                                    @if (Directories != null)
+                                    {
+                                        foreach (var item in Directories)
+                                        {
+                                            <option value="@item.Id">@item.DisplayName</option>
+                                        }
+                                    }
+                                </select>
+                                <span class="material-icons">folder</span>
+                            </tr>
+                        }
+                        <tr>
+                            <textarea @bind="@_dashboardItem.Description" />
+                        </tr>
+                    </table>
+                </content>
+                <footer>
+                    <button onclick="@OnClickSaveItem">
+                        <span class="material-icons">save</span>
+                    </button>
+                    @if (!IsNewItem)
+                    {
+                        <button onclick="@OnClickDeleteItem">
+                            <span class="material-icons">delete</span>
+                        </button>
+                    }
+                    <button onclick="@OnClickCancel">
+                        <span class="material-icons">cancel</span>
+                    </button>
+                </footer>
+            </article>
+        </div>
+    </div>
+} 
+
+@code {
+    [Parameter] public required bool Hidden { get; set; }
+    [Parameter] public EventCallback<bool> HiddenChanged { get; set; }
+    [Parameter] public EventCallback<bool> EditorClosed { get; set; }
+    [Parameter] public bool IsNewItem { get; set; } = false;
+
+    [Parameter] public DirectoryItem? ParentDirectory { get; set; }
+    [Parameter] public List<DirectoryItem>? Directories { get; set; }
+    private string _selectedDirectory = string.Empty;
+
+    [Parameter] public required DashboardItemBase Item { get; set; }
+    private DashboardItemBase _dashboardItem { set; get; }
+
+    private string _notificationTitle = string.Empty;
+    private string _notificationMessage = string.Empty;
+
+    protected override void OnParametersSet()
+    {
+        _dashboardItem = Item;
+
+        if (Item is ShortcutItem shortcut)
+        {
+            if (shortcut.Parent != null)
+            {
+                _selectedDirectory = shortcut.Parent.Id.ToString();
+            }
+            else
+            {
+                _selectedDirectory = string.Empty;
+            }
+        }
+        else
+        {
+            _selectedDirectory = string.Empty;
+        }
+    }
+
+    private async Task<string> PictureToBase64String(InputFileChangeEventArgs eventArgs)
+    {
+        using var memoryStream = new MemoryStream();
+        await eventArgs.File.OpenReadStream(10000000).CopyToAsync(memoryStream);
+        var bytes = memoryStream.ToArray();
+        var base64 = Convert.ToBase64String(bytes);
+
+        return $"data:{eventArgs.File.ContentType};base64,{base64}";
+    }
+
+    private async Task OnUploadItem(InputFileChangeEventArgs e)
+    {
+        _dashboardItem.Icon = await PictureToBase64String(e);
+    }
+
+    private void OnChangeItemType(DashboardItemBase.DashboardItemType type)
+    {
+        if (type == DashboardItemBase.DashboardItemType.Shortcut)
+        {
+            _dashboardItem = new ShortcutItem()
+            {
+                Id = _dashboardItem.Id,
+                DisplayName = _dashboardItem.DisplayName,
+                Description = _dashboardItem.Description,
+                Icon = _dashboardItem.Icon,
+                Url = "https://example.com"
+            };
+        }
+        else if (type == DashboardItemBase.DashboardItemType.Directory)
+        {
+            _dashboardItem = new DirectoryItem()
+            {
+                Id = _dashboardItem.Id,
+                DisplayName = _dashboardItem.DisplayName,
+                Description = _dashboardItem.Description,
+                Icon = _dashboardItem.Icon,
+                Children = []
+            };
+        }
+    }
+
+    private void OnDirectoryChanged()
+    {
+        if (string.IsNullOrWhiteSpace(_selectedDirectory))
+        {
+            if (_dashboardItem is ShortcutItem s)
+            {
+                s.Parent = null;
+            }
+
+            return;
+        }
+
+        if (!Guid.TryParse(_selectedDirectory, out var result))
+        {
+            if (_dashboardItem is ShortcutItem s)
+            {
+                s.Parent = null;
+            }
+
+            return;
+        }
+
+        if (Directories == null) return;
+
+        if (_dashboardItem is ShortcutItem shortcut)
+        {
+            var selectedObj = Directories.FirstOrDefault(x => x.Id == result);
+            shortcut.Parent = selectedObj;
+        }
+    }
+
+    private void OnClickDeleteIcon()
+    {
+        if (null != _dashboardItem.Icon)
+        {
+            _dashboardItem.Icon = null;
+        }
+    }
+
+    private async void OnClickDeleteItem()
+    {
+        await DashboardService.DeleteItemAsync(Item);
+
+        await EditorClosed.InvokeAsync(true);
+        await HiddenChanged.InvokeAsync(true);
+    }
+
+    private async void OnClickSaveItem()
+    {
+        if (IsNewItem)
+        {
+            await DashboardService.SaveItemAsync(_dashboardItem);
+        }
+        else
+        {
+            await DashboardService.EditItemAsync(_dashboardItem);
+        }
+        
+
+        await EditorClosed.InvokeAsync(true);
+        await HiddenChanged.InvokeAsync(true);
+    }
+
+    private async void OnClickCancel()
+    {
+        await EditorClosed.InvokeAsync(false);
+        await HiddenChanged.InvokeAsync(true);
+    }
+}

@@ -1,44 +1,43 @@
-﻿@inject NotificationService NotificationService
-@inject IJSRuntime JSRuntime
-@inject DialogService DialogService
-@inject TooltipService TooltipService
-@inject ContextMenuService ContextMenuService
-@inject NotificationService NotificationService
-
-@inherits LayoutComponentBase
-@inject CookieThemeService CookieThemeService
+﻿@inherits LayoutComponentBase
 @inject NavigationManager NavManager
-@inject ThemeService ThemeService
 
-<RadzenComponents @rendermode="InteractiveWebAssembly" />
+<div class="body">
+    <header>
+        <a href="/">
+            <button>
+                <span class="material-icons">home</span>
+                <span><strong>Home</strong></span>
+            </button>
+        </a>
 
-<RadzenLayout>
-    <RadzenHeader class="header">
-        <RadzenButton Icon="home" Click="@(() => Navigate("home"))" Variant="Variant.Flat" class="ghost_button"/>
-        <RadzenButton Icon="globe" Click="@(() => Navigate("subnets"))" Variant="Variant.Flat" class="ghost_button" />
-        <RadzenButton Icon="autorenew" Click="@(() => Navigate("monitoring"))" Variant="Variant.Flat" class="ghost_button" />
-    </RadzenHeader>
+        <a href="/subtrackr/home">
+            <button>
+                <span class="material-icons">menu</span>
+                <span><strong>Subnets</strong></span>
+            </button>
+        </a>
 
-    <RadzenBody class="body">
+        <a href="/monitoring/home">
+            <button>
+                <span class="material-icons">search</span>
+                <span><strong>Monitoring</strong></span>
+            </button>
+        </a>
+
+        <a href="/settings/home">
+            <button>
+                <span class="material-icons">settings</span>
+                <span><strong>Settings</strong></span>
+            </button>
+        </a>
+    </header>
+    <content>
         @Body
-    </RadzenBody>
-</RadzenLayout>
 
-@code
-{
-    void Navigate(string location) 
-    {
-        switch (location) 
-        {
-            case "home":
-                NavManager.NavigateTo("/");
-                break;
-            case "subnets":
-                NavManager.NavigateTo("/subtrackr/home");
-                break;
-            case "monitoring":
-                NavManager.NavigateTo("/monitoring/home");
-                break;
-        }
-    }
+        <Notification @bind-Hidden="@_notifHidden" />
+    </content>
+</div>
+
+@code {
+    private bool _notifHidden = true;
 }

@@ -1,8 +1,7 @@
-﻿@inject danklibrary.DankAPI.Monitoring MonitorAPI
-@inject DialogService DialogService
+﻿@inject MonitoringApiService MonitorAPI
 
 @page "/monitoring/{deviceId}"
-
+@* 
 <RadzenRow>
     <RadzenRow class="row">
         <RadzenColumn Size="4" class="row_column">
@@ -93,26 +92,26 @@
                 <RadzenButton Click="@(() => DialogService.Close())" Icon="close" class="row_contents"/>
             </RadzenColumn>
         </RadzenRow>
-</RadzenRow>
+</RadzenRow> *@
 
 @code 
 {
-    [Parameter]
-    public int deviceId { get; set; }
+    // [Parameter]
+    // public int deviceId { get; set; }
 
-    List<MonitorState>? monitorStates;
-    List<MonitorState>? currentMonitorStates;
+    // List<MonitorState>? monitorStates;
+    // List<MonitorState>? currentMonitorStates;
 
-    async protected override Task OnInitializedAsync() {
+    // async protected override Task OnInitializedAsync() {
 
-        monitorStates = await MonitorAPI.GetByDeviceId(deviceId);
+    //     monitorStates = await MonitorAPI.GetByDeviceId(deviceId);
 
-        if (null != monitorStates) 
-        {
-            DateTime fromTime = DateTime.Now.AddHours(-24);
-            currentMonitorStates = monitorStates.Where(x => x.SubmitTime.ToLocalTime() > fromTime).ToList();
-        }
+    //     if (null != monitorStates) 
+    //     {
+    //         DateTime fromTime = DateTime.Now.AddHours(-24);
+    //         currentMonitorStates = monitorStates.Where(x => x.SubmitTime.ToLocalTime() > fromTime).ToList();
+    //     }
 
-        await base.OnInitializedAsync();
-    }
+    //     await base.OnInitializedAsync();
+    // }
 }

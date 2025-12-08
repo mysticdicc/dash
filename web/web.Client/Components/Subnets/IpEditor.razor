@@ -1,0 +1,143 @@
+﻿@using web.Client.Services
+@inject ISubnetsAPI SubnetService
+
+@if (EditorVisible)
+{
+    if (null != _ipAddress)
+    {
+        <div class="faded_background">
+            <div class="ip_editor">
+                <header>
+                    <span><strong>@IP.ConvertToString(_ipAddress.Address)</strong></span>
+                    <button onclick="@OnClickCancel">
+                        <span class="material-icons">cancel</span>
+                    </button>
+                </header>
+                <article>
+                    <table>
+                        <tr>
+                            <td>
+                                <input type="text" @bind="_ipAddress.Hostname" placeholder="Hostname"/>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                Icmp Monitored
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <div>
+                                    True
+                                    <input type="radio" checked="@(_ipAddress.IsMonitoredICMP == true)" @onchange="@(() => _ipAddress.IsMonitoredICMP = true)" />
+                                </div>
+                                <div>
+                                    False
+                                    <input type="radio" checked="@(_ipAddress.IsMonitoredICMP == false)" @onchange="@(() => _ipAddress.IsMonitoredICMP = false)" />
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                TCP Monitored
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <div>
+                                    True
+                                    <input type="radio" checked="@(_ipAddress.IsMonitoredTCP == true)" @onchange="@(() => _ipAddress.IsMonitoredTCP = true)" />
+                                </div>
+                                <div>
+                                    False
+                                    <input type="radio" checked="@(_ipAddress.IsMonitoredTCP == false)" @onchange="@(() => _ipAddress.IsMonitoredTCP = false)" />
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                @if (_ipAddress.IsMonitoredTCP)
+                                {
+                                    <input type="text" @bind="_portsMonitoredString" placeholder="Monitored Ports" />
+                                }
+                                else
+                                {
+                                    <input type="text" @bind="_portsMonitoredString" placeholder="Monitored Ports" readonly="readonly"/>
+                                }
+                            </td>
+                        </tr>
+                    </table>
+                </article>
+                <footer>
+                    <button onclick="@OnClickSave">
+                        <span class="material-icons">save</span>
+                    </button>
+                </footer>
+            </div>
+        </div>
+    }
+}
+
+@code {
+    [Parameter] public required IP IpAddress { get; set; }
+    private IP? _ipAddress;
+    private string _portsMonitoredString = string.Empty;
+
+    [Parameter] public required bool EditorVisible { get; set;}
+    [Parameter] public required EventCallback<bool> EditorVisibleChanged { get; set;}
+
+    protected override void OnParametersSet()
+    {
+        _ipAddress = IpAddress;
+
+        if (EditorVisible)
+        {
+            if (_ipAddress?.PortsMonitored != null && _ipAddress.PortsMonitored.Count > 0)
+            {
+                _portsMonitoredString = string.Join(",", _ipAddress.PortsMonitored);
+            }
+            else
+            {
+                _portsMonitoredString = string.Empty;
+            }
+        }
+    }
+
+    private async Task OnClickCancel()
+    {
+        _ipAddress = null;
+        _portsMonitoredString = string.Empty;
+        await EditorVisibleChanged.InvokeAsync(false);
+    }
+
+    private void UpdatePortsMonitored()
+    {
+        if (_ipAddress == null) return;
+
+        if (string.IsNullOrWhiteSpace(_portsMonitoredString))
+        {
+            _ipAddress.PortsMonitored = null;
+        }
+        else
+        {
+            var ports = _portsMonitoredString
+                .Split(',', StringSplitOptions.RemoveEmptyEntries)
+                .Select(p => p.Trim())
+                .Where(p => int.TryParse(p, out _))
+                .Select(int.Parse)
+                .ToList();
+
+            _ipAddress.PortsMonitored = ports.Count > 0 ? ports : null;
+        }
+    }
+
+    private async void OnClickSave()
+    {
+        if (null != _ipAddress)
+        {
+            UpdatePortsMonitored();
+            await SubnetService.EditIpAsync(_ipAddress);
+            await EditorVisibleChanged.InvokeAsync(false);
+        }
+    }
+}

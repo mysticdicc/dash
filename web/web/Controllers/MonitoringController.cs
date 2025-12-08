@@ -1,11 +1,14 @@
 ﻿using dankweb.API;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
-using Newtonsoft.Json;
-using danklibrary;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using web.Services;
+using danklibrary.Monitoring;
+using danklibrary.Network;
+using System.Text.Json;
+using System.Text.Json.Serialization;
+using danklibrary.Settings;
 
 namespace web.Controllers
 {
@@ -15,73 +18,69 @@ namespace web.Controllers
         private readonly IDbContextFactory<danknetContext> _DbFactory = dbContext;
         private readonly MonitorService _monitorService = monitor;
 
+        private static readonly JsonSerializerOptions JsonOptions = new()
+        {
+            ReferenceHandler = ReferenceHandler.IgnoreCycles,
+            PropertyNamingPolicy = null,
+            WriteIndented = true
+        };
+
         [HttpGet]
-        [Route("[controller]/get/restart")]
+        [Route("[controller]/v2/service/restart")]
         public IActionResult RestartService()
         {
             _monitorService.Restart();
-
             return Ok("Restarted");
         }
 
         [HttpGet]
-        [Route("[controller]/get/allmonitored")]
-        public string GetAll()
+        [Route("[controller]/v2/get/devicesandstatus")]
+        public string GetDevicesAndMonitorStates()
         {
             using var context = _DbFactory.CreateDbContext();
-            return JsonConvert.SerializeObject(context.IPs
-                                        .Where(x => (x.IsMonitoredTCP || x.IsMonitoredICMP) && x.MonitorStateList != null)
-                                            .Include(x => x.MonitorStateList!)
-                                                .ThenInclude(x => x.PortState)
-                                            .Include(x => x.MonitorStateList!)
-                                                .ThenInclude(x => x.PingState)
-                                        .ToList(), 
-                Formatting.Indented,
-                        new JsonSerializerSettings
-                        {
-                            ReferenceLoopHandling = ReferenceLoopHandling.Ignore
-                        }
-                );
+            var result = context.IPs
+                .Where(x => (x.IsMonitoredTCP || x.IsMonitoredICMP) && x.MonitorStateList != null)
+                .Include(x => x.MonitorStateList!)
+                    .ThenInclude(x => x.PortState)
+                .Include(x => x.MonitorStateList!)
+                    .ThenInclude(x => x.PingState)
+                .ToList();
+            return JsonSerializer.Serialize(result, JsonOptions);
         }
 
         [HttpGet]
-        [Route("[controller]/get/allmonitoreddevices")]
+        [Route("[controller]/v2/get/all")]
         public string GetAllMonitoredDevices()
         {
             using var context = _DbFactory.CreateDbContext();
-            return JsonConvert.SerializeObject(context.IPs.Where(x => x.IsMonitoredICMP || x.IsMonitoredTCP).ToList());
+            var result = context.IPs.Where(x => x.IsMonitoredICMP || x.IsMonitoredTCP).ToList();
+            return JsonSerializer.Serialize(result, JsonOptions);
         }
 
         [HttpGet]
-        [Route("[controller]/get/bydeviceid")]
+        [Route("[controller]/v2/get/byid")]
         public string GetByDeviceID(int ID)
         {
             using var context = _DbFactory.CreateDbContext();
-            return JsonConvert.SerializeObject(context.MonitorStates
-                                                    .Where(x => x.IP_ID == ID)
-                                                    .Include(x => x.PortState)
-                                                    .Include(x => x.PingState)
-                                                    .ToList(), Formatting.Indented,
-                    new JsonSerializerSettings
-                    {
-                        ReferenceLoopHandling = ReferenceLoopHandling.Ignore
-                    }
-                );
+            var result = context.MonitorStates
+                .Where(x => x.IP_ID == ID)
+                .Include(x => x.PortState)
+                .Include(x => x.PingState)
+                .ToList();
+            return JsonSerializer.Serialize(result, JsonOptions);
         }
 
         [HttpPost]
-        [Route("[controller]/post/newpoll")]
+        [Route("[controller]/v2/new/polls")]
         public async Task<Results<BadRequest<string>, Ok>> NewDevicePoll(List<IP> ips)
         {
             using var context = _DbFactory.CreateDbContext();
-
             var monitorStates = ips.SelectMany(x => x.MonitorStateList!);
 
             try
             {
                 context.MonitorStates.AddRange(monitorStates);
                 await context.SaveChangesAsync();
-
                 return TypedResults.Ok();
             } 
             catch (Exception ex)
@@ -90,34 +89,16 @@ namespace web.Controllers
             }
         }
 
-        [HttpPost]
-        [Route("[controller]/post/newtimer")]
-        public int UpdateMonitorTimer([FromBody]int monitorDelay)
-        {
-            try
-            {
-                MonitorSettings.UpdateMonitorDelay(monitorDelay);
-                return MonitorSettings.GetMonitorDelay();
-            }
-            catch(Exception ex)
-            {
-                throw new Exception(ex.Message);
-            }
-        }
-
         [HttpGet]
-        [Route("[controller]/get/currenttimer")]
-        public int GetMonitorTimer()
+        [Route("[controller]/v2/get/allpolls")]
+        public string GetAllPolls()
         {
-            try
-            {
-                int cur = MonitorSettings.GetMonitorDelay();
-                return cur;
-            } 
-            catch(Exception ex)
-            {
-                throw new Exception(ex.Message);
-            }
+            using var context = _DbFactory.CreateDbContext();
+            var allStates = context.MonitorStates
+                .Include(x => x.PingState)
+                .Include(x => x.PortState)
+                .ToList();
+            return JsonSerializer.Serialize(allStates, JsonOptions);
         }
     }
 }

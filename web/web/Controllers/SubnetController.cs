@@ -1,10 +1,12 @@
 ﻿using dankweb.API;
 using Microsoft.AspNetCore.Mvc;
 using danklibrary;
-using Newtonsoft.Json;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
 using web.Services;
+using danklibrary.Network;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace web.Controllers
 {
@@ -14,8 +16,15 @@ namespace web.Controllers
         private readonly IDbContextFactory<danknetContext> _DbFactory = dbContext;
         private readonly DiscoveryService _discoveryService = discoveryService;
 
+        private static readonly JsonSerializerOptions JsonOptions = new()
+        {
+            ReferenceHandler = ReferenceHandler.IgnoreCycles,
+            PropertyNamingPolicy = null,
+            WriteIndented = true
+        };
+
         [HttpPost]
-        [Route("[controller]/startdiscovery")]
+        [Route("[controller]/v2/startdiscovery")]
         public async Task<Results<BadRequest<string>, Ok<Subnet>>> StartSubnetDiscovery(Subnet subnet)
         {
             var _subnet = await _discoveryService.StartDiscovery(subnet);
@@ -31,20 +40,53 @@ namespace web.Controllers
         }
 
         [HttpPost]
-        [Route("[controller]/subnet/post/new")]
-        public async Task<Results<BadRequest<string>, Created<Subnet>>> AddSubnet(string CIDR)
+        [Route("[controller]/v2/new/byobject")]
+        public async Task<Results<BadRequest<string>, Created<Subnet>>> AddSubnetByObject(Subnet subnet)
         {
             using var context = _DbFactory.CreateDbContext();
 
-            Subnet subnet = new Subnet(CIDR);
-            context.Subnets.Add(subnet);
+            try
+            {
+                context.Subnets.Add(subnet);
+                await context.SaveChangesAsync();
 
-            await context.SaveChangesAsync();
-            return TypedResults.Created(subnet.ID.ToString(), subnet);
+                return TypedResults.Created(subnet.ID.ToString(), subnet);
+            }
+            catch(Exception ex)
+            {
+                return TypedResults.BadRequest(ex.Message);
+            }
+        }
+
+        [HttpPut]
+        [Route("[controller]/v2/update/byobject")]
+        public async Task<Results<BadRequest<string>, Ok<Subnet>>> EditSubnetByObject(Subnet subnet)
+        {
+            using var context = _DbFactory.CreateDbContext();
+            var item = context.Subnets.Find(subnet.ID);
+
+            if (null == item)
+                return TypedResults.BadRequest("Unable to find matching ID");
+
+            item.List = subnet.List;
+            item.Address = subnet.Address;
+            item.StartAddress = subnet.StartAddress;
+            item.EndAddress = subnet.EndAddress;
+            item.SubnetMask = subnet.SubnetMask;
+
+            try
+            {
+                await context.SaveChangesAsync();
+                return TypedResults.Ok(subnet);
+            }
+            catch(Exception ex)
+            {
+                return TypedResults.BadRequest(ex.Message);
+            }
         }
 
         [HttpGet]
-        [Route("[controller]/subnet/get/all")]
+        [Route("[controller]/v2/get/all")]
         public string GetAllSubnets()
         {
             using var context = _DbFactory.CreateDbContext();
@@ -56,21 +98,15 @@ namespace web.Controllers
                 subnet.List = context.IPs.Where(x => x.SubnetID == subnet.ID).ToList();
             }
 
-            return JsonConvert.SerializeObject(tempSubnet, Formatting.Indented,
-                    new JsonSerializerSettings
-                    {
-                        ReferenceLoopHandling = ReferenceLoopHandling.Ignore
-                    }
-                );
+            return JsonSerializer.Serialize(tempSubnet, JsonOptions);
         }
 
         [HttpDelete]
-        [Route("[controller]/subnet/delete/byid")]
-        public async Task<Results<BadRequest<string>, Ok<int>>> DeleteSubnetByID(int ID)
+        [Route("[controller]/v2/delete/byobject")]
+        public async Task<Results<BadRequest<string>, Ok<int>>> DeleteSubnetByObject(Subnet subnet)
         {
             using var context = _DbFactory.CreateDbContext();
-
-            Subnet? deleteItem = context.Subnets.Find(ID);
+            Subnet? deleteItem = context.Subnets.Find(subnet.ID);
 
             if (null != deleteItem)
             {
@@ -78,14 +114,13 @@ namespace web.Controllers
                 {
                     context.Subnets.Remove(deleteItem);
                     await context.SaveChangesAsync();
-
                     return TypedResults.Ok(deleteItem.ID);
-                } 
+                }
                 catch (Exception ex)
                 {
                     return TypedResults.BadRequest(ex.Message);
                 }
-            } 
+            }
             else
             {
                 return TypedResults.BadRequest("unable to find ID in db");
@@ -131,7 +166,7 @@ namespace web.Controllers
         public string GetAllIP()
         {
             using var context = _DbFactory.CreateDbContext();
-            return JsonConvert.SerializeObject(context.IPs);
+            return JsonSerializer.Serialize(context.IPs.ToList(), JsonOptions);
         }
 
         [HttpPut]
@@ -196,6 +231,15 @@ namespace web.Controllers
             {
                 return TypedResults.Ok<Subnet>(subnet);
             }
+        }
+
+        [HttpGet]
+        [Route("[controller]/v2/get/byid")]
+        public string GetById(int ID)
+        {
+            using var context = _DbFactory.CreateDbContext();
+            var item = context.Subnets.Find(ID);
+            return JsonSerializer.Serialize(item, JsonOptions);
         }
     }
 }

@@ -1,0 +1,82 @@
+﻿@using danklibrary.Dashboard
+@inject IJSRuntime JSRuntime
+
+<div class="dashboard_card" onclick="@OnClickCard">
+    @if (_dashboardItem.Icon != null)
+    {
+        <div id="img">
+            <img src="@_dashboardItem.Icon" />
+        </div>
+        
+    }
+    <article>
+        <header>
+            @if (Item.Type == DashboardItemBase.DashboardItemType.Directory)
+            {
+                <span class="material-icons">folder</span>
+            }
+            else if (Item.Type == DashboardItemBase.DashboardItemType.Shortcut)
+            {
+                <span class="material-icons">link</span>
+            }
+            <span><strong>@_dashboardItem.DisplayName</strong></span>
+            <button @onclick:stopPropagation="true" @onclick="OnClickEdit">
+                <span class="material-icons">edit</span>
+            </button>
+        </header>
+        <content>
+            <table>
+                @if (_dashboardItem.Type == DashboardItemBase.DashboardItemType.Shortcut)
+                {
+                    var shortcut = _dashboardItem as ShortcutItem;
+
+                    <tr>
+                        @shortcut!.Url
+                    </tr>
+                }
+                <tr>
+                    @_dashboardItem.Description
+                </tr>
+            </table>
+        </content>
+    </article>
+    @if (_dashboardItem is DirectoryItem directory)
+    {
+        <DashboardFolderView Hidden="@_isFolderViewHidden" Item="directory" OnEditClick="@OnEditClick" />
+    }
+</div>
+
+@code {
+    [Parameter] public required DashboardItemBase Item { get; set; }
+    private DashboardItemBase _dashboardItem => Item;
+
+    [Parameter] public List<DirectoryItem>? Directories { get; set; }
+    
+    [Parameter] public EventCallback<DashboardItemBase> OnEditClick { get; set; }
+
+    private bool _isFolderViewHidden { get; set; } = true;
+
+    private async Task OnClickEdit()
+    {
+        await OnEditClick.InvokeAsync(Item);
+    }
+
+    private async void OnClickCard()
+    {
+        if (Item.Type == DashboardItemBase.DashboardItemType.Directory)
+        {
+            _isFolderViewHidden = !_isFolderViewHidden;
+        }
+        else
+        {
+            var shortcut = Item as ShortcutItem;
+
+            if (null == shortcut) return;
+
+            if (ShortcutItem.UrlIsValid(shortcut))
+            {
+                await JSRuntime.InvokeVoidAsync("open", shortcut.Url, "_blank");
+            }
+        }
+    }
+}

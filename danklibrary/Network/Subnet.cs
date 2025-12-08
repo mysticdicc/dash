@@ -1,0 +1,58 @@
+﻿using NetTools;
+using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+using System.Linq;
+using System.Net;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace danklibrary.Network
+{
+    public class Subnet
+    {
+        [Key]
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        public int ID { get; set; }
+
+        public byte[] Address { get; set; }
+
+        public byte[] SubnetMask { get; set; }
+
+        public byte[] StartAddress { get; set; }
+
+        public byte[] EndAddress { get; set; }
+
+        public IList<IP> List { get; set; }
+
+        public Subnet() { }
+
+        public Subnet(string CIDR)
+        {
+            var subnet = IPAddressRange.Parse(CIDR);
+
+            StartAddress = IP.ConvertToByte(subnet.Begin);
+            EndAddress = IP.ConvertToByte(subnet.End);
+
+            var split = CIDR.Split('/');
+
+            SubnetMask = IP.GetMaskFromCidr(Int32.Parse(split[1]));
+            Address = IP.ConvertToByte(split[0]);
+
+            var temp = new List<IP>();
+
+            foreach (IPAddress ip in subnet)
+            {
+                temp.Add(
+                    new IP
+                    {
+                        Address = IP.ConvertToByte(ip)
+                    }
+                );
+            }
+
+            List = temp;
+        }
+    }
+}

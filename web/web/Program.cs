@@ -1,44 +1,29 @@
-using web.Components;
+using danklibrary.Monitoring;
 using dankweb.API;
-
-using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Components;
-using Radzen;
+using Microsoft.EntityFrameworkCore;
+using web.Client.Services;
+using web.Components;
+using web.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddRazorComponents()
-.AddInteractiveServerComponents()
     .AddInteractiveWebAssemblyComponents();
 
-builder.Services.AddRadzenComponents();
+var baseAddress = new Uri(builder.Configuration.GetValue<string>("WorkerApiAddress")!);
 
-builder.Services.AddRadzenCookieThemeService(options =>
-{
-    options.Name = "RadzenBlazorApp1Theme";
-    options.Duration = TimeSpan.FromDays(365);
-});
-
-builder.Services.AddTransient(sp => new HttpClient {
-    BaseAddress = new Uri(builder.Configuration.GetValue<string>("WorkerApiAddress")!)
-    }
-);
-
-builder.Services.AddTransient<danklibrary.DankAPI.Dash>();
-builder.Services.AddTransient<danklibrary.DankAPI.Subnets>();
-builder.Services.AddTransient<danklibrary.DankAPI.Monitoring>();
+SharedServices.Register(builder.Services, baseAddress);
 
 builder.Services.AddControllers();
 builder.Services.AddDbContextFactory<danknetContext>(options =>
     options.UseSqlite(builder.Configuration.GetConnectionString("SQLite")));
 
-builder.Services.Configure<danklibrary.MonitorSettings>(builder.Configuration.GetSection("MonitorSettings"));
-builder.Services.AddSingleton<web.Services.MonitorService>();
-builder.Services.AddHostedService(x => x.GetRequiredService<web.Services.MonitorService>());
+builder.Services.AddSingleton<MonitorService>();
+builder.Services.AddHostedService(x => x.GetRequiredService<MonitorService>());
 
-builder.Services.AddSingleton<web.Services.DiscoveryService>();
-//builder.Services.AddHostedService(x => x.GetRequiredService<web.Services.DiscoveryService>());
+builder.Services.AddSingleton<DiscoveryService>();
 
 var app = builder.Build();
 
@@ -67,7 +52,6 @@ app.UseAntiforgery();
 
 app.MapStaticAssets();
 app.MapRazorComponents<App>()
-    .AddInteractiveServerRenderMode()
     .AddInteractiveWebAssemblyRenderMode()
     .AddAdditionalAssemblies(typeof(web.Client._Imports).Assembly);
 

@@ -1,0 +1,93 @@
+﻿@inject ISettingsAPI SettingsService
+
+@page "/settings/home"
+
+<PageTitle>settings</PageTitle>
+<article>
+    <header>
+        <button onclick="@OnClickSave">
+            <span class="material-icons">save</span>
+        </button>
+    </header>
+    <content class="settings_layout">
+        <div>
+            <header>
+                <span>
+                    Monitoring Settings
+                </span>
+            </header>
+            <content>
+                @if (null != _currentSettings)
+                {
+                    <table>
+                        <tr>
+                            <td>
+                                Polling Interval (Seconds):
+                            </td>
+                            <td>
+                                <input type="number" @bind-Value:event="onchange" @bind-Value="@_currentSettings.MonitoringSettings.PollingIntervalInSeconds"/>
+                            </td>
+                        </tr>
+                    </table>
+                }
+
+            </content>
+        </div>
+
+        <div>
+            <header>
+                <span>
+                    Dashboard Settings
+                </span>
+            </header>
+            <content>
+                @if (null != _currentSettings)
+                {
+                    <table>
+                    </table>
+                }
+
+            </content>
+        </div>
+
+        <div>
+            <header>
+                <span>
+                    Subnets Settings
+                </span>
+            </header>
+            <content>
+                @if (null != _currentSettings)
+                {
+                    <table>
+                    </table>
+                }
+
+            </content>
+        </div>
+    </content>
+    <footer>
+
+    </footer>
+</article>
+
+@code {
+    private AllSettings? _currentSettings;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _currentSettings = await SettingsService.GetCurrentSettingsAsync();
+        await base.OnInitializedAsync();
+    }
+
+    private async void OnClickSave()
+    {
+        if (null != _currentSettings)
+        {
+            await SettingsService.CreateNewSettingsAsync(_currentSettings);
+            await Task.Delay(100);
+            _currentSettings = await SettingsService.GetCurrentSettingsAsync();
+            StateHasChanged();
+        }
+    }
+}

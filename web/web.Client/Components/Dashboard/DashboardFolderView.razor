@@ -1,0 +1,62 @@
+﻿@using System.Threading.Tasks
+@inject IDashAPI DashboardService
+
+@if (null != _directoryItem.Children)
+{
+    if (_directoryItem.Children.Count > 0)
+    {
+        if (!Hidden)
+        {
+            <div class="dashboard_folder_view">
+                <header>
+                    <span>
+                        <span class="material-icons">folder</span>
+                        <strong>@_directoryItem.DisplayName</strong>
+                    </span>
+                    <div>
+                        <button onclick="@OnClickDelete">
+                            <span class="material-icons">delete</span>
+                        </button>
+                        <button onclick="@OnClickCancel">
+                            <span class="material-icons">cancel</span>
+                        </button>
+                    </div>
+                </header>
+                <article>
+                    @foreach (ShortcutItem item in _directoryItem.Children)
+                    {
+                        <DashboardCard Item="@item" OnEditClick="@OnEditClick" />
+                    }
+                </article>
+            </div>
+        }
+    }
+}
+
+@code {
+    [Parameter] public required DirectoryItem Item { get; set; }
+    private DirectoryItem _directoryItem => Item;
+
+    [Parameter] public required bool Hidden { get; set; }
+    [Parameter] public EventCallback HiddenChanged { get; set; }
+
+    [Parameter] public EventCallback<DashboardItemBase> OnEditClick { get; set; }
+
+    private async void OnClickDelete()
+    {
+        if (Item.Children.Count > 0)
+        {
+            foreach (var item in Item.Children)
+            {
+                await DashboardService.DeleteItemAsync(item);
+            }
+        }
+
+        await DashboardService.DeleteItemAsync(Item);
+    }
+
+    private async Task OnClickCancel()
+    {
+        await HiddenChanged.InvokeAsync(true);
+    }
+}

@@ -1,0 +1,102 @@
+﻿@if (MonitorHistoryVisible)
+{
+    <div class="faded_background">
+        <div class="popup_back" id="monitor_history">
+            <header>
+                @if (null != MonitorStates.First().IP)
+                {
+                    <button onclick="@(() => OnClickView(MonitorStates.First().IP))">
+                        <span title="View parent IP address" class="material-icons">search</span>
+                    </button>
+                }
+                <button onclick="@OnClickCancel">
+                    <span class="material-icons">cancel</span>
+                </button>
+            </header>
+            <article>
+                <table>
+                    <tr>
+                        <th>
+                            Submit Time
+                        </th>
+                        <th>
+                            Type
+                        </th>
+                        <th>
+                            Status
+                        </th>
+                    </tr>
+                    @foreach (var state in MonitorStates)
+                    {
+                        @if (null != state.PingState)
+                        {
+                            <tr>
+                                <td>
+                                    @state.SubmitTime
+                                </td>
+                                <td>
+                                    ICMP
+                                </td>
+                                <td>
+                                    @if (state.PingState.Response)
+                                    {
+                                        <span>Online</span>
+                                    }
+                                    else
+                                    {
+                                        <span>Offline</span>   
+                                    }
+                                </td>
+                            </tr>
+                        }
+                        @if (null != state.PortState)
+                        {
+                            @foreach (var pState in state.PortState)
+                            {
+                                <tr>
+                                    <td>
+                                        @state.SubmitTime
+                                    </td>
+                                    <td>
+                                        TCP:@pState.Port
+                                    </td>
+                                    <td>
+                                        @if (pState.Status)
+                                        {
+                                            <span>Online</span>
+                                        }
+                                        else
+                                        {
+                                            <span>Offline</span>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        }
+                    }
+                </table>
+            </article>
+            <footer>
+
+            </footer>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter] public required List<MonitorState> MonitorStates { get; set; }
+    [Parameter] public required EventCallback<IP> ViewClicked { get; set; }
+    [Parameter] public required bool MonitorHistoryVisible { get; set; }
+    [Parameter] public required EventCallback<bool> MonitorHistoryVisibleChanged { get; set; }
+
+    private void OnClickCancel()
+    {
+        MonitorHistoryVisible = false;
+    }
+
+    private async void OnClickView(IP ip)
+    {
+        MonitorHistoryVisible = false;
+        await ViewClicked.InvokeAsync(ip);
+    }
+}

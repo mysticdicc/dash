@@ -1,29 +1,16 @@
-using ApexCharts;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
-using Radzen;
+using web.Client.Services;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 
-builder.Services.AddRadzenComponents();
+var baseAddress = new Uri(builder.Configuration.GetValue<string>("WorkerApiAddress")!);
 
-builder.Services.AddRadzenCookieThemeService(options =>
+builder.Services.AddSingleton(sp =>
 {
-    options.Name = "RadzenBlazorApp1Theme";
-    options.Duration = TimeSpan.FromDays(365);
+    return new HttpClient { BaseAddress = baseAddress };
 });
 
-builder.Services.AddScoped(sp =>
-{
-    NavigationManager navigation = sp.GetRequiredService<NavigationManager>();
-    return new HttpClient { BaseAddress = new Uri(navigation.BaseUri) };
-});
-
-builder.Services.AddTransient<danklibrary.DankAPI.Dash>();
-builder.Services.AddTransient<danklibrary.DankAPI.Subnets>();
-builder.Services.AddTransient<danklibrary.DankAPI.Monitoring>();
-
-builder.Services.AddApexCharts();
-builder.Services.AddRadzenComponents();
+SharedServices.Register(builder.Services, baseAddress);
 
 await builder.Build().RunAsync();

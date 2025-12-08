@@ -1,0 +1,64 @@
+﻿@using web.Client.Services
+@inject ISubnetsAPI SubnetService
+
+<tr class="ip_row">
+    <td>
+        @IP.ConvertToString(_ipAddress.Address)
+    </td>
+    <td>
+        @_ipAddress.Hostname
+    </td>
+    @if (AdvancedViewEnabled)
+    {
+        <td>
+            @_ipAddress.IsMonitoredICMP
+        </td>
+        <td>
+            @_ipAddress.IsMonitoredTCP
+        </td>
+        <td>
+            @_portsMonitoredString
+        </td>
+    }
+    <td>
+        <div>
+            <button onclick="@OnClickEditIp">
+                <span class="material-icons">edit</span>
+            </button>
+            <button>
+                <span class="material-icons">delete</span>
+            </button>
+        </div>
+    </td>
+</tr>
+
+@code {
+    [Parameter] public required IP IpAddress { get; set; }
+    private IP _ipAddress => IpAddress;
+
+    [Parameter] public bool AdvancedViewEnabled { get; set; }
+    [Parameter] public EventCallback<bool> AdvancedViewEnabledChanged { get; set; }
+
+    [Parameter] public EventCallback<IP> OnEditIp { get; set; }
+
+    private string _portsMonitoredString = string.Empty;
+
+    protected override void OnParametersSet()
+    {
+        if (_ipAddress?.PortsMonitored != null && _ipAddress.PortsMonitored.Count > 0)
+        {
+            _portsMonitoredString = string.Join(",", _ipAddress.PortsMonitored);
+        }
+        else
+        {
+            _portsMonitoredString = string.Empty;
+        }
+
+        base.OnParametersSet();
+    }
+
+    private void OnClickEditIp()
+    {
+        OnEditIp.InvokeAsync(_ipAddress);
+    }
+}

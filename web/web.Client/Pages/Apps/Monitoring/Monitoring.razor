@@ -1,334 +1,76 @@
-﻿@inject danklibrary.DankAPI.Monitoring MonitoringAPI
-@inject DialogService DialogService
+﻿@inject IMonitoringAPI MonitoringAPI
 @inject IJSRuntime JSRuntime
 
 @page "/monitoring/home"
 
 <PageTitle>monitoring</PageTitle>
 
-<RadzenRow Style="max-height: 50%; min-height: 20rem; margin-bottom: 1rem;">
-    <RadzenColumn Size="12">
-        <RadzenCard Style="width: 100%; height: 100%;">
-            <RadzenRow Style="margin-bottom: 0.5rem;">
-                <RadzenColumn Size="4" class="flex_left">
-                    <RadzenButton Icon="refresh" Click="@OnInitializedAsync" class="flex_internal"/>
-                    <RadzenDropDown Data="@timePeriods.Keys.ToList()" @bind-Value="@currentPeriod" TValue="string" Change="@SetPollScale" class="flex_internal"/>
-                </RadzenColumn>
-                <RadzenColumn Size="4">
-                    <RadzenText class="flex_center">
-                        Devices Online Over Time
-                    </RadzenText>
-                </RadzenColumn>
-                <RadzenColumn Size="4" class="flex_right">
-                    <RadzenTextBox @bind-Value="@monitorDelay" class="flex_internal" />
-                    <RadzenText class="flex_internal">
-                        seconds
-                    </RadzenText>
-                    <RadzenButton Icon="save" Click="@(() => UpdateMonitorTimer(int.Parse(monitorDelay!)))" class="flex_internal"/>
-                </RadzenColumn>
-            </RadzenRow>
-            <RadzenRow class="flex_center">
-                @if (null != currentMonitorStates)
-                {
-                    <RadzenChart Style="margin-left: 1rem; margin-right: 1rem; margin-top: 1rem; margin-bottom: 3.5rem; width: 100%" class="flex_internal;">
-                        <RadzenChartTooltipOptions Shared="true"/>
-                        <RadzenLineSeries Data="@devicesOverTime" TItem="CountAtTime" ValueProperty="IcmpResponded" CategoryProperty="SubmitTime" Title="Online">
-                            <RadzenMarkers MarkerType="MarkerType.Circle"/>
-                        </RadzenLineSeries>
-                        <RadzenLineSeries Data="@devicesOverTime" TItem="CountAtTime" ValueProperty="IcmpNotResponded" CategoryProperty="SubmitTime" Title="Offline">
-                            <RadzenMarkers MarkerType="MarkerType.Circle" />
-                        </RadzenLineSeries>
-                        <RadzenLineSeries Data="@devicesOverTime" TItem="CountAtTime" ValueProperty="DeviceCount" CategoryProperty="SubmitTime" Title="Monitored">
-                            <RadzenMarkers MarkerType="MarkerType.Circle" />
-                        </RadzenLineSeries>
-                        <RadzenCategoryAxis LabelRotation="-55"/>
-                    </RadzenChart>
-                }
-                else
-                {
-                    <RadzenProgressBarCircular Mode="ProgressBarMode.Indeterminate" />
-                }
-            </RadzenRow>
-        </RadzenCard>
-    </RadzenColumn>
-</RadzenRow>
-<RadzenRow>
-    <RadzenColumn Size="12">
-        <RadzenCard>
-            <RadzenRow class="monitoring_stats_row">
-                <RadzenColumn Size="6">
-                    <RadzenCard class="monitoring_card">
-                        <RadzenText>
-                            All Time Statistics:
-                        </RadzenText>
-                        @if (null != currentMonitorStates)
-                        {
-                            <RadzenText>
-                                Monitored: @(currentMonitorStates.Select(x => x.IP_ID).Distinct().Count().ToString())
-                            </RadzenText>
-                            <RadzenText>
-                                Polls: @currentMonitorStates.Count()
-                            </RadzenText>
-                        }
-                        else
-                        {
-                            <RadzenProgressBarCircular Mode="ProgressBarMode.Indeterminate" />
-                        }
-                    </RadzenCard>
-                </RadzenColumn>
-                <RadzenColumn Size="6">
-                    <RadzenCard class="monitoring_stats_card">
-                        <RadzenText>
-                            Last Poll Statistics:
-                        </RadzenText>
-                        @if (null != monitoredIPs && null != lastPolls)
-                        {
-                            <RadzenText>Time: @(lastDate.ToLocalTime())</RadzenText>
-                            <RadzenText>Monitored: @lastPolls.DistinctBy(x => x.IP_ID).Count()</RadzenText>
-                            <RadzenText>Online: @lastPolls.Where(x => x.PingState?.Response == true).Count()</RadzenText>
-                            <RadzenText>Offline: @lastPolls.Where(x => x.PingState?.Response == false).Count()</RadzenText>
-                        }
-                    </RadzenCard>
-                </RadzenColumn>
-            </RadzenRow>
-            <RadzenRow class="monitoring_stats_row" RowGap="0">
-                <RadzenColumn Size="12">
-                    <RadzenCard Style="height: fit-content;">
-                        <RadzenRow RowGap="0">
-                            <RadzenColumn Size="6">
-                                <RadzenText class="row_contents">
-                                    Monitored IPs
-                                </RadzenText>
-                            </RadzenColumn>
-                            <RadzenColumn Size="6">
-                                <RadzenButton Icon="keyboard_arrow_down" Click="@(() => ToggleMonitoredHidden())" class="right_button row_contents" />
-                            </RadzenColumn>
-                        </RadzenRow>
-                        <RadzenRow class="row" RowGap="0">
-                            <div hidden="@monitoredHidden" class="row">
-                                <RadzenRow class="row">
-                                    <RadzenColumn Size="3" class="row_column">
-                                        <RadzenText class="row_contents">
-                                            IP Address
-                                        </RadzenText>
-                                    </RadzenColumn>
-                                    <RadzenColumn Size="3" class="row_column">
-                                        <RadzenText class="row_contents">
-                                            Hostname
-                                        </RadzenText>
-                                    </RadzenColumn>
-                                    <RadzenColumn Size="3" class="row_column">
-                                        <RadzenText class="row_contents">
-                                            Last State
-                                        </RadzenText>
-                                    </RadzenColumn>
-                                    <RadzenColumn Size="3">
+<article>
+    <header>
 
-                                    </RadzenColumn>
-                                    <div class="black_line" />
-                                </RadzenRow>
-                                @if (null != currentlyMonitored)
-                                {
-                                    foreach (IP ip in currentlyMonitored)
-                                    {
-                                        <RadzenRow class="row">
-                                            <RadzenColumn Size="3" class="row_column">
-                                                <RadzenText class="row_contents">
-                                                    @IP.ConvertToString(ip.Address)
-                                                </RadzenText>
-                                            </RadzenColumn>
-                                            <RadzenColumn Size="3" class="row_column">
-                                                <RadzenText class="row_contents">
-                                                    @ip.Hostname
-                                                </RadzenText>
-                                            </RadzenColumn>
-                                            <RadzenColumn Size="3" class="row_column">
-                                                @if (LastMonitorState(ip.ID))
-                                                {
-                                                    <RadzenIcon Icon="check" class="row_contents"/>
-                                                }
-                                                else
-                                                {
-                                                    <RadzenIcon Icon="close" class="row_contents" />
-                                                }
-                                            </RadzenColumn>
-                                            <RadzenColumn Size="3" class="row_column">
-                                                <RadzenButton Icon="search" Click="@(() => OpenDeviceMonitorView(ip))"/>
-                                            </RadzenColumn>
-                                            @if (null != lastCurrentlyMonitored)
-                                            {
-                                                @if (!(ip == lastCurrentlyMonitored))
-                                                {
-                                                    <div class="grey_line" />
-                                                }
+    </header>
+    <content>
+        <div class="monitoring_layout">
+            <StatsChart IPAddresses="@_polls"/>
+            <Stats IPAddresses="@_polls"/>
+            <UptimeChart IPAddresses="@_polls"/>
+            <MonitorStates IPAddresses="@_polls" ViewClicked="@OnIpViewClicked" EditClicked="@OnIpEditClicked" HistoryClicked="@OnMonitorHistoryClicked"/>
+        </div>
+    </content>
+</article>
 
-                                            }
-                                        </RadzenRow>
-                                    }
-                                }
-                            </div>
-                        </RadzenRow>
-                    </RadzenCard>
-                </RadzenColumn>
-            </RadzenRow>
-        </RadzenCard>
-    </RadzenColumn>
-</RadzenRow>
-
-
+@if (null != _viewIp)
+{
+    <IpView @bind-IpViewVisible="@_ipViewVisible" IpAddress="@_viewIp" EditClicked="@OnIpEditClicked" />
+}
+@if (null != _editIp)
+{
+    <IpEditor @bind-EditorVisible="@_ipEditorVisible" IpAddress="@_editIp"/>
+}
+@if (_viewHistory.Count > 0)
+{
+    <MonitorStatesHistory @bind-MonitorHistoryVisible="@_monitorHistoryVisible" MonitorStates="@_viewHistory" ViewClicked="@OnIpViewClicked"/>
+}
 
 @code {
-    List<MonitorState>? allMonitorStates;
-    List<MonitorState>? currentMonitorStates;
+    List<IP> _polls = new();
+    private bool _ipViewVisible = false;
+    private bool _ipEditorVisible = false;
+    private bool _monitorHistoryVisible = false;
+    private IP? _viewIp;
+    private IP? _editIp;
+    private List<MonitorState> _viewHistory = [];
 
-    class CountAtTime {
-        required public string SubmitTime { get; set; }
-        required public int DeviceCount { get; set; }
-        required public int IcmpResponded { get; set; }
-        required public int IcmpNotResponded {get; set; }
-    }
-
-    List<CountAtTime> devicesOverTime = new();
-    List<IP>? monitoredIPs;
-    List<IP>? currentlyMonitored;
-    IP? lastCurrentlyMonitored;
-
-    DateTime lastDate;
-    List<MonitorState>? lastPolls;
-
-    public Dictionary<string, int> timePeriods = new();
-    string currentPeriod = "1 Hour";
-
-    bool monitoredHidden = true;
-
-    string? monitorDelay;
-
-    async protected override Task OnInitializedAsync()
+    protected override async Task OnInitializedAsync()
     {
-        if (!timePeriods.ContainsKey("24 Hours")) {
-
-            timePeriods.Add("24 Hours", 24);
-        }
-        if (!timePeriods.ContainsKey("12 Hours")) 
-        {
-            timePeriods.Add("12 Hours", 12);
-        }
-        if (!timePeriods.ContainsKey("6 Hours")) 
-        {
-            timePeriods.Add("6 Hours", 6);
-        }
-        if (!timePeriods.ContainsKey("1 Hour"))
-        {
-            timePeriods.Add("1 Hour", 1);
-        }
-
-        monitorDelay = await GetMonitorTimer();
-        await UpdateMonitorLists();
-        StateHasChanged();
-
+        _polls = await MonitoringAPI.GetAllPollsAsync();
         await base.OnInitializedAsync();
     }
 
-    async Task SetPollScale() {
-        await Task.Run(() => PollTask());
-    }
-
-    void PollTask() {
-        if (null != allMonitorStates)
-        {
-            DateTime fromTime = DateTime.Now.AddHours(-timePeriods[currentPeriod]);
-            currentMonitorStates = allMonitorStates
-                                        .Where(x => x.SubmitTime.ToLocalTime() > fromTime)
-                                        .ToList();
-
-            devicesOverTime = currentMonitorStates
-                                        .Where(x => x.PingState != null)
-                                        .GroupBy(x => x.SubmitTime)
-                                        .Aggregate(new List<CountAtTime>(), (x, group) =>
-                                                {
-                                                    x.Add(new CountAtTime
-                                                        {
-                                                            SubmitTime = String.Format("{0:ddd HH:mm:ss}", group.Key.ToLocalTime()),
-                                                            DeviceCount = group.Count(),
-                                                            IcmpResponded = group.Where(x => x.PingState!.Response == true).Count(),
-                                                            IcmpNotResponded = group.Where(x => x.PingState!.Response == false).Count()
-                                                        });
-                                                    return x;
-                                                });
-        }
-    }
-
-    async Task UpdateMonitorLists() {
-        monitoredIPs = await MonitoringAPI.GetMonitoredIPs();
-
-        allMonitorStates = monitoredIPs?
-                            .Where(x => null != x.MonitorStateList)
-                            .SelectMany(x => x.MonitorStateList!)
-                            .ToList();
-
-        currentlyMonitored = monitoredIPs?.Where(x => x.IsMonitoredTCP || x.IsMonitoredICMP).ToList();
-
-        if (currentlyMonitored?.Count() > 0)
-        {
-            lastCurrentlyMonitored = currentlyMonitored.Last();
-        }
-
-        await SetPollScale();
-
-        if (null != allMonitorStates) 
-        {
-            lastDate = allMonitorStates.OrderByDescending(x => x.SubmitTime).Select(x => x.SubmitTime).FirstOrDefault();
-            lastPolls = allMonitorStates.Where(x => x.SubmitTime == lastDate).ToList();
-        }
-    }
-
-    void ToggleMonitoredHidden() {
-        monitoredHidden = !monitoredHidden;
-    }
-
-    bool LastMonitorState(int ID) {
-        if (null != lastPolls) {
-            var state = lastPolls.Where(x => x.IP_ID == ID).FirstOrDefault();
-
-            if (null != state) {
-                if (state.PingState?.Response == true)
-                {
-                    return true;
-                }
-                else
-                {
-                    return false;
-                }
-            } else {
-                return false; 
-            }
-
-        } else {
-            return false;
-        }
-    }
-
-    async void UpdateMonitorTimer(int delay) 
+    private void OnIpEditClicked(IP ip)
     {
-        await MonitoringAPI.UpdateTimer(delay * 1000);
-        monitorDelay = await GetMonitorTimer();
-        await MonitoringAPI.RestartService();
+        _editIp = ip;
+        _ipViewVisible = false;
+        _ipEditorVisible = true;
+        _monitorHistoryVisible = false;
     }
 
-    async Task<string> GetMonitorTimer() 
+    private void OnIpViewClicked(IP ip)
     {
-        var timer = (await MonitoringAPI.GetTimer() / 1000);
-        return timer.ToString();
+        _viewIp = ip;
+        _ipViewVisible = true;
+        _ipEditorVisible = false;
+        _monitorHistoryVisible = false;
     }
 
-    async Task OpenDeviceMonitorView(IP ip) 
+    private void OnMonitorHistoryClicked(IP ip)
     {
-        await DialogService.OpenAsync<MonitoringDevicePopup>($"Polls in Last 24 Hours: {IP.ConvertToString(ip.Address)}",
-            new Dictionary<string, object>() { { "deviceId", ip.ID } },
-            new DialogOptions()
-                {
-                    Resizable = true,
-                    Draggable = true
-                });
+        var list = new List<IP>();
+        list.Add(ip);
+        _viewHistory = MonitorState.GetAllDevicePollsFromIps(list);
+
+        _ipViewVisible = false;
+        _ipEditorVisible = false;
+        _monitorHistoryVisible = true;
     }
 }
