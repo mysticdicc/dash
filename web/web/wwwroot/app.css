@@ -29,13 +29,27 @@
 }
 
     .body > header {
-    display: flex;
-    justify-content: center;
-    background-color: var(--light-grey);
-    filter: drop-shadow(5px 5px 5px rgba(0,0,0,0.15));
-    height: 2.8rem;
-    
-}
+        display: flex;
+        justify-content: center;
+        background-color: var(--light-grey);
+        filter: drop-shadow(5px 5px 5px rgba(0,0,0,0.15));
+        height: 2.8rem;
+
+        > img {
+            height: 100%;
+            align-self: flex-start;
+            margin-right: auto;
+            padding: 10px;
+        }
+
+        > a {
+            align-self: center;
+        }
+
+        > a:last-of-type {
+            margin-right: auto;
+        }
+    }
 
     .body > content {
         background-color: var(--black);

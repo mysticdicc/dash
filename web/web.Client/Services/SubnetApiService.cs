@@ -13,8 +13,8 @@ namespace web.Client.Services
         {
             try
             {
-                await _subnetsAPI.RunDiscoveryTaskAsync(subnet);
-                _notificationService.ShowAsync("Success", "Discovery completed successfully");
+                _subnetsAPI.RunDiscoveryTaskAsync(subnet);
+                _notificationService.ShowAsync("Success", "Discovery task running, please come back in a few minutes to check results.");
                 return true;
             }
             catch (Exception ex)
