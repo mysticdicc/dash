@@ -1,7 +1,7 @@
 ﻿@using web.Client.Services
 @inject ISubnetsAPI SubnetService
 
-<tr class="ip_row">
+<tr class="ip_row" onclick="@OnClickEditIp">
     <td>
         @IP.ConvertToString(_ipAddress.Address)
     </td>
@@ -22,10 +22,7 @@
     }
     <td>
         <div>
-            <button onclick="@OnClickEditIp">
-                <span class="material-icons">edit</span>
-            </button>
-            <button onclick="@OnClickDelete">
+            <button onclick="@OnClickDelete" @onclick:stopPropagation="true">
                 <span class="material-icons">delete</span>
             </button>
         </div>
