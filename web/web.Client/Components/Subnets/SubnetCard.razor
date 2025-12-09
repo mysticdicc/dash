@@ -15,7 +15,7 @@
     </td>
     <td>
         <div>
-            <input type="text" @bind="@_searchString"/>
+            <input type="text" @bind="@_searchString" @onkeydown="@OnKeyDownInSubnetInput"/>
             <button onclick="@OnClickSearch">
                 <span class="material-icons">search</span>
             </button>
@@ -149,6 +149,14 @@
         {
             await SubnetService.DeleteSubnetByObjectAsync(_subnet);
             await OnDeleteClicked.InvokeAsync(true);
+        }
+    }
+
+    private async Task OnKeyDownInSubnetInput(KeyboardEventArgs e)
+    {
+        if (e.Code == "Enter" || e.Code == "NumpadEnter")
+        {
+            OnClickSearch();
         }
     }
 }

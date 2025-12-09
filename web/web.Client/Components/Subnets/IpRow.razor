@@ -61,4 +61,9 @@
     {
         OnEditIp.InvokeAsync(_ipAddress);
     }
+
+    private async void OnClickDelete()
+    {
+        await SubnetService.DeleteIpByObjectAsync(_ipAddress);
+    }
 }

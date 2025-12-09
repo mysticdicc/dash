@@ -159,5 +159,22 @@ namespace danklibrary.DankAPI
                 throw;
             }
         }
+
+        public async Task<bool> DeleteIpByObjectAsync(IP ip)
+        {
+            string endpoint = $"{_baseEndpoint}/ip/delete/byobject";
+
+            try
+            {
+                var response = await RequestHandler.DeleteAsJsonAsync(_httpClient, endpoint, ip);
+                if (response is null)
+                    throw new InvalidOperationException("No response from delete IP.");
+                return true;
+            }
+            catch
+            {
+                throw;
+            }
+        }
     }
 }

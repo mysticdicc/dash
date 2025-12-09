@@ -13,5 +13,6 @@ namespace danklibrary.DankAPI
         public Task<bool> DeleteSubnetAsync(int ID);
         public Task<bool> DiscoveryUpdateAsync(Subnet subnet);
         public Task<Subnet> GetSubnetByIdAsync(int ID);
+        public Task<bool> DeleteIpByObjectAsync(IP ip);
     }
 }

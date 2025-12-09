@@ -151,5 +151,20 @@ namespace web.Client.Services
                 return new Subnet();
             }
         }
+
+        public async Task<bool> DeleteIpByObjectAsync(IP ip)
+        {
+            try
+            {
+                await _subnetsAPI.DeleteIpByObjectAsync(ip);
+                _notificationService.ShowAsync("Success", "IP address deleted successfully");
+                return true;
+            }
+            catch(Exception ex)
+            {
+                _notificationService.ShowAsync("Failed to delete IP", ex.Message);
+                return false;
+            }
+        }
     }
 }

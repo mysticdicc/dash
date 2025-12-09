@@ -31,7 +31,7 @@ namespace web.Controllers
             using var context = _DbFactory.CreateDbContext();
             var _subnet = await _discoveryService.StartDiscovery(subnet);
 
-            if (null != _subnet) 
+            if (null != _subnet)
             {
                 var dbSubnet = context.Subnets.Include(x => x.List).FirstOrDefault(x => x.ID == _subnet.ID);
 
@@ -54,7 +54,7 @@ namespace web.Controllers
                         await context.SaveChangesAsync();
                         return TypedResults.Ok(_subnet);
                     }
-                    catch(Exception ex)
+                    catch (Exception ex)
                     {
                         return TypedResults.BadRequest(ex.Message);
                     }
@@ -64,7 +64,7 @@ namespace web.Controllers
                 {
                     return TypedResults.BadRequest("Unable to find db object");
                 }
-            } 
+            }
             else
             {
                 return TypedResults.BadRequest("Null object return from discovery service");
@@ -84,7 +84,7 @@ namespace web.Controllers
 
                 return TypedResults.Created(subnet.ID.ToString(), subnet);
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 return TypedResults.BadRequest(ex.Message);
             }
@@ -111,7 +111,7 @@ namespace web.Controllers
                 await context.SaveChangesAsync();
                 return TypedResults.Ok(subnet);
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 return TypedResults.BadRequest(ex.Message);
             }
@@ -209,7 +209,7 @@ namespace web.Controllers
 
             var updateItem = context.IPs.Find(ip.ID);
 
-            if (updateItem != null) 
+            if (updateItem != null)
             {
                 updateItem.Hostname = ip.Hostname;
                 updateItem.IsMonitoredICMP = ip.IsMonitoredICMP;
@@ -224,7 +224,7 @@ namespace web.Controllers
 
                 await context.SaveChangesAsync();
                 return TypedResults.Ok(updateItem);
-            } 
+            }
             else
             {
                 return TypedResults.BadRequest($"Unable to find item with {ip.ID}");
@@ -246,7 +246,7 @@ namespace web.Controllers
                     item.Hostname = ip.Hostname;
                     item.IsMonitoredICMP = ip.IsMonitoredICMP;
                     context.IPs.Update(item);
-                } 
+                }
                 else
                 {
                     badId.Add(ip.ID);
@@ -255,10 +255,10 @@ namespace web.Controllers
 
             await context.SaveChangesAsync();
 
-            if (badId.Count > 0) 
+            if (badId.Count > 0)
             {
                 return TypedResults.Ok<List<int>>(badId);
-            } 
+            }
             else
             {
                 return TypedResults.Ok<Subnet>(subnet);
@@ -273,5 +273,42 @@ namespace web.Controllers
             var item = context.Subnets.Find(ID);
             return JsonSerializer.Serialize(item, JsonOptions);
         }
+
+        [HttpDelete]
+        [Route("[controller]/v2/ip/delete/byobject")]
+        public async Task<Results<BadRequest<string>, Ok<int>>> DeleteIPByObject(IP ip)
+        {
+            using var context = _DbFactory.CreateDbContext();
+            IP? deleteItem = context.IPs.Include(x => x.Subnet).Where(x => x.ID == ip.ID).FirstOrDefault();
+
+            if (null != deleteItem)
+            {
+                try
+                {
+                    if (null != deleteItem.Subnet)
+                    {
+                        var subnet = context.Subnets.Find(deleteItem.Subnet.ID);
+
+                        if (null != subnet)
+                        {
+                            subnet.List.Remove(ip);
+                        }
+                    }
+
+                    context.IPs.Remove(deleteItem);
+                    await context.SaveChangesAsync();
+                    return TypedResults.Ok(deleteItem.ID);
+                }
+                catch (Exception ex)
+                {
+                    return TypedResults.BadRequest(ex.Message);
+                }
+            }
+            else
+            {
+                return TypedResults.BadRequest("unable to find ID in db");
+            }
+        }
+
     }
 }

@@ -29,7 +29,7 @@
                         </tr>
                         <tr id="cidr">
                             <td colspan="10">
-                                <input type="text" @bind="_cidrString" placeholder="192.168.0.1/24"/>
+                                <input type="text" @bind="_cidrString" @onkeydown="@OnKeyDownCidrInput" placeholder="192.168.0.1/24"/>
                                 <button onclick="@OnClickCidrGenerate">
                                     <span class="material-icons">start</span>
                                 </button>
@@ -149,6 +149,14 @@
             _cidrString = string.Empty;
             await EditorVisibleChanged.InvokeAsync(false);
             await SubnetSaved.InvokeAsync(_subnet);
+        }
+    }
+
+    private async Task OnKeyDownCidrInput(KeyboardEventArgs e)
+    {
+        if (e.Code == "Enter" || e.Code == "NumpadEnter")
+        {
+            OnClickCidrGenerate();
         }
     }
 }
