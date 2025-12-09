@@ -1,5 +1,6 @@
 using danklibrary.DankAPI;
 using danklibrary.Dashboard;
+using danklibrary.Interfaces;
 using System.Collections.Generic;
 
 namespace web.Client.Services

@@ -1,6 +1,6 @@
 using danklibrary.Dashboard;
 
-namespace danklibrary.DankAPI
+namespace danklibrary.Interfaces
 {
     public interface IDashAPI
     {

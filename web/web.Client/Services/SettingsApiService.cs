@@ -1,4 +1,5 @@
 ﻿using danklibrary.DankAPI;
+using danklibrary.Interfaces;
 using danklibrary.Settings;
 
 namespace web.Client.Services

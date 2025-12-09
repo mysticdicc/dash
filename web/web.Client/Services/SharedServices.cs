@@ -1,5 +1,6 @@
 ﻿using danklibrary.DankAPI;
 using ApexCharts;
+using danklibrary.Interfaces;
 
 namespace web.Client.Services
 {

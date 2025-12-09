@@ -1,9 +1,9 @@
-﻿@using web.Client.Services
+﻿@using System.Threading.Tasks
+@using web.Client.Services
 @inject ISubnetsAPI SubnetService
 @inject NotificationService NotificationService
 
-@*filter controls here*@
-<tr class="subnet_card">
+<tr class="subnet_card" @onclick="@OnClickSubnetCard">
     <td>
         @IP.ConvertToString(_subnet.Address)
     </td>
@@ -16,23 +16,23 @@
     <td>
         <div>
             <input type="text" @bind="@_searchString" @onkeydown="@OnKeyDownInSubnetInput"/>
-            <button onclick="@OnClickSearch">
+            <button onclick="@OnClickSearch" @onclick:stopPropagation="true">
                 <span class="material-icons">search</span>
             </button>
         </div>
     </td>
     <td>
         <div>
-            <button onclick="@OnClickExpand">
+            <button @onclick="@OnClickExpand" @onclick:stopPropagation="true">
                 <span class="material-icons" title="Expand IP List">list</span>
             </button>
-            <button onclick="@OnClickEditSubnet">
+            <button @onclick="@OnClickEditSubnet" @onclick:stopPropagation="true">
                 <span class="material-icons" title="Edit Subnet Information">edit</span>
             </button>
-            <button onclick="@OnClickDelete">
+            <button @onclick="@OnClickDelete" @onclick:stopPropagation="true">
                 <span class="material-icons" title="Delete Subnet">delete</span>
             </button>
-            <button onclick="@OnClickDiscovery">
+            <button @onclick="@OnClickDiscovery" @onclick:stopPropagation="true">
                 <span class="material-icons" title="Rediscover Subnet">refresh</span>
             </button>
         </div>
@@ -158,5 +158,10 @@
         {
             OnClickSearch();
         }
+    }
+
+    private async Task OnClickSubnetCard()
+    {
+        await OnEditSubnet.InvokeAsync(Subnet);
     }
 }

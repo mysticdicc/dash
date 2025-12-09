@@ -1,6 +1,6 @@
 using danklibrary.Network;
 
-namespace danklibrary.DankAPI
+namespace danklibrary.Interfaces
 {
     public interface ISubnetsAPI
     {

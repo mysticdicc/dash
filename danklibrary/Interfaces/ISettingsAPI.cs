@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using danklibrary.Settings;
 
-namespace danklibrary.DankAPI
+namespace danklibrary.Interfaces
 {
     public interface ISettingsAPI
     {

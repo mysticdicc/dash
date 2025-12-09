@@ -2,12 +2,15 @@
 @inject IJSRuntime JSRuntime
 
 @page "/monitoring/home"
+@using danklibrary.Interfaces
 
 <PageTitle>monitoring</PageTitle>
 
 <article>
     <header>
-
+        <button @onclick="@OnClickRefresh">
+            <span title="Refresh monitoring data" class="material-icons">refresh</span>
+        </button>
     </header>
     <content>
         <div class="monitoring_layout">
@@ -45,6 +48,7 @@
     {
         _polls = await MonitoringAPI.GetAllPollsAsync();
         await base.OnInitializedAsync();
+        StateHasChanged();
     }
 
     private void OnIpEditClicked(IP ip)
@@ -72,5 +76,10 @@
         _ipViewVisible = false;
         _ipEditorVisible = false;
         _monitorHistoryVisible = true;
+    }
+
+    private async void OnClickRefresh()
+    {
+        await OnInitializedAsync();
     }
 }
