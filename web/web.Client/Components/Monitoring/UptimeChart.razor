@@ -3,55 +3,66 @@
 @using danklibrary.Monitoring
 @using danklibrary.Network
 
-<div>
-    <header>
-    </header>
-    <article>
-        <div id="uptime_chart">
-            <div id="left">
-                @if (_chartsReady)
-                {
-                    <ApexChart TItem="UptimePoint" Options="RadialBarOptions" @ref="radialChart">
-                        <ApexPointSeries TItem="UptimePoint"
-                                         Items="UptimePoints"
-                                         SeriesType="SeriesType.RadialBar"
-                                         YValue="point => point.Percentage"
-                                         XValue="point => point.DeviceLabel" />
-                    </ApexChart>
-                }
+@if (Visible)
+{
+    <div>
+        <header>
+            <button id="expand" @onclick="@OnClickExpand">
+                <span class="material-icons">expand</span>
+            </button>
+        </header>
+        <article>
+            <div id="uptime_chart">
+                <div id="left">
+                    @if (_chartsReady)
+                    {
+                        <ApexChart TItem="UptimePoint" Options="RadialBarOptions" @ref="radialChart">
+                            <ApexPointSeries TItem="UptimePoint"
+                                             Items="UptimePoints"
+                                             SeriesType="SeriesType.RadialBar"
+                                             YValue="point => point.Percentage"
+                                             XValue="point => point.DeviceLabel" />
+                        </ApexChart>
+                    }
+                </div>
+                <div>
+                    @if (_chartsReady)
+                    {
+                        <ApexChart TItem="HeatMapPoint"
+                                   Title="Device Status Over Time"
+                                   Options="HeatMapOptions"
+                                   @ref="heatMapChart">
+                            <ApexPointSeries TItem="HeatMapPoint"
+                                             Items="OnlineHeatMapPoints"
+                                             Name="Online"
+                                             SeriesType="SeriesType.Heatmap"
+                                             XValue="point => point.TimeLabel"
+                                             YValue="point => point.Count"
+                                             OrderBy="e => e.X" />
+                            <ApexPointSeries TItem="HeatMapPoint"
+                                             Items="OfflineHeatMapPoints"
+                                             Name="Offline"
+                                             SeriesType="SeriesType.Heatmap"
+                                             XValue="point => point.TimeLabel"
+                                             YValue="point => point.Count"
+                                             OrderBy="e => e.X" />
+                        </ApexChart>
+                    }
+                </div>
             </div>
-            <div>
-                @if (_chartsReady)
-                {
-                    <ApexChart TItem="HeatMapPoint" 
-                               Title="Device Status Over Time"
-                               Options="HeatMapOptions" 
-                               @ref="heatMapChart">
-                        <ApexPointSeries TItem="HeatMapPoint"
-                                         Items="OnlineHeatMapPoints"
-                                         Name="Online"
-                                         SeriesType="SeriesType.Heatmap"
-                                         XValue="point => point.TimeLabel"
-                                         YValue="point => point.Count"
-                                         OrderBy="e => e.X" />
-                        <ApexPointSeries TItem="HeatMapPoint"
-                                         Items="OfflineHeatMapPoints"
-                                         Name="Offline"
-                                         SeriesType="SeriesType.Heatmap"
-                                         XValue="point => point.TimeLabel"
-                                         YValue="point => point.Count"
-                                         OrderBy="e => e.X" />
-                    </ApexChart>
-                }
-            </div>
-        </div>
-    </article>
-</div>
+        </article>
+    </div>
+}
 
 @code {
     [Parameter] public required List<IP>? IPAddresses { get; set; }
+    [Parameter] public required bool Visible { get; set; }
+    [Parameter] public required EventCallback<bool> VisibleChanged { get; set; }
+    [Parameter] public required EventCallback<string> ExpandChanged { get; set; }
+
     private static List<string> _palette = new() { "#008FFB", "#00E396", "#FEB019", "#FF4560", "#775DD0", "#3F51B5", "#546E7A", "#D4526E", "#8D5B4C", "#F86624" };
 
+    private bool _expanded = false;
     private bool _chartsReady = false;
     private ApexChart<UptimePoint>? radialChart;
     private ApexChart<HeatMapPoint>? heatMapChart;
@@ -197,5 +208,19 @@
 
         await Task.Delay(500);
         _chartsReady = true;
+    }
+
+    private async Task OnClickExpand()
+    {
+        if (_expanded)
+        {
+            await ExpandChanged.InvokeAsync("undo");
+            _expanded = false;
+        }
+        else
+        {
+            await ExpandChanged.InvokeAsync("uptimechart");
+            _expanded = true;
+        }
     }
 }

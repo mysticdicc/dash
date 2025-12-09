@@ -26,6 +26,7 @@
     height: 100vh;
     display: flex;
     flex-direction: column;
+    max-height: 100vh;
 }
 
     .body > header {
@@ -56,6 +57,7 @@
         flex-grow: 1;
         display: flex;
         flex-direction: column;
+        max-height: 95vh;
 
         > article {
             margin: 1rem;
@@ -76,7 +78,8 @@
             }
 
             > content {
-                flex-grow: 1;
+                flex: 1;
+                padding: 1rem;
             }
 
             > footer {
@@ -849,18 +852,16 @@ textarea {
 }
 
 .monitoring_layout {
-    display: grid;
-    width: 100%;
+    display: flex;
+    flex-wrap: wrap;
     height: 100%;
-    grid-template-columns: 1fr 1fr;
-    grid-template-rows: 1fr 1fr;
-    gap: 30px;
-    padding: 30px;
-    max-height: 88vh;
+    flex-direction: row;
+    gap: 2rem;
+    max-height: 100%;
 }
 
-    .monitoring_layout > div {
-    flex: 1;
+.monitoring_layout > div {
+    flex: 1 1 45%;
     background-color: var(--primary);
     border-radius: 10px;
     overflow: hidden;
@@ -869,12 +870,16 @@ textarea {
     flex-direction: column;
 }
 
+.monitoring_layout:has(> div:nth-child(4):last-child) > div {
+    max-height: 50%;
+}
+
     .monitoring_layout > div > header {
-    display: flex;
-    flex-direction: row;
-    background-color: var(--light-grey);
-    padding: 10px;
-    min-height: 3rem;
+        display: flex;
+        flex-direction: row;
+        background-color: var(--light-grey);
+        padding: 10px;
+        min-height: 3rem;
 
     > select {
         max-width: 30%;
@@ -885,10 +890,9 @@ textarea {
 }
 
     .monitoring_layout > div > article {
-    flex: 1;
-    display: flex;
-    height: auto;
-}
+        flex: 1;
+        display: flex;
+    }
 
         article#monitor_states {
     display: flex;
@@ -929,6 +933,7 @@ textarea {
 
         .apexcharts-canvas {
             margin: auto;
+            max-height: 90%;
         }
 
         #apex_chart {
@@ -953,7 +958,6 @@ div#uptime_chart {
 
     #apex_chart {
         flex: 1;
-        margin: 20px;
         background-color: var(--secondary);
         border-radius: 10px;
         padding: 20px;
@@ -962,7 +966,6 @@ div#uptime_chart {
     > div {
         border-radius: 10px;
         flex: 1;
-        margin: 20px;
     }
 
         > div#left {

@@ -1,97 +1,109 @@
 ﻿@using ApexCharts
+@using System.Threading.Tasks
 @using danklibrary.Monitoring
 @using danklibrary.Network
 
-<div>
-    <header>
-        @if (!_onlineHidden)
-        {
-            <button id="green" @onclick="@OnClickOnlineVisible">
-                <span title="Toggle Online Devices" class="material-icons">cloud</span>
-            </button>
-        }
-        else
-        {
-            <button id="red" @onclick="@OnClickOnlineVisible">
-                <span title="Toggle Online Devices" class="material-icons">cloud</span>
-            </button>
-        }
-
-        @if (!_offlineHidden)
-        {
-            <button id="green" @onclick="@OnClickOfflineVisible">
-                <span title="Toggle Offline Devices" class="material-symbols-outlined">cloud_alert</span>
-            </button>
-        }
-        else
-        {
-            <button id="red" @onclick="@OnClickOfflineVisible">
-                <span title="Toggle Offline Devices" class="material-symbols-outlined">cloud_alert</span>
-            </button>
-        }
-
-        @if (!_monitoredHidden)
-        {
-            <button id="green" @onclick="@OnClickMonitoredVisible">
-                <span title="Toggle Monitored Devices" class="material-icons">visibility</span>
-            </button>
-        }
-        else
-        {
-            <button id="red" @onclick="@OnClickMonitoredVisible">
-                <span title="Toggle Monitored Devices"  class="material-icons">visibility</span>
-            </button>
-        }
-        <select @onchange="OnViewLengthChanged" style="margin-left: 1rem;">
-            <option value="04:00:00" selected="@(_viewLength == TimeSpan.FromHours(4))">Last 4 hours</option>
-            <option value="12:00:00" selected="@(_viewLength == TimeSpan.FromHours(12))">Last 12 hours</option>
-            <option value="24:00:00" selected="@(_viewLength == TimeSpan.FromHours(24))">Last 24 hours</option>
-            <option value="72:00:00" selected="@(_viewLength == TimeSpan.FromDays(3))">Last 3 days</option>
-        </select>
-    </header>
-    <article>
-        <div id="apex_chart">
-            @if (_chartsReady)
+@if (Visible)
+{
+    <div>
+        <header>
+            @if (!_onlineHidden)
             {
-                <ApexChart TItem="ChartPoint" Options="ChartOptions" @ref="chart">
-                    @if (!_onlineHidden)
-                    {
-                        <ApexPointSeries TItem="ChartPoint"
-                                         Items="ChartData"
-                                         Name="Online Devices"
-                                         SeriesType="SeriesType.Line"
-                                         XValue="@(point => point.Time)"
-                                         YValue="@(point => point.OnlineCount)"
-                                         ShowDataLabels />
-                    }
-                    @if (!_offlineHidden)
-                    {
-                        <ApexPointSeries TItem="ChartPoint"
-                                         Items="ChartData"
-                                         Name="Offline Devices"
-                                         SeriesType="SeriesType.Line"
-                                         XValue="@(point => point.Time)"
-                                         YValue="@(point => point.OfflineCount)"
-                                         ShowDataLabels />
-                    }
-                    @if (!_monitoredHidden)
-                    {
-                        <ApexPointSeries TItem="ChartPoint"
-                                         Items="ChartData"
-                                         Name="Monitored Devices"
-                                         SeriesType="SeriesType.Line"
-                                         XValue="@(point => point.Time)"
-                                         YValue="@(point => point.MonitoredCount)"
-                                         ShowDataLabels />
-                    }
-                </ApexChart>
+                <button id="green" @onclick="@OnClickOnlineVisible">
+                    <span title="Toggle Online Devices" class="material-icons">cloud</span>
+                </button>
             }
-        </div>
-    </article>
-</div>
+            else
+            {
+                <button id="red" @onclick="@OnClickOnlineVisible">
+                    <span title="Toggle Online Devices" class="material-icons">cloud</span>
+                </button>
+            }
+
+            @if (!_offlineHidden)
+            {
+                <button id="green" @onclick="@OnClickOfflineVisible">
+                    <span title="Toggle Offline Devices" class="material-symbols-outlined">cloud_alert</span>
+                </button>
+            }
+            else
+            {
+                <button id="red" @onclick="@OnClickOfflineVisible">
+                    <span title="Toggle Offline Devices" class="material-symbols-outlined">cloud_alert</span>
+                </button>
+            }
+
+            @if (!_monitoredHidden)
+            {
+                <button id="green" @onclick="@OnClickMonitoredVisible">
+                    <span title="Toggle Monitored Devices" class="material-icons">visibility</span>
+                </button>
+            }
+            else
+            {
+                <button id="red" @onclick="@OnClickMonitoredVisible">
+                    <span title="Toggle Monitored Devices" class="material-icons">visibility</span>
+                </button>
+            }
+            <select @onchange="OnViewLengthChanged" style="margin-left: 1rem;">
+                <option value="04:00:00" selected="@(_viewLength == TimeSpan.FromHours(4))">Last 4 hours</option>
+                <option value="12:00:00" selected="@(_viewLength == TimeSpan.FromHours(12))">Last 12 hours</option>
+                <option value="24:00:00" selected="@(_viewLength == TimeSpan.FromHours(24))">Last 24 hours</option>
+                <option value="72:00:00" selected="@(_viewLength == TimeSpan.FromDays(3))">Last 3 days</option>
+            </select>
+            <button id="expand" @onclick="@OnClickExpand">
+                <span class="material-icons">expand</span>
+            </button>
+        </header>
+        <article>
+            <div id="apex_chart">
+                @if (_chartsReady)
+                {
+                    <ApexChart TItem="ChartPoint" Options="ChartOptions" @ref="chart">
+                        @if (!_onlineHidden)
+                        {
+                            <ApexPointSeries TItem="ChartPoint"
+                                             Items="ChartData"
+                                             Name="Online Devices"
+                                             SeriesType="SeriesType.Line"
+                                             XValue="@(point => point.Time)"
+                                             YValue="@(point => point.OnlineCount)"
+                                             ShowDataLabels />
+                        }
+                        @if (!_offlineHidden)
+                        {
+                            <ApexPointSeries TItem="ChartPoint"
+                                             Items="ChartData"
+                                             Name="Offline Devices"
+                                             SeriesType="SeriesType.Line"
+                                             XValue="@(point => point.Time)"
+                                             YValue="@(point => point.OfflineCount)"
+                                             ShowDataLabels />
+                        }
+                        @if (!_monitoredHidden)
+                        {
+                            <ApexPointSeries TItem="ChartPoint"
+                                             Items="ChartData"
+                                             Name="Monitored Devices"
+                                             SeriesType="SeriesType.Line"
+                                             XValue="@(point => point.Time)"
+                                             YValue="@(point => point.MonitoredCount)"
+                                             ShowDataLabels />
+                        }
+                    </ApexChart>
+                }
+            </div>
+        </article>
+    </div>
+}
 
 @code {
     [Parameter] public required List<IP>? IPAddresses { get; set; }
+    [Parameter] public required bool Visible { get; set; }
+    [Parameter] public required EventCallback<bool> VisibleChanged { get; set; }
+    [Parameter] public required EventCallback<string> ExpandChanged { get; set; }
+
+    private bool _expanded = false;
 
     private bool _onlineHidden = false;
     private bool _offlineHidden = false;
@@ -256,6 +268,20 @@
             await Task.Delay(100);
             _chartsReady = true;
             StateHasChanged();
+        }
+    }
+
+    private async Task OnClickExpand()
+    {
+        if (_expanded)
+        {
+            await ExpandChanged.InvokeAsync("undo");
+            _expanded = false;
+        }
+        else
+        {
+            await ExpandChanged.InvokeAsync("statschart");
+            _expanded = true;
         }
     }
 }

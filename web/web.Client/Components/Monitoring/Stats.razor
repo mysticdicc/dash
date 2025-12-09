@@ -1,101 +1,113 @@
-﻿<div id="stats_card">
-    <header>
-    </header>
-    <article>
+﻿@if (Visible)
+{
+    <div id="stats_card">
+        <header>
+            <button id="expand" @onclick="@OnClickExpand">
+                <span class="material-icons">expand</span>
+            </button>
+        </header>
+        <article>
 
-        @if (null != _lastPoll)
-        {
-            <div>
-                <span><strong>Last Poll Statistics:</strong></span>
-                <table>
-                    <tr>
-                        <td>
-                            Poll Time:
-                        </td>
-                        <td>
-                            @_lastPoll.SubmitTime
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>
-                            Monitored:
-                        </td>
-                        <td>
-                            @_lastPolls.Count
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>
-                            Online:
-                        </td>
-                        <td>
-                            @_lastPolls.Where(x => x.PingState?.Response == true).Count()
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>
-                            Offline:
-                        </td>
-                        <td>
-                            @_lastPolls.Where(x => x.PingState?.Response == false).Count()
-                        </td>
-                    </tr>
-                </table>
-            </div>
-        }
-        @if (_allPolls.Count > 0)
-        {
-            <div>
-                <span><strong>All Time Statistics:</strong></span>
-                <table>
-                    <tr>
-                        <td>
-                            Polls:
-                        </td>
-                        <td>
-                            @_allPolls.Count
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>
-                            Successful Polls:
-                        </td>
-                        <td>
-                            @_successPolls
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>
-                            Failed Polls:
-                        </td>
-                        <td>
-                            @_failedPolls
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>
-                            Monitored Devices:
-                        </td>
-                        <td>
-                            @if (null != IPAddresses)
-                            {
-                                @IPAddresses.Count()
-                            }
-                        </td>
-                    </tr>
-                </table>
-            </div>
-        }
-    </article>
-</div>
+            @if (null != _lastPoll)
+            {
+                <div>
+                    <span><strong>Last Poll Statistics:</strong></span>
+                    <table>
+                        <tr>
+                            <td>
+                                Poll Time:
+                            </td>
+                            <td>
+                                @_lastPoll.SubmitTime
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                Monitored:
+                            </td>
+                            <td>
+                                @_lastPolls.Count
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                Online:
+                            </td>
+                            <td>
+                                @_lastPolls.Where(x => x.PingState?.Response == true).Count()
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                Offline:
+                            </td>
+                            <td>
+                                @_lastPolls.Where(x => x.PingState?.Response == false).Count()
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            }
+            @if (_allPolls.Count > 0)
+            {
+                <div>
+                    <span><strong>All Time Statistics:</strong></span>
+                    <table>
+                        <tr>
+                            <td>
+                                Polls:
+                            </td>
+                            <td>
+                                @_allPolls.Count
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                Successful Polls:
+                            </td>
+                            <td>
+                                @_successPolls
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                Failed Polls:
+                            </td>
+                            <td>
+                                @_failedPolls
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                Monitored Devices:
+                            </td>
+                            <td>
+                                @if (null != IPAddresses)
+                                {
+                                    @IPAddresses.Count()
+                                }
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            }
+        </article>
+    </div>
+
+}
 
 
 @code {
     [Parameter] public required List<IP>? IPAddresses { get; set; }
+    [Parameter] public required bool Visible { get; set; }
+    [Parameter] public required EventCallback<bool> VisibleChanged { get; set; }
+    [Parameter] public required EventCallback<string> ExpandChanged { get; set; }
+
     MonitorState _lastPoll = new() { SubmitTime = new DateTime() };
     List<MonitorState> _lastPolls = [];
     List<MonitorState> _allPolls = [];
 
+    private bool _expanded = false;
     private int _failedPolls;
     private int _successPolls;
 
@@ -116,5 +128,19 @@
         }
 
         return base.OnParametersSetAsync();
+    }
+
+    private async Task OnClickExpand()
+    {
+        if (_expanded)
+        {
+            await ExpandChanged.InvokeAsync("undo");
+            _expanded = false;
+        }
+        else
+        {
+            await ExpandChanged.InvokeAsync("stats");
+            _expanded = true;
+        }
     }
 }

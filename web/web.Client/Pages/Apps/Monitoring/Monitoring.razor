@@ -24,10 +24,10 @@
     </header>
     <content>
         <div class="monitoring_layout">
-            <StatsChart IPAddresses="@_polls"/>
-            <Stats IPAddresses="@_polls"/>
-            <UptimeChart IPAddresses="@_polls"/>
-            <MonitorStates IPAddresses="@_polls" ViewClicked="@OnIpViewClicked" EditClicked="@OnIpEditClicked" HistoryClicked="@OnMonitorHistoryClicked"/>
+            <StatsChart IPAddresses="@_polls" @bind-Visible="@_statsChartVisible" ExpandChanged="@OnClickExpandMonitoringWindow" />
+            <Stats IPAddresses="@_polls" @bind-Visible="@_statsVisible" ExpandChanged="@OnClickExpandMonitoringWindow" />
+            <UptimeChart IPAddresses="@_polls" @bind-Visible="@_uptimeChartVisible" ExpandChanged="@OnClickExpandMonitoringWindow" />
+            <MonitorStates IPAddresses="@_polls" @bind-Visible="@_monitorStatesVisible" ExpandChanged="@OnClickExpandMonitoringWindow" ViewClicked="@OnIpViewClicked" EditClicked="@OnIpEditClicked" HistoryClicked="@OnMonitorHistoryClicked"/>
         </div>
     </content>
 </article>
@@ -47,9 +47,16 @@
 
 @code {
     List<IP> _polls = new();
+
     private bool _ipViewVisible = false;
     private bool _ipEditorVisible = false;
     private bool _monitorHistoryVisible = false;
+
+    private bool _statsChartVisible = true;
+    private bool _statsVisible = true;
+    private bool _uptimeChartVisible = true;
+    private bool _monitorStatesVisible = true;
+
     private IP? _viewIp;
     private IP? _editIp;
     private IP? _filterIp;
@@ -112,6 +119,48 @@
         else
         {
             await OnInitializedAsync();
+        }
+    }
+
+    private void OnClickExpandMonitoringWindow(string source)
+    {
+        switch (source)
+        {
+            case "statschart":
+                _statsChartVisible = true;    
+                _monitorStatesVisible = false;
+                _uptimeChartVisible = false;
+                _statsVisible = false;
+
+                break;
+            case "stats":
+                _statsChartVisible = false;
+                _monitorStatesVisible = false;
+                _uptimeChartVisible = false;
+                _statsVisible = true;
+
+                break;
+            case "uptimechart":
+                _statsChartVisible = false;
+                _monitorStatesVisible = false;
+                _uptimeChartVisible = true;
+                _statsVisible = false;
+
+                break;
+            case "monitorstates":
+                _statsChartVisible = false;
+                _monitorStatesVisible = true;
+                _uptimeChartVisible = false;
+                _statsVisible = false;
+
+                break;
+            case "undo":
+                _statsChartVisible = true;
+                _monitorStatesVisible = true;
+                _uptimeChartVisible = true;
+                _statsVisible = true;
+
+                break;
         }
     }
 }

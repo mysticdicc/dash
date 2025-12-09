@@ -1,89 +1,98 @@
-﻿<div>
-    <header>
-
-    </header>
-    <article id="monitor_states">
-        @if (_lastPolls.Count > 0)
-        {
-            <div>
-                <table>
-                    <tr>
-                        <th>IP Address</th>
-                        <th></th>
-                        <th>Hostname</th>
-                        <th>Status</th>
-                        <th>Ports Monitored</th>
-                        <th></th>
-                    </tr>
-                    @foreach (var poll in _lastPolls)
-                    {
-                        <tr onclick="@(() => OnClickView(poll.IP))">
-                            <td>
-                                @if (null != poll.IP)
-                                {
-                                    @IP.ConvertToString(poll.IP.Address)
-                                }
-                            </td>
-                            <td>
-                                @if (null != poll.IP)
-                                {
-                                    <button @onclick="@(() => OnClickEditIP(poll.IP))" @onclick:stopPropagation="true">
-                                        <span title="Edit IP Address" class="material-icons">edit</span>
-                                    </button>
-                                }
-                            </td>
-                            <td>
-                                @if (null != poll.IP)
-                                {
-                                    @poll.IP.Hostname
-                                }
-                            </td>
-                            <td>
-                                @if (null != poll.PingState)
-                                {
-                                    @if (poll.PingState.Response == true)
+﻿@if (Visible)
+{
+    <div>
+        <header>
+            <button id="expand" @onclick="@OnClickExpand">
+                <span class="material-icons">expand</span>
+            </button>
+        </header>
+        <article id="monitor_states">
+            @if (_lastPolls.Count > 0)
+            {
+                <div>
+                    <table>
+                        <tr>
+                            <th>IP Address</th>
+                            <th></th>
+                            <th>Hostname</th>
+                            <th>Status</th>
+                            <th>Ports Monitored</th>
+                            <th></th>
+                        </tr>
+                        @foreach (var poll in _lastPolls)
+                        {
+                            <tr onclick="@(() => OnClickView(poll.IP))">
+                                <td>
+                                    @if (null != poll.IP)
                                     {
-                                        <span>Online</span>
+                                        @IP.ConvertToString(poll.IP.Address)
+                                    }
+                                </td>
+                                <td>
+                                    @if (null != poll.IP)
+                                    {
+                                        <button @onclick="@(() => OnClickEditIP(poll.IP))" @onclick:stopPropagation="true">
+                                            <span title="Edit IP Address" class="material-icons">edit</span>
+                                        </button>
+                                    }
+                                </td>
+                                <td>
+                                    @if (null != poll.IP)
+                                    {
+                                        @poll.IP.Hostname
+                                    }
+                                </td>
+                                <td>
+                                    @if (null != poll.PingState)
+                                    {
+                                        @if (poll.PingState.Response == true)
+                                        {
+                                            <span>Online</span>
+                                        }
+                                        else
+                                        {
+                                            <span>Offline</span>
+                                        }
+                                    }
+                                </td>
+                                <td>
+                                    @if (null != poll.PortState && poll.PortState.Count > 0)
+                                    {
+                                        <span>@string.Join(',', poll.PortState.Select(x => x.Port))</span>
                                     }
                                     else
                                     {
-                                        <span>Offline</span>
+                                        <span>None</span>
                                     }
-                                }
-                            </td>
-                            <td>
-                                @if (null != poll.PortState && poll.PortState.Count > 0)
-                                {
-                                    <span>@string.Join(',', poll.PortState.Select(x => x.Port))</span>
-                                }
-                                else
-                                {
-                                    <span>None</span>
-                                }
-                            </td>
-                            <td>
-                                @if (null != poll.IP)
-                                {
-                                    <button @onclick="@(() => OnClickHistory(poll.IP))" @onclick:stopPropagation="true">
-                                        <span title="View monitor history" class="material-icons">history</span>
-                                    </button>
-                                }
-                            </td>
-                        </tr>
-                    }
-                </table>
-            </div>
+                                </td>
+                                <td>
+                                    @if (null != poll.IP)
+                                    {
+                                        <button @onclick="@(() => OnClickHistory(poll.IP))" @onclick:stopPropagation="true">
+                                            <span title="View monitor history" class="material-icons">history</span>
+                                        </button>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </table>
+                </div>
 
-        }
-    </article>
-</div>
+            }
+        </article>
+    </div>
+}
 
 @code {
     [Parameter] public required List<IP>? IPAddresses { get; set; }
     [Parameter] public required EventCallback<IP> ViewClicked { get; set; }
     [Parameter] public required EventCallback<IP> EditClicked { get; set; }
     [Parameter] public required EventCallback<IP> HistoryClicked { get; set; }
+    [Parameter] public required bool Visible { get; set; }
+    [Parameter] public required EventCallback<bool> VisibleChanged { get; set; }
+    [Parameter] public required EventCallback<string> ExpandChanged { get; set; }
 
+    private bool _expanded = false;
     private List<MonitorState> _lastPolls = [];
 
     protected override Task OnParametersSetAsync()
@@ -109,5 +118,19 @@
     private async void OnClickHistory(IP ip)
     {
         await HistoryClicked.InvokeAsync(ip);
+    }
+
+    private async Task OnClickExpand()
+    {
+        if (_expanded)
+        {
+            await ExpandChanged.InvokeAsync("undo");
+            _expanded = false;
+        }
+        else
+        {
+            await ExpandChanged.InvokeAsync("monitorstates");
+            _expanded = true;
+        }
     }
 }
