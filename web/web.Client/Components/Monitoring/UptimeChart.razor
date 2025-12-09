@@ -98,7 +98,7 @@
                     {
                         Show = true,
                         Label = "Total Uptime",
-                        Formatter = "function(w) { return w.globals.series.reduce((a, b) => a + b, 0) / w.globals.series.length + '%'; }"
+                        Formatter = "function(w) { return (w.globals.series.reduce((a, b) => a + b, 0) / w.globals.series.length).toFixed(2) + '%'; }"
                     }
                 }
             }

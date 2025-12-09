@@ -30,11 +30,11 @@
                             <td>
                                 <div>
                                     True
-                                    <input type="radio" checked="@(_ipAddress.IsMonitoredICMP == true)" @onchange="@(() => _ipAddress.IsMonitoredICMP = true)" />
+                                    <input type="radio" value="true" checked="@(_ipAddress.IsMonitoredICMP == true)" @onchange="@((e) => OnIcmpMonitoredChange(e))" />
                                 </div>
                                 <div>
                                     False
-                                    <input type="radio" checked="@(_ipAddress.IsMonitoredICMP == false)" @onchange="@(() => _ipAddress.IsMonitoredICMP = false)" />
+                                    <input type="radio" value="false" checked="@(_ipAddress.IsMonitoredICMP == false)" @onchange="@((e) => OnIcmpMonitoredChange(e))" />
                                 </div>
                             </td>
                         </tr>
@@ -47,11 +47,11 @@
                             <td>
                                 <div>
                                     True
-                                    <input type="radio" checked="@(_ipAddress.IsMonitoredTCP == true)" @onchange="@(() => _ipAddress.IsMonitoredTCP = true)" />
+                                    <input type="radio" value="true" checked="@(_ipAddress.IsMonitoredTCP == true)" @onchange="@((e) => OnTcpMonitoredChange(e))" />
                                 </div>
                                 <div>
                                     False
-                                    <input type="radio" checked="@(_ipAddress.IsMonitoredTCP == false)" @onchange="@(() => _ipAddress.IsMonitoredTCP = false)" />
+                                    <input type="radio" value="false" checked="@(_ipAddress.IsMonitoredTCP == false)" @onchange="@((e) => OnTcpMonitoredChange(e))" />
                                 </div>
                             </td>
                         </tr>
@@ -139,6 +139,34 @@
             UpdatePortsMonitored();
             await SubnetService.EditIpAsync(_ipAddress);
             await EditorVisibleChanged.InvokeAsync(false);
+        }
+    }
+
+    private void OnIcmpMonitoredChange(ChangeEventArgs e)
+    {
+        if (null != _ipAddress)
+        {
+            var selected = e.Value?.ToString();
+            _ipAddress.IsMonitoredICMP = selected == "true";
+
+            if (!_ipAddress.IsMonitoredICMP)
+            {
+                _ipAddress.IsMonitoredTCP = false;
+            }
+        }
+    }
+
+    private void OnTcpMonitoredChange(ChangeEventArgs e)
+    {
+        if (null != _ipAddress)
+        {
+            var selected = e.Value?.ToString();
+            _ipAddress.IsMonitoredTCP = selected == "true";
+
+            if (!_ipAddress.IsMonitoredICMP)
+            {
+                _ipAddress.IsMonitoredICMP = true;
+            }
         }
     }
 }

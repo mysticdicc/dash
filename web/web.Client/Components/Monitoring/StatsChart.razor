@@ -6,39 +6,39 @@
     <header>
         @if (!_onlineHidden)
         {
-            <button id="green" onclick="@OnClickOnlineVisible">
+            <button id="green" @onclick="@OnClickOnlineVisible">
                 <span title="Toggle Online Devices" class="material-icons">cloud</span>
             </button>
         }
         else
         {
-            <button id="red" onclick="@OnClickOnlineVisible">
+            <button id="red" @onclick="@OnClickOnlineVisible">
                 <span title="Toggle Online Devices" class="material-icons">cloud</span>
             </button>
         }
 
         @if (!_offlineHidden)
         {
-            <button id="green" onclick="@OnClickOfflineVisible">
+            <button id="green" @onclick="@OnClickOfflineVisible">
                 <span title="Toggle Offline Devices" class="material-symbols-outlined">cloud_alert</span>
             </button>
         }
         else
         {
-            <button id="red" onclick="@OnClickOfflineVisible">
+            <button id="red" @onclick="@OnClickOfflineVisible">
                 <span title="Toggle Offline Devices" class="material-symbols-outlined">cloud_alert</span>
             </button>
         }
 
         @if (!_monitoredHidden)
         {
-            <button id="green" onclick="@OnClickMonitoredVisible">
+            <button id="green" @onclick="@OnClickMonitoredVisible">
                 <span title="Toggle Monitored Devices" class="material-icons">visibility</span>
             </button>
         }
         else
         {
-            <button id="red" onclick="@OnClickMonitoredVisible">
+            <button id="red" @onclick="@OnClickMonitoredVisible">
                 <span title="Toggle Monitored Devices"  class="material-icons">visibility</span>
             </button>
         }
