@@ -160,8 +160,9 @@
         }
     }
 
-    private async Task OnClickSubnetCard()
+    private void OnClickSubnetCard()
     {
-        await OnEditSubnet.InvokeAsync(Subnet);
+        _ipListVisible = !_ipListVisible;
+        StateHasChanged();
     }
 }
