@@ -1,4 +1,5 @@
-﻿@using web.Client.Services
+﻿@using danklibrary.Interfaces
+@using web.Client.Services
 @inject ISubnetsAPI SubnetService
 
 <tr class="ip_row" onclick="@OnClickEditIp">
@@ -37,6 +38,7 @@
     [Parameter] public EventCallback<bool> AdvancedViewEnabledChanged { get; set; }
 
     [Parameter] public EventCallback<IP> OnEditIp { get; set; }
+    [Parameter] public EventCallback<bool> OnDeleteIp { get; set; }
 
     private string _portsMonitoredString = string.Empty;
 
@@ -62,5 +64,6 @@
     private async void OnClickDelete()
     {
         await SubnetService.DeleteIpByObjectAsync(_ipAddress);
+        await OnDeleteIp.InvokeAsync(true);
     }
 }

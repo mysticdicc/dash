@@ -34,28 +34,6 @@ namespace danklibrary.Network
         public bool IsMonitoredTCP { get; set; }
         public List<int>? PortsMonitored { get; set; }
 
-        public bool IsValid(IP ip)
-        {
-            //address is 4 bytes
-            //address is a valid ip
-            bool addressValid;
-
-            if (ip.Address.Length != 4)
-            {
-                return false;
-            }
-
-            //if (ip.Add)
-
-            //hostname <= 100
-            bool hostValid;
-
-            //subnetid is a valid int
-            bool subIdValid;
-
-            return true;
-        }
-
         static public byte[] ConvertToByte(IPAddress ip)
         {
             return IPAddress.Parse(ip.ToString()).GetAddressBytes();

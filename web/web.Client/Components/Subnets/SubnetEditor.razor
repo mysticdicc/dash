@@ -1,4 +1,5 @@
 ﻿@using System.Threading.Tasks
+@using danklibrary.Interfaces
 @inject ISubnetsAPI SubnetService
 
 @if (EditorVisible)
@@ -104,6 +105,17 @@
     override protected async Task OnParametersSetAsync()
     {
         _subnet = Subnet;
+
+        if (!IsNewSubnet)
+        {
+            _ipListVisible = true;
+            try 
+            {
+                _cidrString = Subnet.GetCidrString(_subnet);
+            }
+            catch { }
+        }
+
         await base.OnParametersSetAsync();
     }
 

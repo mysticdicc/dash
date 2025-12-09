@@ -1,4 +1,5 @@
 ﻿@using System.Threading.Tasks
+@using danklibrary.Interfaces
 @using web.Client.Services
 @inject ISubnetsAPI SubnetService
 @inject NotificationService NotificationService
@@ -58,7 +59,7 @@
                 {
                     <Virtualize Items="@_ipList">
                         <ItemContent>
-                            <IpRow IpAddress="@context" @bind-AdvancedViewEnabled="AdvancedViewEnabled" OnEditIp="@OnEditIp" />
+                            <IpRow IpAddress="@context" @bind-AdvancedViewEnabled="AdvancedViewEnabled" OnEditIp="@OnEditIp" OnDeleteIp="@OnDeleteIp"/>
                         </ItemContent>
                     </Virtualize>
                 }
@@ -75,6 +76,7 @@
     [Parameter] public EventCallback<bool> AdvancedViewEnabledChanged { get; set; }
 
     [Parameter] public EventCallback<IP> OnEditIp { get; set; }
+    [Parameter] public EventCallback<bool> OnDeleteIp { get; set; }
     [Parameter] public EventCallback<Subnet> OnEditSubnet { get; set; }
     [Parameter] public EventCallback<bool> OnDeleteClicked { get; set;  }
 
@@ -160,9 +162,14 @@
         }
     }
 
-    private void OnClickSubnetCard()
+    private async Task OnClickSubnetCard()
     {
         _ipListVisible = !_ipListVisible;
         StateHasChanged();
+    }
+
+    private async Task OnClickDeleteIp()
+    {
+        await OnDeleteIp.InvokeAsync(true);
     }
 }

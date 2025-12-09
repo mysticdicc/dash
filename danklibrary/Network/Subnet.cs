@@ -54,5 +54,29 @@ namespace danklibrary.Network
 
             List = temp;
         }
+
+        public static string GetCidrString(Subnet subnet)
+        {
+            var startAdr = IPAddress.Parse(IP.ConvertToString(subnet.StartAddress));
+            var subMask = IPAddress.Parse(IP.ConvertToString(subnet.SubnetMask));
+
+            if (null != startAdr && null != subMask)
+            {
+                var range = new IPAddressRange(startAdr, IPAddressRange.SubnetMaskLength(subMask));
+
+                if (range != null)
+                {
+                    return range.ToCidrString();
+                }
+                else
+                {
+                    throw new InvalidCastException("Unable to create IP range");
+                }
+            }
+            else
+            {
+                throw new InvalidCastException("Unable to create IP and Mask objects");
+            }
+        }
     }
 }

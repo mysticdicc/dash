@@ -11,6 +11,16 @@
         <button @onclick="@OnClickRefresh">
             <span title="Refresh monitoring data" class="material-icons">refresh</span>
         </button>
+        @if (null != _polls)
+        {
+            <select @onchange="@((e) => OnSelectFilterIpChanged(e))">
+                @foreach (var ip in _polls)
+                {
+                    <option value="@ip">@IP.ConvertToString(ip.Address)</option>
+                }
+                <option value="@string.Empty">Clear Filter</option>
+            </select>
+        }
     </header>
     <content>
         <div class="monitoring_layout">
@@ -42,6 +52,7 @@
     private bool _monitorHistoryVisible = false;
     private IP? _viewIp;
     private IP? _editIp;
+    private IP? _filterIp;
     private List<MonitorState> _viewHistory = [];
 
     protected override async Task OnInitializedAsync()
@@ -81,5 +92,26 @@
     private async void OnClickRefresh()
     {
         await OnInitializedAsync();
+    }
+
+    private async void OnSelectFilterIpChanged(ChangeEventArgs e)
+    {
+        var selectedValue = e.Value?.ToString();
+
+        if (!string.IsNullOrEmpty(selectedValue))
+        {
+            var selectedIp = _polls.FirstOrDefault(ip => IP.ConvertToString(ip.Address) == selectedValue);
+
+            if (selectedIp != null)
+            {
+                _filterIp = selectedIp;
+                _polls = new List<IP> { selectedIp };
+                StateHasChanged();
+            }
+        }
+        else
+        {
+            await OnInitializedAsync();
+        }
     }
 }
