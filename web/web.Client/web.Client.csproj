@@ -18,6 +18,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\danklibrary\danklibrary.csproj" />
+    <ProjectReference Include="..\..\dash.Components\dash.Components.csproj" />
   </ItemGroup>
 
   <ItemGroup>

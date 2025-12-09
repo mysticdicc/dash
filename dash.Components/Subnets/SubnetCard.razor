@@ -1,8 +1,4 @@
-﻿@using System.Threading.Tasks
-@using danklibrary.Interfaces
-@using web.Client.Services
-@inject ISubnetsAPI SubnetService
-@inject NotificationService NotificationService
+﻿@inject ISubnetsAPI SubnetService
 
 <tr class="subnet_card" @onclick="@OnClickSubnetCard">
     <td>
@@ -16,7 +12,7 @@
     </td>
     <td>
         <div>
-            <input type="text" @bind="@_searchString" @onkeydown="@OnKeyDownInSubnetInput"/>
+            <input type="text" @bind="@_searchString" @onkeydown="@OnKeyDownInSubnetInput" @onclick:stopPropagation="true" />
             <button onclick="@OnClickSearch" @onclick:stopPropagation="true">
                 <span class="material-icons">search</span>
             </button>
@@ -24,7 +20,7 @@
     </td>
     <td>
         <div>
-            <button @onclick="@OnClickExpand" @onclick:stopPropagation="true">
+            <button @onclick="@OnClickExpand" id="iplistbtn" @onclick:stopPropagation="true">
                 <span class="material-icons" title="Expand IP List">list</span>
             </button>
             <button @onclick="@OnClickEditSubnet" @onclick:stopPropagation="true">
@@ -57,10 +53,8 @@
                 </tr>
                 @if (null != _ipList && _ipList.Count > 0)
                 {
-                    <Virtualize Items="@_ipList">
-                        <ItemContent>
-                            <IpRow IpAddress="@context" @bind-AdvancedViewEnabled="AdvancedViewEnabled" OnEditIp="@OnEditIp" OnDeleteIp="@OnDeleteIp"/>
-                        </ItemContent>
+                    <Virtualize Items="@_ipList" Context="context">
+                        <IpRow IpAddress="@context" @bind-AdvancedViewEnabled="AdvancedViewEnabled" OnEditIp="@OnEditIp" OnDeleteIp="@OnDeleteIp" />
                     </Virtualize>
                 }
             </table>
@@ -133,15 +127,7 @@
     {
         if (null != _subnet)
         {
-            try
-            {
-                await SubnetService.RunDiscoveryTaskAsync(_subnet);
-                NotificationService.ShowAsync("Discovery Task Running", "Please come back in a few minutes to see discovery results.");
-            }
-            catch (Exception ex)
-            {
-                NotificationService.ShowAsync("Error Running Discovery Task", ex.Message);
-            }
+            await SubnetService.RunDiscoveryTaskAsync(_subnet);
         }
     }
 

@@ -1,5 +1,4 @@
-﻿@using danklibrary.Interfaces
-@inject ISubnetsAPI SubnetsAPI
+﻿@inject ISubnetsAPI SubnetsAPI
 
 @if (IpViewVisible)
 {
@@ -66,7 +65,7 @@
 
     private async void OnClickCancel()
     {
-        IpViewVisible = false;
+        await IpViewVisibleChanged.InvokeAsync(false);
     }
 
     private async void OnClickEdit()

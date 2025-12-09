@@ -75,6 +75,10 @@
                 display: flex;
                 flex-direction: row;
                 min-height: 2rem;
+
+                > select {
+                    max-width: 10rem;
+                }
             }
 
             > content {
@@ -881,23 +885,27 @@ textarea {
         padding: 10px;
         min-height: 3rem;
 
-    > select {
-        max-width: 30%;
-        min-width: 4rem;
-        margin-left: auto!important;
-        margin-right: 0;
+        > select {
+            max-width: 30%;
+            min-width: 4rem;
+            margin-left: auto!important;
+            margin-right: 0;
+        }
     }
-}
 
     .monitoring_layout > div > article {
         flex: 1;
         display: flex;
+
+        apex_canvas  {
+
+        }
     }
 
-        article#monitor_states {
-    display: flex;
-    flex-direction: column;
-    min-height: 0;
+    article#monitor_states {
+        display: flex;
+        flex-direction: column;
+        min-height: 0;
 
     > div {
         flex: 1;
@@ -909,27 +917,27 @@ textarea {
 }
 
         article#monitor_states > div > table {
-    width: 100%;
-    text-align: center;
+            width: 100%;
+            text-align: center;
 
-    > tr:has(td):hover {
-        background-color: var(--primary-light);
-    }
+            > tr:has(td):hover {
+                background-color: var(--primary-light);
+            }
 
-    > tr:has(th) {
-        position: sticky;
-        top: 0;
-        background-color: var(--secondary);
-        opacity: 100%;
-    }
+            > tr:has(th) {
+                position: sticky;
+                top: 0;
+                background-color: var(--secondary);
+                opacity: 100%;
+            }
 
-    td {
-        > button {
-            margin-left: auto;
-            margin-right: auto;
+            td {
+                > button {
+                    margin-left: auto;
+                    margin-right: auto;
+                }
+            }
         }
-    }
-}
 
         .apexcharts-canvas {
             margin: auto;

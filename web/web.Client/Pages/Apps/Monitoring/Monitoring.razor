@@ -2,7 +2,6 @@
 @inject IJSRuntime JSRuntime
 
 @page "/monitoring/home"
-@using danklibrary.Interfaces
 
 <PageTitle>monitoring</PageTitle>
 
@@ -14,11 +13,11 @@
         @if (null != _polls)
         {
             <select @onchange="@((e) => OnSelectFilterIpChanged(e))">
-                @foreach (var ip in _polls)
+                @foreach (var ip in Polls)
                 {
-                    <option value="@ip">@IP.ConvertToString(ip.Address)</option>
+                    <option value="@ip.ID">@IP.ConvertToString(ip.Address)</option>
                 }
-                <option value="@string.Empty">Clear Filter</option>
+                <option value="@string.Empty"></option>
             </select>
         }
     </header>
@@ -46,6 +45,7 @@
 }
 
 @code {
+    List<IP> Polls = new();
     List<IP> _polls = new();
 
     private bool _ipViewVisible = false;
@@ -64,7 +64,8 @@
 
     protected override async Task OnInitializedAsync()
     {
-        _polls = await MonitoringAPI.GetAllPollsAsync();
+        Polls = await MonitoringAPI.GetAllPollsAsync();
+        _polls = Polls;
         await base.OnInitializedAsync();
         StateHasChanged();
     }
@@ -107,7 +108,7 @@
 
         if (!string.IsNullOrEmpty(selectedValue))
         {
-            var selectedIp = _polls.FirstOrDefault(ip => IP.ConvertToString(ip.Address) == selectedValue);
+            var selectedIp = Polls.Where(x => x.ID.ToString() == selectedValue).FirstOrDefault();
 
             if (selectedIp != null)
             {

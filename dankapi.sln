@@ -11,6 +11,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "web.Client", "web\web.Clien
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "gitimages", "gitimages", "{FDD21176-6E9B-41E0-B5DE-EA7922C53FBD}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "dash.Tests", "dash.Tests\dash.Tests.csproj", "{6761EA21-927F-4BBB-A0CD-36ABE841CABE}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "dash.Components", "dash.Components\dash.Components.csproj", "{C1BF540D-3464-4C3D-8B56-C514B2AFFB14}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -43,6 +47,22 @@ Global
 		{1D88282A-7A52-4206-AFD6-4316DFB45C16}.Release|Any CPU.Build.0 = Release|Any CPU
 		{1D88282A-7A52-4206-AFD6-4316DFB45C16}.Release|x64.ActiveCfg = Release|Any CPU
 		{1D88282A-7A52-4206-AFD6-4316DFB45C16}.Release|x64.Build.0 = Release|Any CPU
+		{6761EA21-927F-4BBB-A0CD-36ABE841CABE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6761EA21-927F-4BBB-A0CD-36ABE841CABE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6761EA21-927F-4BBB-A0CD-36ABE841CABE}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{6761EA21-927F-4BBB-A0CD-36ABE841CABE}.Debug|x64.Build.0 = Debug|Any CPU
+		{6761EA21-927F-4BBB-A0CD-36ABE841CABE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6761EA21-927F-4BBB-A0CD-36ABE841CABE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6761EA21-927F-4BBB-A0CD-36ABE841CABE}.Release|x64.ActiveCfg = Release|Any CPU
+		{6761EA21-927F-4BBB-A0CD-36ABE841CABE}.Release|x64.Build.0 = Release|Any CPU
+		{C1BF540D-3464-4C3D-8B56-C514B2AFFB14}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C1BF540D-3464-4C3D-8B56-C514B2AFFB14}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C1BF540D-3464-4C3D-8B56-C514B2AFFB14}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{C1BF540D-3464-4C3D-8B56-C514B2AFFB14}.Debug|x64.Build.0 = Debug|Any CPU
+		{C1BF540D-3464-4C3D-8B56-C514B2AFFB14}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C1BF540D-3464-4C3D-8B56-C514B2AFFB14}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C1BF540D-3464-4C3D-8B56-C514B2AFFB14}.Release|x64.ActiveCfg = Release|Any CPU
+		{C1BF540D-3464-4C3D-8B56-C514B2AFFB14}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -1,5 +1,4 @@
-﻿@using danklibrary.Dashboard
-@inject IJSRuntime JSRuntime
+﻿@inject IJSRuntime JSRuntime
 
 <div class="dashboard_card" onclick="@OnClickCard">
     @if (_dashboardItem.Icon != null)
@@ -31,11 +30,15 @@
                     var shortcut = _dashboardItem as ShortcutItem;
 
                     <tr>
-                        @shortcut!.Url
+                        <td>
+                            <span>@shortcut!.Url</span>
+                        </td>
                     </tr>
                 }
                 <tr>
-                    @_dashboardItem.Description
+                    <td>
+                        @_dashboardItem.Description
+                    </td>
                 </tr>
             </table>
         </content>
