@@ -43,22 +43,26 @@
                         @if (_dashboardItem is ShortcutItem shortcut)
                         {
                             <tr>
-                                <input type="text" @bind="@shortcut.Url"/>
-                                <span class="material-icons">add_link</span>
+                                <td>
+                                    <input type="text" @bind="@shortcut.Url" />
+                                    <span class="material-icons">add_link</span>
+                                </td>
                             </tr>
 
                             <tr>
-                                <select @bind="@_selectedDirectory" @bind:after="() => OnDirectoryChanged()">
-                                    <option value="">No Folder</option>
-                                    @if (Directories != null)
-                                    {
-                                        foreach (var item in Directories)
+                                <td>
+                                    <select @bind="@_selectedDirectory" @bind:after="() => OnDirectoryChanged()">
+                                        <option value="">No Folder</option>
+                                        @if (Directories != null)
                                         {
-                                            <option value="@item.Id">@item.DisplayName</option>
+                                            foreach (var item in Directories)
+                                            {
+                                                <option value="@item.Id">@item.DisplayName</option>
+                                            }
                                         }
-                                    }
-                                </select>
-                                <span class="material-icons">folder</span>
+                                    </select>
+                                    <span class="material-icons">folder</span>
+                                </td>
                             </tr>
                         }
                         <tr>

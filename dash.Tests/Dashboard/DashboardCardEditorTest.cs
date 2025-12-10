@@ -28,6 +28,10 @@ public class DashboardCardEditorTest : TestContext
         );
 
         Assert.Contains("dashboard_card_editor", cut.Markup);
+        Assert.Contains(@$"value=""{shortcut.Url}""", cut.Markup);
+        Assert.Contains(@$"value=""{shortcut.DisplayName}""", cut.Markup);
+        Assert.Contains(shortcut.Id.ToString(), cut.Markup);
+
     }
 
     [Fact]

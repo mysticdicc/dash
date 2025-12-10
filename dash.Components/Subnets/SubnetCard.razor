@@ -1,6 +1,6 @@
 ﻿@inject ISubnetsAPI SubnetService
 
-<tr class="subnet_card" @onclick="@OnClickSubnetCard">
+<tr id="subcard" class="subnet_card" @onclick="@OnClickSubnetCard">
     <td>
         @IP.ConvertToString(_subnet.Address)
     </td>
@@ -23,13 +23,13 @@
             <button @onclick="@OnClickExpand" id="iplistbtn" @onclick:stopPropagation="true">
                 <span class="material-icons" title="Expand IP List">list</span>
             </button>
-            <button @onclick="@OnClickEditSubnet" @onclick:stopPropagation="true">
+            <button id="editbutton" @onclick="@OnClickEditSubnet" @onclick:stopPropagation="true">
                 <span class="material-icons" title="Edit Subnet Information">edit</span>
             </button>
-            <button @onclick="@OnClickDelete" @onclick:stopPropagation="true">
+            <button id="deletebutton" @onclick="@OnClickDelete" @onclick:stopPropagation="true">
                 <span class="material-icons" title="Delete Subnet">delete</span>
             </button>
-            <button @onclick="@OnClickDiscovery" @onclick:stopPropagation="true">
+            <button id="discoverbutton" @onclick="@OnClickDiscovery" @onclick:stopPropagation="true">
                 <span class="material-icons" title="Rediscover Subnet">refresh</span>
             </button>
         </div>
