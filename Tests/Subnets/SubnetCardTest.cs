@@ -1,20 +1,33 @@
+using DashComponents.Subnets;
 using DashLib.Interfaces;
 using DashLib.Network;
-using DashComponents.Subnets;
 using Moq;
+using System.Collections.Generic;
 
 public class SubnetCardTest : TestContext
 {
     public (IRenderedComponent<SubnetCard>, Mock<ISubnetsAPI>) CreateStandardComponent(TestServiceProvider services)
     {
         var subnetApi = new Mock<ISubnetsAPI>();
-        subnetApi.Setup(x => x.DeleteSubnetByObjectAsync(It.IsAny<Subnet>())).ReturnsAsync(true);
-        subnetApi.Setup(x => x.RunDiscoveryTaskAsync(It.IsAny<Subnet>())).ReturnsAsync(true);
-        services.AddSingleton(subnetApi.Object);
 
         var subnet = new Subnet("192.168.0.0/24");
         var ip = subnet.List[0];
         ip.Hostname = "iphost";
+
+        subnetApi.Setup(x => x.RunDiscoveryTaskAsync(It.IsAny<Subnet>())).ReturnsAsync(true);
+        subnetApi.Setup(x => x.AddSubnetByObjectAsync(It.IsAny<Subnet>())).ReturnsAsync(true);
+        subnetApi.Setup(x => x.UpdateSubnetByObjectAsync(It.IsAny<Subnet>())).ReturnsAsync(true);
+        subnetApi.Setup(x => x.GetAllAsync()).ReturnsAsync(() => new List<Subnet>());
+        subnetApi.Setup(x => x.DeleteSubnetByObjectAsync(It.IsAny<Subnet>())).ReturnsAsync(true);
+        subnetApi.Setup(x => x.EditIpAsync(It.IsAny<IP>())).ReturnsAsync(true);
+        subnetApi.Setup(x => x.DeleteSubnetAsync(It.IsAny<int>())).ReturnsAsync(true);
+        subnetApi.Setup(x => x.DiscoveryUpdateAsync(It.IsAny<Subnet>())).ReturnsAsync(true);
+        subnetApi.Setup(x => x.GetSubnetByIdAsync(It.IsAny<int>())).ReturnsAsync((Subnet)null!);
+        subnetApi.Setup(x => x.DeleteIpByObjectAsync(It.IsAny<IP>())).ReturnsAsync(true);
+        subnetApi.Setup(x => x.GetAllAsync()).ReturnsAsync(new List<Subnet> { subnet });
+        subnetApi.Setup(x => x.GetSubnetByIdAsync(It.IsAny<int>())).ReturnsAsync(subnet);
+
+        services.AddSingleton(subnetApi.Object);
 
         var cut = RenderComponent<SubnetCard>(parameters => parameters
             .Add(p => p.Subnet, subnet)

@@ -1,23 +1,36 @@
 using Bunit;
-using Xunit;
 using DashComponents.Subnets;
+using DashLib.Interfaces;
 using DashLib.Network;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
-using DashLib.Interfaces;
+using System.Collections.Generic;
+using Xunit;
 
 public class IpViewTest : TestContext
 {
     public (IRenderedComponent<IpView>, Mock<ISubnetsAPI>) CreateStandardComponent(TestServiceProvider services)
     {
         var subnetApi = new Mock<ISubnetsAPI>();
-        subnetApi.Setup(x => x.DeleteSubnetByObjectAsync(It.IsAny<Subnet>())).ReturnsAsync(true);
-        subnetApi.Setup(x => x.RunDiscoveryTaskAsync(It.IsAny<Subnet>())).ReturnsAsync(true);
-        services.AddSingleton(subnetApi.Object);
 
         var subnet = new Subnet("192.168.0.0/24");
         var ip = subnet.List[0];
         ip.Hostname = "iphost";
+
+        subnetApi.Setup(x => x.RunDiscoveryTaskAsync(It.IsAny<Subnet>())).ReturnsAsync(true);
+        subnetApi.Setup(x => x.AddSubnetByObjectAsync(It.IsAny<Subnet>())).ReturnsAsync(true);
+        subnetApi.Setup(x => x.UpdateSubnetByObjectAsync(It.IsAny<Subnet>())).ReturnsAsync(true);
+        subnetApi.Setup(x => x.GetAllAsync()).ReturnsAsync(() => new List<Subnet>());
+        subnetApi.Setup(x => x.DeleteSubnetByObjectAsync(It.IsAny<Subnet>())).ReturnsAsync(true);
+        subnetApi.Setup(x => x.EditIpAsync(It.IsAny<IP>())).ReturnsAsync(true);
+        subnetApi.Setup(x => x.DeleteSubnetAsync(It.IsAny<int>())).ReturnsAsync(true);
+        subnetApi.Setup(x => x.DiscoveryUpdateAsync(It.IsAny<Subnet>())).ReturnsAsync(true);
+        subnetApi.Setup(x => x.GetSubnetByIdAsync(It.IsAny<int>())).ReturnsAsync((Subnet)null!);
+        subnetApi.Setup(x => x.DeleteIpByObjectAsync(It.IsAny<IP>())).ReturnsAsync(true);
+        subnetApi.Setup(x => x.GetAllAsync()).ReturnsAsync(new List<Subnet> { subnet });
+        subnetApi.Setup(x => x.GetSubnetByIdAsync(It.IsAny<int>())).ReturnsAsync(subnet);
+
+        services.AddSingleton(subnetApi.Object);
 
         var cut = RenderComponent<IpView>(parameters => parameters
             .Add(p => p.IpAddress, ip)
