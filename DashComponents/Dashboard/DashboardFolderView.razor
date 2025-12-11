@@ -6,7 +6,7 @@
     {
         if (!Hidden)
         {
-            <div class="dashboard_folder_view">
+            <div id="dashfolderview" class="dashboard_folder_view">
                 <header>
                     <span>
                         <span class="material-icons">folder</span>
@@ -57,5 +57,6 @@
     private async Task OnClickCancel()
     {
         await HiddenChanged.InvokeAsync(true);
+        Hidden = true;
     }
 }
