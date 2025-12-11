@@ -8,7 +8,7 @@
             <div class="ip_editor">
                 <header>
                     <span><strong>@IP.ConvertToString(_ipAddress.Address)</strong></span>
-                    <button onclick="@OnClickCancel">
+                    <button id="cancelbutton" onclick="@OnClickCancel">
                         <span class="material-icons">cancel</span>
                     </button>
                 </header>
@@ -16,7 +16,7 @@
                     <table>
                         <tr>
                             <td>
-                                <input type="text" @bind="_ipAddress.Hostname" placeholder="Hostname"/>
+                                <input id="hostnameinput" type="text" @bind="_ipAddress.Hostname" placeholder="Hostname"/>
                             </td>
                         </tr>
                         <tr>
@@ -68,7 +68,7 @@
                     </table>
                 </article>
                 <footer>
-                    <button onclick="@OnClickSave">
+                    <button id="savebutton" onclick="@OnClickSave">
                         <span class="material-icons">save</span>
                     </button>
                 </footer>
@@ -107,6 +107,7 @@
         _ipAddress = null;
         _portsMonitoredString = string.Empty;
         await EditorVisibleChanged.InvokeAsync(false);
+        EditorVisible = false;
     }
 
     private void UpdatePortsMonitored()
