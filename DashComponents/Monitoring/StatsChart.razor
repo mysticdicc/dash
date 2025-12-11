@@ -98,7 +98,7 @@
     [Parameter] public required EventCallback<bool> VisibleChanged { get; set; }
     [Parameter] public required EventCallback<string> ExpandChanged { get; set; }
 
-    private bool _expanded = false;
+    public bool _expanded = false;
 
     private bool _onlineHidden = false;
     private bool _offlineHidden = false;

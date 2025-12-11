@@ -76,5 +76,116 @@ namespace DashLib.Monitoring
 
             return allStates;
         }
+
+        static public List<MonitorState> CreateRandomListOfMonitorStates(IP ip)
+        {
+            int count = new Random().Next(0, 20);
+            var list = new List<MonitorState>();
+
+            for (int i = 0; i < count; i++)
+            {
+                var random = new Random().Next(0, 100);
+
+                var monitorState = new MonitorState
+                {
+                    ID = i,
+                    IP_ID = ip.ID,
+                    SubmitTime = DateTime.Now.AddMinutes(-i * 5),
+                    PortState = [],
+                    IP = ip
+                };
+
+                if (random >= 0 && random < 50)
+                {
+                    monitorState.PingState = new PingState
+                    {
+                        ID = i,
+                        MonitorID = i,
+                        MonitorState = monitorState,
+                        Response = true
+                    };
+
+                    if (random >= 0 && random < 25)
+                    {
+                        monitorState.PortState.Add(new PortState
+                        {
+                            ID = i,
+                            MonitorID = i,
+                            Port = 80,
+                            Status = true,
+                            MonitorState = monitorState
+                        });
+                        monitorState.PortState.Add(new PortState
+                        {
+                            ID = i + 1,
+                            MonitorID = i,
+                            Port = 443,
+                            Status = true,
+                            MonitorState = monitorState
+                        });
+                    }
+                    else if (random >= 25 && random < 50)
+                    {
+                        monitorState.PortState.Add(new PortState
+                        {
+                            ID = i,
+                            MonitorID = i,
+                            Port = 80,
+                            Status = false,
+                            MonitorState = monitorState
+                        });
+                        monitorState.PortState.Add(new PortState
+                        {
+                            ID = i + 1,
+                            MonitorID = i,
+                            Port = 443,
+                            Status = false,
+                            MonitorState = monitorState
+                        });
+                    }
+                }
+                else if (random > 50 && random <= 100)
+                {
+                    monitorState.PingState = new PingState
+                    {
+                        ID = i,
+                        MonitorID = i,
+                        Response = false
+                    };
+                }
+
+                if (null != monitorState.PingState || (monitorState.PortState != null && monitorState.PortState.Count > 0))
+                {
+                    list.Add(monitorState);
+                }
+            }
+
+            if (list.Count > 0 && ip.IsMonitoredICMP == false)
+            {
+                ip.IsMonitoredICMP = true;
+
+                if (list.Where(x => x.PortState != null).Select(x => x.PortState).Count() > 0 && ip.IsMonitoredTCP == false)
+                {
+                    ip.IsMonitoredTCP = true;
+                }
+            }
+            else if (list.Count == 0)
+            {
+                list.Add(
+                    new MonitorState { 
+                        SubmitTime = DateTime.Now, 
+                        IP_ID = ip.ID, 
+                        IP = ip, 
+                        ID = 1,
+                        PingState = new PingState { 
+                            ID = 1, 
+                            MonitorID = 1, 
+                            Response = true} 
+                    });
+            }
+
+            ip.MonitorStateList = list;
+            return list;
+        }
     }
 }

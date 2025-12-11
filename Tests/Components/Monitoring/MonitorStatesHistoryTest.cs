@@ -23,7 +23,7 @@ public class MonitorStatesHistoryTest : TestContext
 
         foreach (var ip in ips)
         {
-            var stateList = CreateRandomListOfMonitorStates(ip);
+            var stateList = MonitorState.CreateRandomListOfMonitorStates(ip);
             ip.MonitorStateList = stateList;
             states.AddRange(stateList);
         };
@@ -34,90 +34,6 @@ public class MonitorStatesHistoryTest : TestContext
         );
 
         return (cut, monitoringApi);
-    }
-
-    public List<MonitorState> CreateRandomListOfMonitorStates(IP ip)
-    {
-        int count = new Random().Next(0, 20);
-        var list = new List<MonitorState>();
-
-        for (int i = 0; i < count; i++)
-        {
-            var random = new Random().Next(0, 100);
-
-            var monitorState = new MonitorState
-            {
-                ID = i,
-                IP_ID = ip.ID,
-                SubmitTime = DateTime.Now.AddMinutes(-i * 5),
-                PortState = new List<PortState>(),
-                IP = ip
-            };
-
-            if (random >= 0 && random < 50)
-            {
-                monitorState.PingState = new PingState
-                {
-                    ID = i,
-                    MonitorID = i,
-                    MonitorState = monitorState,
-                    Response = true
-                };
-
-                if (random >= 0 && random < 25)
-                {
-                    monitorState.PortState.Add(new PortState
-                    {
-                        ID = i,
-                        MonitorID = i,
-                        Port = 80,
-                        Status = true,
-                        MonitorState = monitorState
-                    });
-                    monitorState.PortState.Add(new PortState
-                    {
-                        ID = i + 1,
-                        MonitorID = i,
-                        Port = 443,
-                        Status = true,
-                        MonitorState = monitorState
-                    });
-                }
-                else if (random >= 25 && random < 50)
-                {
-                    monitorState.PortState.Add(new PortState
-                    {
-                        ID = i,
-                        MonitorID = i,
-                        Port = 80,
-                        Status = false,
-                        MonitorState = monitorState
-                    });
-                    monitorState.PortState.Add(new PortState
-                    {
-                        ID = i + 1,
-                        MonitorID = i,
-                        Port = 443,
-                        Status = false,
-                        MonitorState = monitorState
-                    });
-                }
-            }
-            else if (random > 50 && random <= 100)
-            {
-                monitorState.PingState = new PingState
-                {
-                    ID = i,
-                    MonitorID = i,
-                    Response = false
-                };
-            }
-
-            list.Add(monitorState);
-        }
-
-        ip.MonitorStateList = list;
-        return list;
     }
 
     [Fact]

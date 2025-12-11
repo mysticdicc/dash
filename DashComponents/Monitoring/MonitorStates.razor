@@ -31,7 +31,7 @@
                                 <td>
                                     @if (null != poll.IP)
                                     {
-                                        <button @onclick="@(() => OnClickEditIP(poll.IP))" @onclick:stopPropagation="true">
+                                        <button id="editbutton" @onclick="@(() => OnClickEditIP(poll.IP))" @onclick:stopPropagation="true">
                                             <span title="Edit IP Address" class="material-icons">edit</span>
                                         </button>
                                     }
@@ -68,7 +68,7 @@
                                 <td>
                                     @if (null != poll.IP)
                                     {
-                                        <button @onclick="@(() => OnClickHistory(poll.IP))" @onclick:stopPropagation="true">
+                                        <button id="history" @onclick="@(() => OnClickHistory(poll.IP))" @onclick:stopPropagation="true">
                                             <span title="View monitor history" class="material-icons">history</span>
                                         </button>
                                     }
@@ -92,7 +92,7 @@
     [Parameter] public required EventCallback<bool> VisibleChanged { get; set; }
     [Parameter] public required EventCallback<string> ExpandChanged { get; set; }
 
-    private bool _expanded = false;
+    public bool _expanded = false;
     public List<MonitorState> _lastPolls = [];
 
     protected override Task OnParametersSetAsync()
