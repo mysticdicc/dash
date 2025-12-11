@@ -36,6 +36,10 @@
 	  <ProjectReference Include="..\DashLib\DashLib.csproj" />
 	</ItemGroup>
 
+	<ItemGroup>
+	  <Folder Include="Methods\" />
+	</ItemGroup>
+
 
 
 </Project>
