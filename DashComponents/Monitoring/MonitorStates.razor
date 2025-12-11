@@ -21,7 +21,7 @@
                         </tr>
                         @foreach (var poll in _lastPolls)
                         {
-                            <tr onclick="@(() => OnClickView(poll.IP))">
+                            <tr id="ip" onclick="@(() => OnClickView(poll.IP))">
                                 <td>
                                     @if (null != poll.IP)
                                     {
@@ -84,7 +84,7 @@
 }
 
 @code {
-    [Parameter] public required List<IP>? IPAddresses { get; set; }
+    [Parameter] public required List<IP> IPAddresses { get; set; }
     [Parameter] public required EventCallback<IP> ViewClicked { get; set; }
     [Parameter] public required EventCallback<IP> EditClicked { get; set; }
     [Parameter] public required EventCallback<IP> HistoryClicked { get; set; }
@@ -93,13 +93,17 @@
     [Parameter] public required EventCallback<string> ExpandChanged { get; set; }
 
     private bool _expanded = false;
-    private List<MonitorState> _lastPolls = [];
+    public List<MonitorState> _lastPolls = [];
 
     protected override Task OnParametersSetAsync()
     {
         if (null != IPAddresses)
         {
             _lastPolls = MonitorState.GetLastDevicePollsFromIps(IPAddresses);
+        }
+        else
+        {
+            _lastPolls = [];
         }
 
         return base.OnParametersSetAsync();

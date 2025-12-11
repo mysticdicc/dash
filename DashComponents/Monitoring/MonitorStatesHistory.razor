@@ -30,7 +30,7 @@
                     {
                         @if (null != state.PingState)
                         {
-                            <tr>
+                            <tr id="pingstate">
                                 <td>
                                     @state.SubmitTime
                                 </td>
@@ -53,7 +53,7 @@
                         {
                             @foreach (var pState in state.PortState)
                             {
-                                <tr>
+                                <tr id="portstate">
                                     <td>
                                         @state.SubmitTime
                                     </td>

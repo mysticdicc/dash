@@ -6,6 +6,7 @@ using DashLib.Network;
 using Moq;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Xunit;
 
 public class MonitorStatesHistoryTest : TestContext
@@ -22,7 +23,7 @@ public class MonitorStatesHistoryTest : TestContext
 
         foreach (var ip in ips)
         {
-            var stateList = CreateRandomListOfMonitorStates();
+            var stateList = CreateRandomListOfMonitorStates(ip);
             ip.MonitorStateList = stateList;
             states.AddRange(stateList);
         };
@@ -35,7 +36,7 @@ public class MonitorStatesHistoryTest : TestContext
         return (cut, monitoringApi);
     }
 
-    public List<MonitorState> CreateRandomListOfMonitorStates()
+    public List<MonitorState> CreateRandomListOfMonitorStates(IP ip)
     {
         int count = new Random().Next(0, 20);
         var list = new List<MonitorState>();
@@ -47,9 +48,10 @@ public class MonitorStatesHistoryTest : TestContext
             var monitorState = new MonitorState
             {
                 ID = i,
-                IP_ID = i,
+                IP_ID = ip.ID,
                 SubmitTime = DateTime.Now.AddMinutes(-i * 5),
-                PortState = new List<PortState>()
+                PortState = new List<PortState>(),
+                IP = ip
             };
 
             if (random >= 0 && random < 50)
@@ -58,6 +60,7 @@ public class MonitorStatesHistoryTest : TestContext
                 {
                     ID = i,
                     MonitorID = i,
+                    MonitorState = monitorState,
                     Response = true
                 };
 
@@ -68,14 +71,16 @@ public class MonitorStatesHistoryTest : TestContext
                         ID = i,
                         MonitorID = i,
                         Port = 80,
-                        Status = true
+                        Status = true,
+                        MonitorState = monitorState
                     });
                     monitorState.PortState.Add(new PortState
                     {
                         ID = i + 1,
                         MonitorID = i,
                         Port = 443,
-                        Status = true
+                        Status = true,
+                        MonitorState = monitorState
                     });
                 }
                 else if (random >= 25 && random < 50)
@@ -85,14 +90,16 @@ public class MonitorStatesHistoryTest : TestContext
                         ID = i,
                         MonitorID = i,
                         Port = 80,
-                        Status = false
+                        Status = false,
+                        MonitorState = monitorState
                     });
                     monitorState.PortState.Add(new PortState
                     {
                         ID = i + 1,
                         MonitorID = i,
                         Port = 443,
-                        Status = false
+                        Status = false,
+                        MonitorState = monitorState
                     });
                 }
             }
@@ -109,6 +116,7 @@ public class MonitorStatesHistoryTest : TestContext
             list.Add(monitorState);
         }
 
+        ip.MonitorStateList = list;
         return list;
     }
 
@@ -125,5 +133,20 @@ public class MonitorStatesHistoryTest : TestContext
     {
         var (cut, api) = CreateStandardComponent(Services, false);
         Assert.DoesNotContain("monitor_history", cut.Markup);
+    }
+
+    [Fact]
+    public void RendersCorrectNumberOfMonitorStates()
+    {
+        var (cut, api) = CreateStandardComponent(Services, true);
+
+        var pings = cut.FindAll("tr#pingstate").Count;
+        var expectedPings = cut.Instance.MonitorStates.Where(x => null != x.PingState).Count();
+
+        var ports = cut.FindAll("tr#portstate").Count;
+        var expectedPorts = cut.Instance.MonitorStates.Sum(x => x.PortState?.Count ?? 0);
+
+        Assert.Equal(ports, expectedPorts);
+        Assert.Equal(pings, expectedPings);
     }
 }
