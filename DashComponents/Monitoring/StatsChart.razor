@@ -4,39 +4,39 @@
         <header>
             @if (!_onlineHidden)
             {
-                <button id="green" @onclick="@OnClickOnlineVisible">
+                <button id="onlinetoggle" class="green" @onclick="@OnClickOnlineVisible">
                     <span title="Toggle Online Devices" class="material-icons">cloud</span>
                 </button>
             }
             else
             {
-                <button id="red" @onclick="@OnClickOnlineVisible">
+                <button id="onlinetoggle" class="red" @onclick="@OnClickOnlineVisible">
                     <span title="Toggle Online Devices" class="material-icons">cloud</span>
                 </button>
             }
 
             @if (!_offlineHidden)
             {
-                <button id="green" @onclick="@OnClickOfflineVisible">
+                <button id="offlinetoggle" class="green" @onclick="@OnClickOfflineVisible">
                     <span title="Toggle Offline Devices" class="material-symbols-outlined">cloud_alert</span>
                 </button>
             }
             else
             {
-                <button id="red" @onclick="@OnClickOfflineVisible">
+                <button id="offlinetoggle" class="red" @onclick="@OnClickOfflineVisible">
                     <span title="Toggle Offline Devices" class="material-symbols-outlined">cloud_alert</span>
                 </button>
             }
 
             @if (!_monitoredHidden)
             {
-                <button id="green" @onclick="@OnClickMonitoredVisible">
+                <button id="monitoredtoggle" class="green" @onclick="@OnClickMonitoredVisible">
                     <span title="Toggle Monitored Devices" class="material-icons">visibility</span>
                 </button>
             }
             else
             {
-                <button id="red" @onclick="@OnClickMonitoredVisible">
+                <button id="monitoredtoggle" class="red" @onclick="@OnClickMonitoredVisible">
                     <span title="Toggle Monitored Devices" class="material-icons">visibility</span>
                 </button>
             }
@@ -100,9 +100,9 @@
 
     public bool _expanded = false;
 
-    private bool _onlineHidden = false;
-    private bool _offlineHidden = false;
-    private bool _monitoredHidden = false;
+    public bool _onlineHidden = false;
+    public bool _offlineHidden = false;
+    public bool _monitoredHidden = false;
     private bool _chartsReady = false;
     private TimeSpan _viewLength = TimeSpan.FromHours(4);
 

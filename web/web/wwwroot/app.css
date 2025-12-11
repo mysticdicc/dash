@@ -116,20 +116,20 @@ button {
     color: white;
 }
 
-button#green {
+button.green {
     color: green;
 }
 
-    button#green:hover {
+    button.green:hover {
     transform: scale(1.02);
     color: limegreen;
 }
 
-button#red {
+button.red {
     color: darkred;
 }
 
-    button#red:hover {
+    button.red:hover {
     transform: scale(1.02);
     color: red;
 }

@@ -3,6 +3,7 @@ using DashComponents.Monitoring;
 using DashLib.Interfaces;
 using DashLib.Monitoring;
 using DashLib.Network;
+using Microsoft.AspNetCore.Components;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -54,5 +55,51 @@ public class StatsChartTest : TestContext
         Assert.False(cut.Instance._expanded);
         cut.Find("button#expand").Click();
         Assert.True(cut.Instance._expanded);
+    }
+
+    [Fact]
+    public void ClickExpanded_CallsEventCallback()
+    {
+        var (cut, api) = CreateStandardComponent(Services, true);
+        bool invoked = false;
+
+        cut.SetParametersAndRender(parameters => parameters.Add(p => p.ExpandChanged, EventCallback.Factory.Create<string>(this, ip =>
+        {
+            invoked = true;
+        })));
+
+        cut.Find("button#expand").Click();
+
+        Assert.True(invoked);
+    }
+
+    [Fact]
+    public void ClickOnline_TogglesOnlineVisible()
+    {
+        var (cut, api) = CreateStandardComponent(Services, true);
+
+        Assert.False(cut.Instance._onlineHidden);
+        cut.Find("button#onlinetoggle").Click();
+        Assert.True(cut.Instance._onlineHidden);
+    }
+
+    [Fact]
+    public void ClickOffline_TogglesOfflineVisible()
+    {
+        var (cut, api) = CreateStandardComponent(Services, true);
+
+        Assert.False(cut.Instance._offlineHidden);
+        cut.Find("button#offlinetoggle").Click();
+        Assert.True(cut.Instance._offlineHidden);
+    }
+
+    [Fact]
+    public void ClickMonitored_TogglesMonitoredVisible()
+    {
+        var (cut, api) = CreateStandardComponent(Services, true);
+
+        Assert.False(cut.Instance._monitoredHidden);
+        cut.Find("button#monitoredtoggle").Click();
+        Assert.True(cut.Instance._monitoredHidden);
     }
 }

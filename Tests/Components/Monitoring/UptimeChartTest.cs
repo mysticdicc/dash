@@ -9,6 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Xunit;
+using Microsoft.AspNetCore.Components;
 
 public class UptimeChartTest : TestContext
 {
@@ -56,5 +57,22 @@ public class UptimeChartTest : TestContext
         Assert.False(cut.Instance._expanded);
         cut.Find("button#expand").Click();
         Assert.True(cut.Instance._expanded);
+    }
+
+    [Fact]
+    public void ClickExpanded_CallsEventCallback()
+    {
+        var (cut, api) = CreateStandardComponent(Services, true);
+        bool callbackInvoked = false;
+
+        cut.SetParametersAndRender(parameters => parameters
+            .Add(p => p.ExpandChanged, EventCallback.Factory.Create<string>(this, (expanded) =>
+            {
+                callbackInvoked = true;
+            }))
+        );
+
+        cut.Find("button#expand").Click();
+        Assert.True(callbackInvoked);
     }
 }

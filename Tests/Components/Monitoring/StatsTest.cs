@@ -7,6 +7,7 @@ using Moq;
 using System;
 using System.Collections.Generic;
 using Xunit;
+using Microsoft.AspNetCore.Components;
 
 public class StatsTest : TestContext
 {
@@ -55,5 +56,21 @@ public class StatsTest : TestContext
         var (cut, api) = CreateStandardComponent(Services, false);
 
         Assert.DoesNotContain("stats_card", cut.Markup);
+    }
+
+    [Fact]
+    public void ClickExpanded_CallsEventCallback()
+    {
+        var (cut, api) = CreateStandardComponent(Services, true);
+        bool invoked = false;
+
+        cut.SetParametersAndRender(parameters => parameters.Add(p => p.ExpandChanged, EventCallback.Factory.Create<string>(this, ip =>
+        {
+            invoked = true;
+        })));
+
+        cut.Find("button#expand").Click();
+
+        Assert.True(invoked);
     }
 }
