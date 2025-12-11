@@ -96,4 +96,14 @@ public class DashboardFolderViewTest : TestContext
         cut.Find("button#cancelbutton").Click();
         Assert.DoesNotContain(test, cut.Markup);
     }
+
+    [Fact]
+    public void ClickChildCard_InvokesJsRuntime()
+    {
+        var (cut, api, js) = CreateFolderComponent(this.Services);
+        var item = cut.Instance.Item as DirectoryItem;
+        var child = item.Children[0] as ShortcutItem;
+        cut.FindAll("div#dashcard")[0].Click();
+        js.Verify(j => j.InvokeAsync<object?>("open", It.Is<object?[]>(o => o[0]!.ToString() == child.Url)), Times.Once);
+    }
 }

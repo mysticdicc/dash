@@ -8,7 +8,7 @@
             {
                 <div>
                     <img src="@_dashboardItem.Icon"/>
-                    <button onclick="@OnClickDeleteIcon">
+                    <button id="deleteiconbutton" onclick="@OnClickDeleteIcon">
                         <span class="material-icons">delete</span>
                     </button>
                 </div>
@@ -71,16 +71,16 @@
                     </table>
                 </content>
                 <footer>
-                    <button onclick="@OnClickSaveItem">
+                    <button id="savebutton" onclick="@OnClickSaveItem">
                         <span class="material-icons">save</span>
                     </button>
                     @if (!IsNewItem)
                     {
-                        <button onclick="@OnClickDeleteItem">
+                        <button id="deleteitembutton" onclick="@OnClickDeleteItem">
                             <span class="material-icons">delete</span>
                         </button>
                     }
-                    <button onclick="@OnClickCancel">
+                    <button id="cancelbutton" onclick="@OnClickCancel">
                         <span class="material-icons">cancel</span>
                     </button>
                 </footer>
@@ -224,7 +224,7 @@
         {
             await DashboardService.EditItemAsync(_dashboardItem);
         }
-        
+
 
         await EditorClosed.InvokeAsync(true);
         await HiddenChanged.InvokeAsync(true);
@@ -234,5 +234,6 @@
     {
         await EditorClosed.InvokeAsync(false);
         await HiddenChanged.InvokeAsync(true);
+        Hidden = true;
     }
 }
