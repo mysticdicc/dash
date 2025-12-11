@@ -5,7 +5,7 @@
             <header>
                 @if (null != MonitorStates.First().IP)
                 {
-                    <button onclick="@(() => OnClickView(MonitorStates.First().IP))">
+                    <button id="viewbutton" onclick="@(() => OnClickView(MonitorStates.First().IP))">
                         <span title="View parent IP address" class="material-icons">search</span>
                     </button>
                 }
