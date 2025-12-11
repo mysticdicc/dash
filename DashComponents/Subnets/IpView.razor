@@ -5,10 +5,10 @@
     <div class="faded_background">
         <div class="popup_back" id="ip_view">
             <header>
-                <button onclick="@OnClickEdit">
+                <button id="editbutton" onclick="@OnClickEdit">
                     <span class="material-icons">edit</span>
                 </button>
-                <button onclick="@OnClickCancel">
+                <button id="closebutton" onclick="@OnClickCancel">
                     <span class="material-icons">cancel</span>
                 </button>
             </header>
@@ -66,11 +66,13 @@
     private async void OnClickCancel()
     {
         await IpViewVisibleChanged.InvokeAsync(false);
+        IpViewVisible = false;
     }
 
     private async void OnClickEdit()
     {
-        await IpViewVisibleChanged.InvokeAsync(true);
+        await IpViewVisibleChanged.InvokeAsync(false);
+        IpViewVisible = false;
         await EditClicked.InvokeAsync(IpAddress);
     }
 }

@@ -35,4 +35,22 @@ public class IpViewTest : TestContext
         Assert.Contains("ip_view", cut.Item1.Markup);
         Assert.Contains("iphost", cut.Item1.Markup);
     }
+
+    [Fact]
+    public void ClickClose_HidesIpView()
+    {
+        var (cut, _) = CreateStandardComponent(this.Services);
+        Assert.Contains("ip_view", cut.Markup);
+        cut.Find("button#closebutton").Click();
+        Assert.DoesNotContain("ip_view", cut.Markup);
+    }
+
+    [Fact]
+    public void ClickEdit_HidesIpView()
+    {
+        var (cut, _) = CreateStandardComponent(this.Services);
+        Assert.Contains("ip_view", cut.Markup);
+        cut.Find("button#editbutton").Click();
+        Assert.DoesNotContain("ip_view", cut.Markup);
+    }
 }
