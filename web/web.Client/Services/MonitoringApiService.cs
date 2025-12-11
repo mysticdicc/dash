@@ -1,7 +1,7 @@
-﻿using danklibrary.DankAPI;
-using danklibrary.Interfaces;
-using danklibrary.Monitoring;
-using danklibrary.Network;
+﻿using DashLib.DankAPI;
+using DashLib.Interfaces;
+using DashLib.Monitoring;
+using DashLib.Network;
 
 namespace web.Client.Services
 {

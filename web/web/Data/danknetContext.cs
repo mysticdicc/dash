@@ -3,10 +3,10 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
-using danklibrary;
-using danklibrary.Dashboard;
-using danklibrary.Network;
-using danklibrary.Monitoring;
+using DashLib;
+using DashLib.Dashboard;
+using DashLib.Network;
+using DashLib.Monitoring;
 
 namespace dankweb.API;
 public partial class danknetContext : DbContext

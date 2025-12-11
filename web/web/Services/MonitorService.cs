@@ -1,7 +1,7 @@
-using danklibrary.DankAPI;
-using danklibrary.Monitoring;
-using danklibrary.Network;
-using danklibrary.Settings;
+using DashLib.DankAPI;
+using DashLib.Monitoring;
+using DashLib.Network;
+using DashLib.Settings;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;

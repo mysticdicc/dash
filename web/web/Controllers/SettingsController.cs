@@ -1,4 +1,4 @@
-﻿using danklibrary.Settings;
+﻿using DashLib.Settings;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using System.Text.Json;

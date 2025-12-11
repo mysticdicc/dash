@@ -4,11 +4,11 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using web.Services;
-using danklibrary.Monitoring;
-using danklibrary.Network;
+using DashLib.Monitoring;
+using DashLib.Network;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using danklibrary.Settings;
+using DashLib.Settings;
 
 namespace web.Controllers
 {

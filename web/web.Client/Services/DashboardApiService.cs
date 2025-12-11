@@ -1,6 +1,6 @@
-using danklibrary.DankAPI;
-using danklibrary.Dashboard;
-using danklibrary.Interfaces;
+using DashLib.DankAPI;
+using DashLib.Dashboard;
+using DashLib.Interfaces;
 using System.Collections.Generic;
 
 namespace web.Client.Services

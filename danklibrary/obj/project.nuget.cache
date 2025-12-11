@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "EI8CThsFGmQ=",
+  "dgSpecHash": "f8eIjsX9oEA=",
   "success": true,
-  "projectFilePath": "C:\\Users\\richard.local\\source\\repos\\Homelab-Dashboard\\danklibrary\\danklibrary.csproj",
+  "projectFilePath": "C:\\Users\\richard.local\\source\\repos\\Homelab-Dashboard\\danklibrary\\DashLib.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\richard.local\\.nuget\\packages\\ipaddressrange\\6.1.0\\ipaddressrange.6.1.0.nupkg.sha512"
   ],

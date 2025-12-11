@@ -8,7 +8,7 @@ FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
 COPY ["web/web/web.csproj", "web/web/"]
-COPY ["danklibrary/danklibrary.csproj", "danklibrary/"]
+COPY ["DashLib/DashLib.csproj", "DashLib/"]
 COPY ["web/web.Client/web.Client.csproj", "web/web.Client/"]
 RUN dotnet restore "./web/web/web.csproj"
 COPY . .

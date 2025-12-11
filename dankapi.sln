@@ -3,17 +3,17 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 18
 VisualStudioVersion = 18.0.11222.15
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "danklibrary", "danklibrary\danklibrary.csproj", "{9B0EAF49-83A1-4221-8821-1F825C783E60}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "web", "web\web\web.csproj", "{5837E450-4E46-4DE5-ACB5-C17F6E07331E}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "web.Client", "web\web.Client\web.Client.csproj", "{1D88282A-7A52-4206-AFD6-4316DFB45C16}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "gitimages", "gitimages", "{FDD21176-6E9B-41E0-B5DE-EA7922C53FBD}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "dash.Tests", "dash.Tests\dash.Tests.csproj", "{6761EA21-927F-4BBB-A0CD-36ABE841CABE}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DashComponents", "DashComponents\DashComponents.csproj", "{26D7AA4C-B733-B5ED-F64A-A930CDAF871D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "dash.Components", "dash.Components\dash.Components.csproj", "{C1BF540D-3464-4C3D-8B56-C514B2AFFB14}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DashLib", "DashLib\DashLib.csproj", "{D30C194D-70CF-B169-0B24-8EFF55A823FE}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests", "Tests\Tests.csproj", "{9CF47860-2CEA-F379-09D8-9AEF27965D12}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -23,14 +23,6 @@ Global
 		Release|x64 = Release|x64
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{9B0EAF49-83A1-4221-8821-1F825C783E60}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{9B0EAF49-83A1-4221-8821-1F825C783E60}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{9B0EAF49-83A1-4221-8821-1F825C783E60}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{9B0EAF49-83A1-4221-8821-1F825C783E60}.Debug|x64.Build.0 = Debug|Any CPU
-		{9B0EAF49-83A1-4221-8821-1F825C783E60}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{9B0EAF49-83A1-4221-8821-1F825C783E60}.Release|Any CPU.Build.0 = Release|Any CPU
-		{9B0EAF49-83A1-4221-8821-1F825C783E60}.Release|x64.ActiveCfg = Release|Any CPU
-		{9B0EAF49-83A1-4221-8821-1F825C783E60}.Release|x64.Build.0 = Release|Any CPU
 		{5837E450-4E46-4DE5-ACB5-C17F6E07331E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{5837E450-4E46-4DE5-ACB5-C17F6E07331E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5837E450-4E46-4DE5-ACB5-C17F6E07331E}.Debug|x64.ActiveCfg = Debug|Any CPU
@@ -47,22 +39,30 @@ Global
 		{1D88282A-7A52-4206-AFD6-4316DFB45C16}.Release|Any CPU.Build.0 = Release|Any CPU
 		{1D88282A-7A52-4206-AFD6-4316DFB45C16}.Release|x64.ActiveCfg = Release|Any CPU
 		{1D88282A-7A52-4206-AFD6-4316DFB45C16}.Release|x64.Build.0 = Release|Any CPU
-		{6761EA21-927F-4BBB-A0CD-36ABE841CABE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{6761EA21-927F-4BBB-A0CD-36ABE841CABE}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{6761EA21-927F-4BBB-A0CD-36ABE841CABE}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{6761EA21-927F-4BBB-A0CD-36ABE841CABE}.Debug|x64.Build.0 = Debug|Any CPU
-		{6761EA21-927F-4BBB-A0CD-36ABE841CABE}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{6761EA21-927F-4BBB-A0CD-36ABE841CABE}.Release|Any CPU.Build.0 = Release|Any CPU
-		{6761EA21-927F-4BBB-A0CD-36ABE841CABE}.Release|x64.ActiveCfg = Release|Any CPU
-		{6761EA21-927F-4BBB-A0CD-36ABE841CABE}.Release|x64.Build.0 = Release|Any CPU
-		{C1BF540D-3464-4C3D-8B56-C514B2AFFB14}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{C1BF540D-3464-4C3D-8B56-C514B2AFFB14}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{C1BF540D-3464-4C3D-8B56-C514B2AFFB14}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{C1BF540D-3464-4C3D-8B56-C514B2AFFB14}.Debug|x64.Build.0 = Debug|Any CPU
-		{C1BF540D-3464-4C3D-8B56-C514B2AFFB14}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{C1BF540D-3464-4C3D-8B56-C514B2AFFB14}.Release|Any CPU.Build.0 = Release|Any CPU
-		{C1BF540D-3464-4C3D-8B56-C514B2AFFB14}.Release|x64.ActiveCfg = Release|Any CPU
-		{C1BF540D-3464-4C3D-8B56-C514B2AFFB14}.Release|x64.Build.0 = Release|Any CPU
+		{26D7AA4C-B733-B5ED-F64A-A930CDAF871D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{26D7AA4C-B733-B5ED-F64A-A930CDAF871D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{26D7AA4C-B733-B5ED-F64A-A930CDAF871D}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{26D7AA4C-B733-B5ED-F64A-A930CDAF871D}.Debug|x64.Build.0 = Debug|Any CPU
+		{26D7AA4C-B733-B5ED-F64A-A930CDAF871D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{26D7AA4C-B733-B5ED-F64A-A930CDAF871D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{26D7AA4C-B733-B5ED-F64A-A930CDAF871D}.Release|x64.ActiveCfg = Release|Any CPU
+		{26D7AA4C-B733-B5ED-F64A-A930CDAF871D}.Release|x64.Build.0 = Release|Any CPU
+		{D30C194D-70CF-B169-0B24-8EFF55A823FE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D30C194D-70CF-B169-0B24-8EFF55A823FE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D30C194D-70CF-B169-0B24-8EFF55A823FE}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{D30C194D-70CF-B169-0B24-8EFF55A823FE}.Debug|x64.Build.0 = Debug|Any CPU
+		{D30C194D-70CF-B169-0B24-8EFF55A823FE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D30C194D-70CF-B169-0B24-8EFF55A823FE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D30C194D-70CF-B169-0B24-8EFF55A823FE}.Release|x64.ActiveCfg = Release|Any CPU
+		{D30C194D-70CF-B169-0B24-8EFF55A823FE}.Release|x64.Build.0 = Release|Any CPU
+		{9CF47860-2CEA-F379-09D8-9AEF27965D12}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9CF47860-2CEA-F379-09D8-9AEF27965D12}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9CF47860-2CEA-F379-09D8-9AEF27965D12}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{9CF47860-2CEA-F379-09D8-9AEF27965D12}.Debug|x64.Build.0 = Debug|Any CPU
+		{9CF47860-2CEA-F379-09D8-9AEF27965D12}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9CF47860-2CEA-F379-09D8-9AEF27965D12}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9CF47860-2CEA-F379-09D8-9AEF27965D12}.Release|x64.ActiveCfg = Release|Any CPU
+		{9CF47860-2CEA-F379-09D8-9AEF27965D12}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

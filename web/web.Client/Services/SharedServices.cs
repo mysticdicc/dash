@@ -1,6 +1,6 @@
-﻿using danklibrary.DankAPI;
+﻿using DashLib.DankAPI;
 using ApexCharts;
-using danklibrary.Interfaces;
+using DashLib.Interfaces;
 
 namespace web.Client.Services
 {

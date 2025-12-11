@@ -1,4 +1,4 @@
-﻿using danklibrary.Dashboard;
+﻿using DashLib.Dashboard;
 using dankweb.API;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;

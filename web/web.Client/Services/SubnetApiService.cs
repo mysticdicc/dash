@@ -1,6 +1,6 @@
-using danklibrary.DankAPI;
-using danklibrary.Interfaces;
-using danklibrary.Network;
+using DashLib.DankAPI;
+using DashLib.Interfaces;
+using DashLib.Network;
 using web.Client.Components;
 
 namespace web.Client.Services

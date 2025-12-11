@@ -1,4 +1,4 @@
-using danklibrary.Monitoring;
+using DashLib.Monitoring;
 using dankweb.API;
 using Microsoft.AspNetCore.Components;
 using Microsoft.EntityFrameworkCore;

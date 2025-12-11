@@ -60,9 +60,9 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\richard.local\\source\\repos\\Homelab-Dashboard\\danklibrary\\danklibrary.csproj",
-      "projectName": "danklibrary",
-      "projectPath": "C:\\Users\\richard.local\\source\\repos\\Homelab-Dashboard\\danklibrary\\danklibrary.csproj",
+      "projectUniqueName": "C:\\Users\\richard.local\\source\\repos\\Homelab-Dashboard\\danklibrary\\DashLib.csproj",
+      "projectName": "DashLib",
+      "projectPath": "C:\\Users\\richard.local\\source\\repos\\Homelab-Dashboard\\danklibrary\\DashLib.csproj",
       "packagesPath": "C:\\Users\\richard.local\\.nuget\\packages\\",
       "outputPath": "C:\\Users\\richard.local\\source\\repos\\Homelab-Dashboard\\danklibrary\\obj\\",
       "projectStyle": "PackageReference",
@@ -125,7 +125,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.100/PortableRuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.101/PortableRuntimeIdentifierGraph.json"
       }
     }
   }

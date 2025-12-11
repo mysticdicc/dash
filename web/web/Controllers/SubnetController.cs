@@ -1,10 +1,10 @@
 ﻿using dankweb.API;
 using Microsoft.AspNetCore.Mvc;
-using danklibrary;
+using DashLib;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
 using web.Services;
-using danklibrary.Network;
+using DashLib.Network;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 

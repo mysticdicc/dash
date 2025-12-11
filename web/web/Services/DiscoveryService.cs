@@ -1,8 +1,8 @@
-﻿using danklibrary;
+﻿using DashLib;
 using System.Net.NetworkInformation;
 using System.Net;
 using System.Net.Sockets;
-using danklibrary.Network;
+using DashLib.Network;
 
 namespace web.Services
 {
