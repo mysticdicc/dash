@@ -328,70 +328,85 @@ textarea {
 }
 
     .dashboard_card_editor > article {
-    flex-grow: 1;
-    display: flex;
-    flex-direction: column;
-    min-height: 0;
-
-    > header {
-        display: flex;
-        flex-direction: row;
-        align-items: center;
-        justify-content: center;
-        padding: 3px;
-        background-color: var(--light-grey);
-        flex-shrink: 0;
-
-        button {
-            margin-left: auto;
-
-            span {
-                font-size: 14px;
-            }
-        }
-    }
-
-    > content {
         flex-grow: 1;
-        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
         min-height: 0;
-        padding: 10px;
 
-        table {
-            width: 100%;
-            gap: 5px;
+        > header {
             display: flex;
-            flex-direction: column;
+            flex-direction: row;
+            align-items: center;
+            justify-content: center;
+            padding: 3px;
+            background-color: var(--light-grey);
+            flex-shrink: 0;
+            color: var(--white);
+        }
 
-            tr {
+        > content {
+            flex-grow: 1;
+            overflow-y: auto;
+            min-height: 0;
+            padding: 10px;
+
+            table {
+                width: 100%;
+                gap: 5px;
                 display: flex;
-                flex-direction: row;
-                justify-content: center;
+                flex-direction: column;
 
-                > span {
-                    margin-left: 5px;
-                    height: 100%;
-                }
+                > tr {
+                    > td {
+                        width: 100%;
+                        display: flex;
+                        flex-direction: row;
+                        justify-content: center;
 
-                > input[type="text"] {
-                    width: 100%;
-                }
+                        > span {
+                            margin-left: 5px;
+                            height: 100%;
+                        }
 
-                > input[type="radio"] {
-                    margin-right: 5px;
+                        > input[type="text"] {
+                            width: 100%;
+                        }
+
+                        > select {
+                            width: 100%;
+                            color: var(--black);
+                        }
+
+                            > select:focus {
+                                background-color: var(--grey);
+                                color: var(--white);
+                            }
+
+                        > textarea {
+                            color: var(--black);
+                        }
+
+                        > textarea:focus {
+                            background-color: var(--grey);
+                            color: var(--white);
+                        }
+
+                        > input[type="radio"] {
+                            margin-right: 5px;
+                        }
+                    }
                 }
             }
         }
-    }
 
-    > footer {
-        display: flex;
-        flex-direction: row;
-        justify-content: center;
-        background-color: var(--light-grey);
-        flex-shrink: 0;
+        > footer {
+            display: flex;
+            flex-direction: row;
+            justify-content: center;
+            background-color: var(--light-grey);
+            flex-shrink: 0;
+        }
     }
-}
 
 .faded_background {
     background-color: rgba(0,0,0,0.5);
@@ -885,21 +900,15 @@ textarea {
         padding: 10px;
         min-height: 3rem;
 
-        > select {
-            max-width: 30%;
-            min-width: 4rem;
-            margin-left: auto!important;
+        > button#expand {
             margin-right: 0;
+            margin-left: auto;
         }
     }
 
     .monitoring_layout > div > article {
         flex: 1;
         display: flex;
-
-        apex_canvas  {
-
-        }
     }
 
     article#monitor_states {
@@ -926,7 +935,7 @@ textarea {
                 }
 
                 > tr:has(td):hover {
-                    background-color: var(--primary-light);
+                    background-color: var(--primary-light) !important;
                 }
 
                 > tr:has(th) {
@@ -959,6 +968,8 @@ textarea {
 div#uptime_chart {
     display: flex;
     flex: 1;
+    justify-content: center;
+    align-content: center;
 
     .apexcharts-canvas {
         margin: auto;
