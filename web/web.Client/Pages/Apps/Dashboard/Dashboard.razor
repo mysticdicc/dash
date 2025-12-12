@@ -23,8 +23,11 @@
 
 <article>
     <header>
-        <button onclick="@(() => OnClickAdd())">
+        <button @onclick="@(() => OnClickAdd())">
             <span class="material-icons">add</span>
+        </button>
+        <button @onclick="@(() => OnInitializedAsync())">
+            <span class="material-icons">refresh</span>
         </button>
     </header>
     <content>

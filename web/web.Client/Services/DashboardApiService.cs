@@ -68,6 +68,19 @@ namespace web.Client.Services
 
         public async Task<bool> SaveItemAsync(DashboardItemBase item)
         {
+            if (item is DirectoryItem directory)
+            {
+                directory.Children = [];
+            }
+            else if (item is ShortcutItem shortcut)
+            {
+                if (shortcut.Parent != null)
+                {
+                    shortcut.ParentId = shortcut.Parent.Id;
+                    shortcut.Parent = null;
+                }
+            }
+
             try
             {
                 await _dashAPI.SaveItemAsync(item);
@@ -79,7 +92,7 @@ namespace web.Client.Services
             }
             catch (Exception ex)
             {
-                _notificationService.ShowAsync("Error Saving Item", 
+                _notificationService.ShowAsync("Error Saving Item",
                     $"Failed to save '{item.DisplayName}'. {ex.Message}");
 
                 return false;
@@ -88,6 +101,15 @@ namespace web.Client.Services
 
         public async Task<bool> DeleteItemAsync(DashboardItemBase item)
         {
+            if (item is DirectoryItem directory)
+            {
+                directory.Children = [];
+            }
+            else if (item is ShortcutItem shortcut)
+            {
+                shortcut.Parent = null;
+            }
+
             try
             {
                 await _dashAPI.DeleteItemAsync(item);
@@ -105,6 +127,19 @@ namespace web.Client.Services
 
         public async Task<bool> EditItemAsync(DashboardItemBase item)
         {
+            if (item is DirectoryItem directory)
+            {
+                directory.Children = [];
+            }
+            else if (item is ShortcutItem shortcut)
+            {
+                if (shortcut.Parent != null)
+                {
+                    shortcut.ParentId = shortcut.Parent.Id;
+                    shortcut.Parent = null;
+                }
+            }
+
             try
             {
                 await _dashAPI.EditItemAsync(item);

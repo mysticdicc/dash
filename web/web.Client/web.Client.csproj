@@ -11,9 +11,9 @@
   <ItemGroup>
     <PackageReference Include="Blazor-ApexCharts" Version="6.0.2" />
     <PackageReference Include="IPAddressRange" Version="6.3.0" />
-    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="10.0.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="10.0.1" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
-    <PackageReference Include="System.Net.Http.Json" Version="10.0.0" />
+    <PackageReference Include="System.Net.Http.Json" Version="10.0.1" />
   </ItemGroup>
 
   <ItemGroup>

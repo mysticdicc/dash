@@ -20,11 +20,11 @@
     <ProjectReference Include="..\web.Client\web.Client.csproj" />
     <PackageReference Include="Blazor-ApexCharts" Version="6.0.2" />
     <PackageReference Include="IPAddressRange" Version="6.3.0" />
-    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="10.0.0" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.0" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="10.0.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="10.0.1" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.1" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="10.0.1" />
     <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.22.1" />
-    <PackageReference Include="System.Net.Http.Json" Version="10.0.0" />
+    <PackageReference Include="System.Net.Http.Json" Version="10.0.1" />
   </ItemGroup>
 
 </Project>

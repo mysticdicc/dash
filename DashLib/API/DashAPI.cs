@@ -73,12 +73,11 @@ namespace DashLib.DankAPI
         {
             if (item is ShortcutItem shortcut)
             {
-                var dto = ShortcutItemDto.FromEntity(shortcut);
                 string endpoint = $"{_shortcutBase}/delete/byobject";
 
                 try
                 {
-                    await RequestHandler.DeleteAsJsonAsync(_httpClient, endpoint, dto);
+                    await RequestHandler.DeleteAsJsonAsync(_httpClient, endpoint, shortcut);
                     return true;
                 }
                 catch
@@ -88,12 +87,11 @@ namespace DashLib.DankAPI
             }
             else if (item is DirectoryItem directory)
             {
-                var dto = DirectoryItemDto.FromEntity(directory);
                 string endpoint = $"{_directoryBase}/delete/byobject";
 
                 try
                 {
-                    await RequestHandler.DeleteAsJsonAsync(_httpClient, endpoint, dto);
+                    await RequestHandler.DeleteAsJsonAsync(_httpClient, endpoint, directory);
                     return true;
                 }
                 catch
@@ -111,12 +109,11 @@ namespace DashLib.DankAPI
         {
             if (item is ShortcutItem shortcutSend)
             {
-                var dto = ShortcutItemDto.FromEntity(shortcutSend);
                 string endpoint = $"{_shortcutBase}/post/new";
 
                 try
                 {
-                    await RequestHandler.PostJsonAsync(_httpClient, endpoint, dto);
+                    await RequestHandler.PostJsonAsync(_httpClient, endpoint, shortcutSend);
                     return true;
                 }
                 catch
@@ -126,12 +123,11 @@ namespace DashLib.DankAPI
             }
             else if (item is DirectoryItem directorySend)
             {
-                var dto = DirectoryItemDto.FromEntity(directorySend);
                 string endpoint = $"{_directoryBase}/post/new";
 
                 try
                 {
-                    await RequestHandler.PostJsonAsync(_httpClient, endpoint, dto);
+                    await RequestHandler.PostJsonAsync(_httpClient, endpoint, directorySend);
                     return true;
                 }
                 catch
@@ -149,12 +145,11 @@ namespace DashLib.DankAPI
         {
             if (item is ShortcutItem shortcut)
             {
-                var dto = ShortcutItemDto.FromEntity(shortcut);
                 string endpoint = $"{_shortcutBase}/put/update";
 
                 try
                 {
-                    await RequestHandler.PutAsJsonAsync(_httpClient, endpoint, dto);
+                    await RequestHandler.PutAsJsonAsync(_httpClient, endpoint, shortcut);
                     return true;
                 }
                 catch
@@ -164,12 +159,11 @@ namespace DashLib.DankAPI
             }
             else if (item is DirectoryItem directory)
             {
-                var dto = DirectoryItemDto.FromEntity(directory);
                 string endpoint = $"{_directoryBase}/put/update";
 
                 try
                 {
-                    await RequestHandler.PutAsJsonAsync(_httpClient, endpoint, dto);
+                    await RequestHandler.PutAsJsonAsync(_httpClient, endpoint, directory);
                     return true;
                 }
                 catch

@@ -52,29 +52,14 @@ namespace web.Controllers
 
         [HttpPost]
         [Route("[controller]/v2/shortcuts/post/new")]
-        public async Task<Results<BadRequest<string>, Created<ShortcutItemDto>>> NewShortcut(ShortcutItemDto dto)
+        public async Task<Results<BadRequest<string>, Created<ShortcutItem>>> NewShortcut(ShortcutItem item)
         {
             using var context = _DbFactory.CreateDbContext();
-            var entity = new ShortcutItem
-            {
-                Id = dto.Id,
-                DisplayName = dto.DisplayName ?? string.Empty,
-                Description = dto.Description,
-                Icon = dto.Icon,
-                Url = dto.Url ?? string.Empty
-            };
-
-            if (dto.ParentId is Guid parentId)
-            {
-                var parent = await context.DirectoryItems.FindAsync(parentId);
-                if (parent != null) entity.Parent = parent;
-            }
-
             try
             {
-                context.ShortcutItems.Add(entity);
+                context.ShortcutItems.Add(item);
                 await context.SaveChangesAsync();
-                return TypedResults.Created(entity.Id.ToString(), dto);
+                return TypedResults.Created(item.Id.ToString(), item);
             }
             catch (Exception ex)
             {
@@ -84,23 +69,15 @@ namespace web.Controllers
 
         [HttpPost]
         [Route("[controller]/v2/directories/post/new")]
-        public async Task<Results<BadRequest<string>, Created<DirectoryItemDto>>> NewDirectory(DirectoryItemDto dto)
+        public async Task<Results<BadRequest<string>, Created<DirectoryItem>>> NewDirectory(DirectoryItem item)
         {
             using var ctx = _DbFactory.CreateDbContext();
-            var entity = new DirectoryItem
-            {
-                Id = dto.Id,
-                DisplayName = dto.DisplayName ?? string.Empty,
-                Description = dto.Description,
-                Icon = dto.Icon,
-                Children = []
-            };
 
             try
             {
-                ctx.DirectoryItems.Add(entity);
+                ctx.DirectoryItems.Add(item);
                 await ctx.SaveChangesAsync();
-                return TypedResults.Created(entity.Id.ToString(), dto);
+                return TypedResults.Created(item.Id.ToString(), item);
             }
             catch (Exception ex)
             {
@@ -110,29 +87,24 @@ namespace web.Controllers
 
         [HttpPut]
         [Route("[controller]/v2/shortcuts/put/update")]
-        public async Task<Results<BadRequest<string>, Ok<ShortcutItemDto>>> UpdateShortcut(ShortcutItemDto dto)
+        public async Task<Results<BadRequest<string>, Ok<ShortcutItem>>> UpdateShortcut(ShortcutItem item)
         {
             using var context = _DbFactory.CreateDbContext();
             var entity = await context.ShortcutItems.Include(x => x.Parent)
-                                                .FirstOrDefaultAsync(x => x.Id == dto.Id);
+                                                .FirstOrDefaultAsync(x => x.Id == item.Id);
             if (entity == null) return TypedResults.BadRequest("Bad ID match");
 
-            dto.ApplyToEntity(entity);
-
-            if (dto.ParentId is Guid parentId)
-            {
-                entity.Parent = await context.DirectoryItems.FindAsync(parentId);
-            }
-            else
-            {
-                entity.Parent = null;
-            }
+            entity.DisplayName = item.DisplayName;
+            entity.Url = item.Url;
+            entity.ParentId = item.ParentId;
+            entity.Icon = item.Icon;
+            entity.Description = item.Description;
 
             try
             {
                 context.ShortcutItems.Update(entity);
                 await context.SaveChangesAsync();
-                return TypedResults.Ok(dto);
+                return TypedResults.Ok(item);
             }
             catch (Exception ex)
             {
@@ -142,19 +114,22 @@ namespace web.Controllers
 
         [HttpPut]
         [Route("[controller]/v2/directories/put/update")]
-        public async Task<Results<BadRequest<string>, Ok<DirectoryItemDto>>> UpdateDirectory(DirectoryItemDto dto)
+        public async Task<Results<BadRequest<string>, Ok<DirectoryItem>>> UpdateDirectory(DirectoryItem item)
         {
             using var context = _DbFactory.CreateDbContext();
-            var entity = await context.DirectoryItems.FirstOrDefaultAsync(x => x.Id == dto.Id);
+            var entity = await context.DirectoryItems.FirstOrDefaultAsync(x => x.Id == item.Id);
             if (entity == null) return TypedResults.BadRequest("Bad ID match");
 
-            dto.ApplyToEntity(entity);
+            entity.DisplayName = item.DisplayName;
+            entity.Children = item.Children;
+            entity.Icon = item.Icon;
+            entity.Description = item.Description;
 
             try
             {
                 context.DirectoryItems.Update(entity);
                 await context.SaveChangesAsync();
-                return TypedResults.Ok(dto);
+                return TypedResults.Ok(item);
             }
             catch (Exception ex)
             {
@@ -164,10 +139,10 @@ namespace web.Controllers
 
         [HttpDelete]
         [Route("[controller]/v2/shortcuts/delete/byobject")]
-        public async Task<Results<BadRequest<string>, Ok<ShortcutItemDto>>> DeleteShortcut(ShortcutItemDto dto)
+        public async Task<Results<BadRequest<string>, Ok<ShortcutItem>>> DeleteShortcut(ShortcutItem item)
         {
             using var context = _DbFactory.CreateDbContext();
-            var delete = await context.ShortcutItems.Include(x => x.Parent).FirstOrDefaultAsync(x => x.Id == dto.Id);
+            var delete = await context.ShortcutItems.Include(x => x.Parent).FirstOrDefaultAsync(x => x.Id == item.Id);
 
             if (delete == null)
             {
@@ -187,7 +162,7 @@ namespace web.Controllers
             {
                 context.ShortcutItems.Remove(delete);
                 await context.SaveChangesAsync();
-                return TypedResults.Ok(dto);
+                return TypedResults.Ok(item);
             }
             catch (Exception ex)
             {
@@ -197,10 +172,10 @@ namespace web.Controllers
 
         [HttpDelete]
         [Route("[controller]/v2/directories/delete/byobject")]
-        public async Task<Results<BadRequest<string>, Ok<DirectoryItemDto>>> DeleteDirectory(DirectoryItemDto dto)
+        public async Task<Results<BadRequest<string>, Ok<DirectoryItem>>> DeleteDirectory(DirectoryItem item)
         {
             using var context = _DbFactory.CreateDbContext();
-            var delete = await context.DirectoryItems.Include(d => d.Children).FirstOrDefaultAsync(x => x.Id == dto.Id);
+            var delete = await context.DirectoryItems.Include(d => d.Children).FirstOrDefaultAsync(x => x.Id == item.Id);
 
             if (delete == null)
             {
@@ -216,7 +191,7 @@ namespace web.Controllers
 
                 context.DirectoryItems.Remove(delete);
                 await context.SaveChangesAsync();
-                return TypedResults.Ok(dto);
+                return TypedResults.Ok(item);
             }
             catch (Exception ex)
             {
