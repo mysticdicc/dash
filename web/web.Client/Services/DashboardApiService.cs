@@ -28,9 +28,22 @@ namespace web.Client.Services
                     {
                         if (shortcut.ParentId != null)
                         {
-                            shortcut.Parent = list
-                                .OfType<DirectoryItem>()
-                                .FirstOrDefault(d => d.Id == shortcut.ParentId);
+                            var parent = list.Where(x => x.Id == shortcut.ParentId).FirstOrDefault();
+
+                            if (null != parent)
+                            {
+                                if (parent is DirectoryItem directory)
+                                {
+                                    shortcut.Parent = directory;
+
+                                    if (null == directory.Children)
+                                    {
+                                        directory.Children = [];
+                                    }
+
+                                    directory.Children.Add(shortcut);
+                                }
+                            }
                         }
                     }
                 }
