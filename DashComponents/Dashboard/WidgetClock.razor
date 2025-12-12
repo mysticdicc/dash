@@ -12,7 +12,7 @@
     private System.Timers.Timer? _timer;
     private string _dateString = string.Empty;
 
-    protected override Task OnParametersSetAsync()
+    protected override Task OnInitializedAsync()
     {
         _timer = new System.Timers.Timer(1000);
         _timer.Elapsed += (sender, e) =>
@@ -23,7 +23,7 @@
         };
         _timer.Start();
 
-        return base.OnParametersSetAsync();
+        return base.OnInitializedAsync();
     }
 
     static string ToOrdinalDate(DateTime dt, CultureInfo? culture = null)

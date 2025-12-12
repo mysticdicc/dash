@@ -23,7 +23,7 @@
     private string _dateString = string.Empty;
     private IP? ipAddress;
 
-    protected override async Task OnParametersSetAsync()
+    protected override async Task OnInitializedAsync()
     {
         _timer = new System.Timers.Timer(30000);
         _timer.Elapsed += TimerElapsed;
@@ -32,7 +32,7 @@
 
         ipAddress = await SubnetService.GetIpByIdAsync(Widget.IP_ID);
 
-        await base.OnParametersSetAsync();
+        await base.OnInitializedAsync();
     }
 
     private async void TimerElapsed(object? source, System.Timers.ElapsedEventArgs? e)
@@ -62,8 +62,9 @@
         if (null != _timer)
         {
             _timer.Elapsed -= TimerElapsed;
-            _timer?.Stop();
-            _timer?.Dispose();
+            _timer.Stop();
+            _timer.Dispose();
+            _timer = null;
         }
     }
 }
