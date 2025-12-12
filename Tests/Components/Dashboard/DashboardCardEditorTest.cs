@@ -81,6 +81,18 @@ public class DashboardCardEditorTest : TestContext
     }
 
     [Fact]
+    public void DoesNotRenderEditor_WhenHidden()
+    {
+        var (cut, api, js) = CreateStandardComponent(this.Services, true);
+
+        cut.SetParametersAndRender(parameters => parameters
+            .Add(p => p.Hidden, true)
+        );
+
+        Assert.DoesNotContain("dashboard_card_editor", cut.Markup);
+    }
+
+    [Fact]
     public void SaveButton_CallsSave()
     {
         var (cut, api, js) = CreateStandardComponent(this.Services, true);

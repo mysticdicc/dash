@@ -906,11 +906,12 @@ textarea {
         display: flex;
         flex-direction: column;
         min-height: 0;
+        padding: 20px;
 
     > div {
         flex: 1;
         overflow-y: auto;
-        margin: 20px;
+        padding: 20px;
         border-radius: 10px;
         background-color: var(--secondary);
     }
@@ -920,16 +921,19 @@ textarea {
             width: 100%;
             text-align: center;
 
-            > tr:has(td):hover {
-                background-color: var(--primary-light);
-            }
+                > tr {
+                    background-color: var(--secondary) !important;
+                }
 
-            > tr:has(th) {
-                position: sticky;
-                top: 0;
-                background-color: var(--secondary);
-                opacity: 100%;
-            }
+                > tr:has(td):hover {
+                    background-color: var(--primary-light);
+                }
+
+                > tr:has(th) {
+                    position: sticky;
+                    top: 0;
+                    opacity: 100%;
+                }
 
             td {
                 > button {

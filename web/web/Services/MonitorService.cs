@@ -120,7 +120,7 @@ namespace web.Services
                                     break;
                             }
 
-                            ip.MonitorStateList = ip.MonitorStateList.Append(currentMonitorState);
+                            ip.MonitorStateList.Add(currentMonitorState);
 
                         }
 

@@ -46,7 +46,7 @@ namespace DashLib.Monitoring
 
                 if (parent != null)
                 {
-                    state.IP = parent;
+                    state.IP = IP.Clone(parent);
                 }
             }
 
@@ -70,7 +70,7 @@ namespace DashLib.Monitoring
 
                 if (parent != null)
                 {
-                    state.IP = parent;
+                    state.IP = IP.Clone(parent);
                 }
             }
 
@@ -186,6 +186,62 @@ namespace DashLib.Monitoring
 
             ip.MonitorStateList = list;
             return list;
+        }
+
+        static public List<IP> GetMonitorStatesFromTimespan(List<IP> ips, TimeSpan timespan)
+        {
+            var ipList = new List<IP>();
+            var oldDate = DateTime.Now - timespan;
+
+            var states = GetAllDevicePollsFromIps(ips);
+            var validStates = states.Where(x => x.SubmitTime.ToUniversalTime() >= oldDate.ToUniversalTime()).ToList();
+
+            foreach (var state in validStates)
+            {
+                var parent = ips.Where(x => x.ID == state.IP_ID).FirstOrDefault();
+
+                if (null != parent)
+                {
+                    var exists = ipList.Where(x => x.ID == parent.ID).ToList();
+                    IP? clone;
+
+                    if (exists.Count == 0)
+                    {
+                        clone = IP.Clone(parent);
+                        ipList.Add(clone);
+
+                        state.IP = clone;
+
+                        if (null == clone.MonitorStateList)
+                        {
+                            clone.MonitorStateList = [];
+                        }
+
+                        if (!clone.MonitorStateList.Contains(state))
+                        {
+                            clone.MonitorStateList.Add(state);
+                        }
+                    }
+                    else if (exists.Count > 0)
+                    {
+                        clone = exists[0];
+
+                        state.IP = clone;
+
+                        if (null == clone.MonitorStateList)
+                        {
+                            clone.MonitorStateList = [];
+                        }
+
+                        if (!clone.MonitorStateList.Contains(state))
+                        {
+                            clone.MonitorStateList.Add(state);
+                        }
+                    }
+                }
+            }
+
+            return ipList;
         }
     }
 }

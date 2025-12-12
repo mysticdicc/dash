@@ -19,14 +19,40 @@
                 }
                 <option value="@string.Empty"></option>
             </select>
+            <select @onchange="OnViewLengthChanged" style="margin-left: 1rem;">
+                <option value="00:10:00" selected="@(_viewLength == TimeSpan.FromMinutes(10))">Last 10 Minutes</option>
+                <option value="04:00:00" selected="@(_viewLength == TimeSpan.FromHours(4))">Last 4 hours</option>
+                <option value="12:00:00" selected="@(_viewLength == TimeSpan.FromHours(12))">Last 12 hours</option>
+                <option value="24:00:00" selected="@(_viewLength == TimeSpan.FromHours(24))">Last 24 hours</option>
+                <option value="72:00:00" selected="@(_viewLength == TimeSpan.FromDays(3))">Last 3 days</option>
+            </select>
         }
     </header>
     <content>
         <div class="monitoring_layout">
-            <StatsChart IPAddresses="@_polls" @bind-Visible="@_statsChartVisible" ExpandChanged="@OnClickExpandMonitoringWindow" />
-            <Stats IPAddresses="@_polls" @bind-Visible="@_statsVisible" ExpandChanged="@OnClickExpandMonitoringWindow" />
-            <UptimeChart IPAddresses="@_polls" @bind-Visible="@_uptimeChartVisible" ExpandChanged="@OnClickExpandMonitoringWindow" />
-            <MonitorStates IPAddresses="@_polls" @bind-Visible="@_monitorStatesVisible" ExpandChanged="@OnClickExpandMonitoringWindow" ViewClicked="@OnIpViewClicked" EditClicked="@OnIpEditClicked" HistoryClicked="@OnMonitorHistoryClicked"/>
+            <StatsChart 
+                @bind-IPAddresses="@_polls" 
+                @bind-Visible="@_statsChartVisible" 
+                @bind-ViewLength="@_viewLength"
+                ExpandChanged="@OnClickExpandMonitoringWindow" />
+            <Stats 
+                @bind-IPAddresses="@_polls" 
+                @bind-Visible="@_statsVisible" 
+                @bind-ViewLength="@_viewLength"
+                ExpandChanged="@OnClickExpandMonitoringWindow" />
+            <UptimeChart 
+                @bind-IPAddresses="@_polls" 
+                @bind-Visible="@_uptimeChartVisible" 
+                @bind-ViewLength="@_viewLength"
+                ExpandChanged="@OnClickExpandMonitoringWindow" />
+            <MonitorStates 
+                @bind-IPAddresses="@_polls" 
+                @bind-Visible="@_monitorStatesVisible" 
+                @bind-ViewLength="@_viewLength"
+                ExpandChanged="@OnClickExpandMonitoringWindow" 
+                ViewClicked="@OnIpViewClicked" 
+                EditClicked="@OnIpEditClicked" 
+                HistoryClicked="@OnMonitorHistoryClicked"/>
         </div>
     </content>
 </article>
@@ -57,6 +83,8 @@
     private bool _uptimeChartVisible = true;
     private bool _monitorStatesVisible = true;
 
+    private TimeSpan _viewLength = TimeSpan.FromHours(24);
+
     private IP? _viewIp;
     private IP? _editIp;
     private IP? _filterIp;
@@ -65,7 +93,7 @@
     protected override async Task OnInitializedAsync()
     {
         Polls = await MonitoringAPI.GetAllPollsAsync();
-        _polls = Polls;
+        _polls = MonitorState.GetMonitorStatesFromTimespan(Polls, _viewLength);
         await base.OnInitializedAsync();
         StateHasChanged();
     }
@@ -108,7 +136,7 @@
 
         if (!string.IsNullOrEmpty(selectedValue))
         {
-            var selectedIp = Polls.Where(x => x.ID.ToString() == selectedValue).FirstOrDefault();
+            var selectedIp = MonitorState.GetMonitorStatesFromTimespan(Polls, _viewLength).Where(x => x.ID.ToString() == selectedValue).FirstOrDefault();
 
             if (selectedIp != null)
             {
@@ -162,6 +190,16 @@
                 _statsVisible = true;
 
                 break;
+        }
+    }
+
+    private async Task OnViewLengthChanged(ChangeEventArgs e)
+    {
+        if (TimeSpan.TryParse(e.Value?.ToString(), out var newSpan))
+        {
+            _polls = MonitorState.GetMonitorStatesFromTimespan(Polls, newSpan);
+            _viewLength = newSpan;
+            StateHasChanged();
         }
     }
 }

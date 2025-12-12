@@ -28,7 +28,7 @@ namespace DashLib.Network
 
         [JsonIgnore]
         public MonitorState? MonitorState { get; set; }
-        public IEnumerable<MonitorState>? MonitorStateList { get; set; }
+        public List<MonitorState>? MonitorStateList { get; set; }
 
         public bool IsMonitoredICMP { get; set; }
         public bool IsMonitoredTCP { get; set; }
@@ -54,6 +54,22 @@ namespace DashLib.Network
         {
             var temp = new IPAddress(ip);
             return temp.ToString();
+        }
+
+        static public IP Clone(IP ip)
+        {
+            var _ip = new IP
+            {
+                Address = ip.Address,
+                ID = ip.ID,
+                IsMonitoredICMP = ip.IsMonitoredICMP,
+                IsMonitoredTCP = ip.IsMonitoredTCP,
+                PortsMonitored = ip.PortsMonitored,
+                Hostname = ip.Hostname,
+                SubnetID = ip.SubnetID
+            };
+
+            return _ip;
         }
     }
 }

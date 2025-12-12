@@ -18,7 +18,7 @@
                                 Poll Time:
                             </td>
                             <td>
-                                @_lastPoll.SubmitTime
+                                @_lastSubmitTime
                             </td>
                         </tr>
                         <tr>
@@ -26,7 +26,7 @@
                                 Monitored:
                             </td>
                             <td>
-                                @_lastPolls.Count
+                                @_lastMonitored
                             </td>
                         </tr>
                         <tr>
@@ -34,7 +34,7 @@
                                 Online:
                             </td>
                             <td>
-                                @_lastPolls.Where(x => x.PingState?.Response == true).Count()
+                                @_lastOnline
                             </td>
                         </tr>
                         <tr>
@@ -42,7 +42,7 @@
                                 Offline:
                             </td>
                             <td>
-                                @_lastPolls.Where(x => x.PingState?.Response == false).Count()
+                                @_lastOffline
                             </td>
                         </tr>
                     </table>
@@ -58,7 +58,7 @@
                                 Polls:
                             </td>
                             <td>
-                                @_allPolls.Count
+                                @_totalPolls
                             </td>
                         </tr>
                         <tr>
@@ -82,10 +82,7 @@
                                 Monitored Devices:
                             </td>
                             <td>
-                                @if (null != IPAddresses)
-                                {
-                                    @IPAddresses.Count()
-                                }
+                                @_monitored
                             </td>
                         </tr>
                     </table>
@@ -99,35 +96,66 @@
 
 @code {
     [Parameter] public required List<IP>? IPAddresses { get; set; }
+    [Parameter] public required EventCallback<List<IP>?> IPAddressesChanged { get; set; }
     [Parameter] public required bool Visible { get; set; }
     [Parameter] public required EventCallback<bool> VisibleChanged { get; set; }
     [Parameter] public required EventCallback<string> ExpandChanged { get; set; }
+    [Parameter] public required TimeSpan ViewLength { get; set; }
+    [Parameter] public required EventCallback<TimeSpan> ViewLengthChanged { get; set; }
 
     MonitorState _lastPoll = new() { SubmitTime = new DateTime() };
     List<MonitorState> _lastPolls = [];
     List<MonitorState> _allPolls = [];
 
-    public bool _expanded = false;
+    private int _monitored;
     private int _failedPolls;
     private int _successPolls;
+    private int _totalPolls;
 
-    protected override Task OnParametersSetAsync()
+    private int _lastMonitored;
+    private int _lastOffline;
+    private int _lastOnline;
+    DateTime _lastSubmitTime;
+
+    public bool _expanded = false;
+
+
+    protected override async Task OnParametersSetAsync()
     {
         if (IPAddresses != null && IPAddresses.Count > 0)
         {
+            _lastPolls = [];
+            _allPolls = [];
+            _successPolls = 0;
+            _failedPolls = 0;
+            _totalPolls = 0;
+            _monitored = 0;
+            _lastMonitored = 0;
+            _lastOffline = 0;
+            _lastOnline = 0;
+            _lastSubmitTime = DateTime.MinValue;
+
             _lastPolls = MonitorState.GetLastDevicePollsFromIps(IPAddresses);
             _allPolls = MonitorState.GetAllDevicePollsFromIps(IPAddresses);
 
             _successPolls = _allPolls.Where(x => x.PingState != null && x.PingState.Response == true).Count();
             _failedPolls = _allPolls.Where(x => x.PingState != null && x.PingState.Response == false).Count();
+            _totalPolls = _allPolls.Count();
+            _monitored = IPAddresses.Count(); // api needs to return where icmpmonitored is no longer true
+
+            _lastMonitored = IPAddresses.Count();
+            _lastOffline = _lastPolls.Where(x => x.PingState != null && x.PingState.Response == true).Count();
+            _lastOnline = _lastPolls.Where(x => x.PingState != null && x.PingState.Response == false).Count();
 
             if (_lastPolls.Count > 0)
             {
                 _lastPoll = _lastPolls.OrderByDescending(x => x.SubmitTime).First();
+                _lastSubmitTime = _lastPoll.SubmitTime;
             }
         }
 
-        return base.OnParametersSetAsync();
+        await base.OnParametersSetAsync();
+        StateHasChanged();
     }
 
     private async Task OnClickExpand()

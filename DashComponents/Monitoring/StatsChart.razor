@@ -40,12 +40,6 @@
                     <span title="Toggle Monitored Devices" class="material-icons">visibility</span>
                 </button>
             }
-            <select @onchange="OnViewLengthChanged" style="margin-left: 1rem;">
-                <option value="04:00:00" selected="@(_viewLength == TimeSpan.FromHours(4))">Last 4 hours</option>
-                <option value="12:00:00" selected="@(_viewLength == TimeSpan.FromHours(12))">Last 12 hours</option>
-                <option value="24:00:00" selected="@(_viewLength == TimeSpan.FromHours(24))">Last 24 hours</option>
-                <option value="72:00:00" selected="@(_viewLength == TimeSpan.FromDays(3))">Last 3 days</option>
-            </select>
             <button id="expand" @onclick="@OnClickExpand">
                 <span class="material-icons">expand</span>
             </button>
@@ -94,9 +88,12 @@
 
 @code {
     [Parameter] public required List<IP>? IPAddresses { get; set; }
+    [Parameter] public required EventCallback<List<IP>?> IPAddressesChanged { get; set; }
     [Parameter] public required bool Visible { get; set; }
     [Parameter] public required EventCallback<bool> VisibleChanged { get; set; }
     [Parameter] public required EventCallback<string> ExpandChanged { get; set; }
+    [Parameter] public required TimeSpan ViewLength { get; set; }
+    [Parameter] public required EventCallback<TimeSpan> ViewLengthChanged { get; set; }
 
     public bool _expanded = false;
 
@@ -104,7 +101,6 @@
     public bool _offlineHidden = false;
     public bool _monitoredHidden = false;
     private bool _chartsReady = false;
-    private TimeSpan _viewLength = TimeSpan.FromHours(4);
 
     private readonly List<string> _lineColors = new() { "#00E396", "#FF4560", "#008FFB" };
 
@@ -130,10 +126,11 @@
             return;
         }
 
-        CreateChartData(IPAddresses, _viewLength);
+        CreateChartData(IPAddresses, ViewLength);
         ChartOptions = GenerateApexChartOptions();
 
         await Task.Delay(500);
+        StateHasChanged();
         _chartsReady = true;
     }
 
@@ -164,8 +161,10 @@
         var minTime = now - viewLength;
 
         ChartData = allChartPoints
-            .Where(point => point.Time >= minTime && point.Time <= now)
+            .Where(point => point.Time.ToUniversalTime() >= minTime)
             .ToList();
+
+        StateHasChanged();
     }
 
     private ApexChartOptions<ChartPoint> GenerateApexChartOptions()
@@ -250,20 +249,6 @@
         await Task.Delay(100);
         _chartsReady = true;
         StateHasChanged();
-    }
-
-    private async Task OnViewLengthChanged(ChangeEventArgs e)
-    {
-        if (TimeSpan.TryParse(e.Value?.ToString(), out var newSpan))
-        {
-            _chartsReady = false;
-            _viewLength = newSpan;
-            CreateChartData(IPAddresses!, _viewLength);
-            StateHasChanged();
-            await Task.Delay(100);
-            _chartsReady = true;
-            StateHasChanged();
-        }
     }
 
     private async Task OnClickExpand()

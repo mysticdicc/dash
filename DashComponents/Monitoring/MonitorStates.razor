@@ -85,12 +85,15 @@
 
 @code {
     [Parameter] public required List<IP> IPAddresses { get; set; }
+    [Parameter] public required EventCallback<List<IP>?> IPAddressesChanged { get; set; }
     [Parameter] public required EventCallback<IP> ViewClicked { get; set; }
     [Parameter] public required EventCallback<IP> EditClicked { get; set; }
     [Parameter] public required EventCallback<IP> HistoryClicked { get; set; }
     [Parameter] public required bool Visible { get; set; }
     [Parameter] public required EventCallback<bool> VisibleChanged { get; set; }
     [Parameter] public required EventCallback<string> ExpandChanged { get; set; }
+    [Parameter] public required TimeSpan ViewLength { get; set; }
+    [Parameter] public required EventCallback<TimeSpan> ViewLengthChanged { get; set; }
 
     public bool _expanded = false;
     public List<MonitorState> _lastPolls = [];
@@ -99,13 +102,14 @@
     {
         if (null != IPAddresses)
         {
-            _lastPolls = MonitorState.GetLastDevicePollsFromIps(IPAddresses);
+            _lastPolls = MonitorState.GetLastDevicePollsFromIps(MonitorState.GetMonitorStatesFromTimespan(IPAddresses, ViewLength));
         }
         else
         {
             _lastPolls = [];
         }
 
+        StateHasChanged();
         return base.OnParametersSetAsync();
     }
 

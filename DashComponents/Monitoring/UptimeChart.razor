@@ -51,9 +51,12 @@
 
 @code {
     [Parameter] public required List<IP>? IPAddresses { get; set; }
+    [Parameter] public required EventCallback<List<IP>?> IPAddressesChanged { get; set; }
     [Parameter] public required bool Visible { get; set; }
     [Parameter] public required EventCallback<bool> VisibleChanged { get; set; }
     [Parameter] public required EventCallback<string> ExpandChanged { get; set; }
+    [Parameter] public required TimeSpan ViewLength { get; set; }
+    [Parameter] public required EventCallback<TimeSpan> ViewLengthChanged { get; set; }
 
     private static List<string> _palette = new() { "#008FFB", "#00E396", "#FEB019", "#FF4560", "#775DD0", "#3F51B5", "#546E7A", "#D4526E", "#8D5B4C", "#F86624" };
 
@@ -187,13 +190,13 @@
         foreach (var group in grouped)
         {
             string timeLabel = group.Key.ToString("dd/MM HH:mm");
-            
+
             OnlineHeatMapPoints.Add(new HeatMapPoint
             {
                 TimeLabel = timeLabel,
                 Count = group.Count(ms => ms.PingState!.Response)
             });
-            
+
             OfflineHeatMapPoints.Add(new HeatMapPoint
             {
                 TimeLabel = timeLabel,
@@ -202,6 +205,7 @@
         }
 
         await Task.Delay(500);
+        StateHasChanged();
         _chartsReady = true;
     }
 
