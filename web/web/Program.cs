@@ -1,5 +1,6 @@
-using DashLib.Monitoring;
 using dankweb.API;
+using DashLib.Monitoring;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Components;
 using Microsoft.EntityFrameworkCore;
 using System.Text.Json;
@@ -21,6 +22,9 @@ builder.Services.AddControllers();
 
 builder.Services.AddDbContextFactory<DashDbContext>(options =>
     options.UseSqlite(builder.Configuration.GetConnectionString("SQLite")));
+
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
 
 builder.Services.AddSingleton<MonitorService>();
 builder.Services.AddHostedService(x => x.GetRequiredService<MonitorService>());
@@ -49,6 +53,10 @@ app.UseCors(x => x
     .SetIsOriginAllowed(origin => true)
     .AllowCredentials()
 );
+
+app.MapSwagger();
+app.UseSwagger();
+app.UseSwaggerUI();
 
 app.UseAntiforgery();
 

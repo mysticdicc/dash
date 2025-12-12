@@ -14,6 +14,8 @@ namespace DashLib.Settings
         public DashboardSettings DashboardSettings { get; set; }
         public MonitoringSettings MonitoringSettings { get; set; }
         public SubnetSettings SubnetSettings { get; set; }
+        public string? SmtpServerAddress { get; set; }
+        public string? SmtpUsername { get; set; }
 
         [JsonIgnore]
         public static readonly JsonSerializerOptions JsonOptions = new()
