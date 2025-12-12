@@ -124,17 +124,6 @@
     {
         if (IPAddresses != null && IPAddresses.Count > 0)
         {
-            _lastPolls = [];
-            _allPolls = [];
-            _successPolls = 0;
-            _failedPolls = 0;
-            _totalPolls = 0;
-            _monitored = 0;
-            _lastMonitored = 0;
-            _lastOffline = 0;
-            _lastOnline = 0;
-            _lastSubmitTime = DateTime.MinValue;
-
             _lastPolls = MonitorState.GetLastDevicePollsFromIps(IPAddresses);
             _allPolls = MonitorState.GetAllDevicePollsFromIps(IPAddresses);
 

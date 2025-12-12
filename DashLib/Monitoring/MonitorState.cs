@@ -40,13 +40,24 @@ namespace DashLib.Monitoring
                 .Select(g => g.OrderByDescending(ms => ms.SubmitTime).First())
                 .ToList();
 
+            List<IP> _parentList = [];
+
             foreach (var state in allStates)
             {
                 var parent = ips.FirstOrDefault(x => x.ID == state.IP_ID);
 
                 if (parent != null)
                 {
-                    state.IP = IP.Clone(parent);
+                    var inList = _parentList.Where(x => x.ID == state.IP_ID).FirstOrDefault();
+
+                    if (inList == null)
+                    {
+                        _parentList.Add(IP.Clone(parent));
+                    }
+                    else
+                    {
+                        state.IP = inList;
+                    }
                 }
             }
 
@@ -64,13 +75,24 @@ namespace DashLib.Monitoring
                 .Where(x => x.PingState != null || x.PortState != null)
                 .ToList();
 
+            List<IP> _parentList = [];
+
             foreach (var state in allStates)
             {
                 var parent = ips.FirstOrDefault(x => x.ID == state.IP_ID);
 
                 if (parent != null)
                 {
-                    state.IP = IP.Clone(parent);
+                    var inList = _parentList.Where(x => x.ID == state.IP_ID).FirstOrDefault();
+
+                    if (inList == null)
+                    {
+                        _parentList.Add(IP.Clone(parent));
+                    }
+                    else
+                    {
+                        state.IP = inList;
+                    }
                 }
             }
 

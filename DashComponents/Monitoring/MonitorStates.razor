@@ -102,7 +102,7 @@
     {
         if (null != IPAddresses)
         {
-            _lastPolls = MonitorState.GetLastDevicePollsFromIps(MonitorState.GetMonitorStatesFromTimespan(IPAddresses, ViewLength));
+            _lastPolls = MonitorState.GetLastDevicePollsFromIps(IPAddresses);
         }
         else
         {
