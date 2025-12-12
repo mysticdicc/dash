@@ -14,11 +14,10 @@ namespace DashLib.Settings
         public DashboardSettings DashboardSettings { get; set; }
         public MonitoringSettings MonitoringSettings { get; set; }
         public SubnetSettings SubnetSettings { get; set; }
-        public string? SmtpServerAddress { get; set; }
-        public string? SmtpUsername { get; set; }
 
-        [JsonIgnore]
-        public static readonly JsonSerializerOptions JsonOptions = new()
+        [JsonIgnore] public static readonly string SettingsPath = Path.Combine(AppContext.BaseDirectory, "settings.json");
+
+        [JsonIgnore] public static readonly JsonSerializerOptions JsonOptions = new()
         {
             ReferenceHandler = ReferenceHandler.IgnoreCycles,
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
@@ -34,7 +33,6 @@ namespace DashLib.Settings
             DashboardSettings = new DashboardSettings();
             MonitoringSettings = new MonitoringSettings(true);
             SubnetSettings = new SubnetSettings();
-
         }
 
         static public void CreateNewSettingsFile(string path)

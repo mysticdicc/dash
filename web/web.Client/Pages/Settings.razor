@@ -1,4 +1,5 @@
 ﻿@inject ISettingsAPI SettingsService
+@inject IMailAPI MailService
 
 @page "/settings/home"
 @using DashLib.Interfaces
@@ -27,6 +28,56 @@
                             </td>
                             <td>
                                 <input type="number" @bind="@_currentSettings.MonitoringSettings.PollingIntervalInSeconds"/>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                SMTP Server Address:
+                            </td>
+                            <td>
+                                <input type="text" @bind="@_currentSettings.MonitoringSettings.SmtpServerAddress"/>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                SMTP Username:
+                            </td>
+                            <td>
+                                <input type="text" @bind="@_currentSettings.MonitoringSettings.SmtpUsername"/>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                SMTP Password:
+                            </td>
+                            <td>
+                                <input type="text" @bind="@_currentSettings.MonitoringSettings.SmtpPassword"/>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                SMTP Port: 
+                            </td>
+                            <td>
+                                <input type="number" @bind="@_currentSettings.MonitoringSettings.SmtpPort"/>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                SMTP Send To:
+                            </td>
+                            <td>
+                                <input type="text" @bind="@_currentSettings.MonitoringSettings.SmtpTargetEmail"/>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                Send Test Email: 
+                            </td>
+                            <td>
+                                <button @onclick="@OnClickSendTestEmail">
+                                    <span class="material-symbols-outlined">send</span>
+                                </button>
                             </td>
                         </tr>
                     </table>
@@ -114,5 +165,10 @@
             _currentSettings = await SettingsService.GetCurrentSettingsAsync();
             StateHasChanged();
         }
+    }
+
+    private async void OnClickSendTestEmail()
+    {
+        await MailService.SendTestEmailAsync();
     }
 }

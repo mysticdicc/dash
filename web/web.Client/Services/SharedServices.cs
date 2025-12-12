@@ -1,6 +1,7 @@
 ﻿using DashLib.DankAPI;
 using ApexCharts;
 using DashLib.Interfaces;
+using DashLib.API;
 
 namespace web.Client.Services
 {
@@ -25,6 +26,9 @@ namespace web.Client.Services
 
             services.AddSingleton<SettingsAPI>();
             services.AddScoped<ISettingsAPI, SettingsApiService>();
+
+            services.AddSingleton<MailAPI>();
+            services.AddScoped<IMailAPI, MailApiService>();
         }
     }
 }

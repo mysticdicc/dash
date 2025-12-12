@@ -15,7 +15,7 @@ namespace web.Controllers
         public SettingsController(MonitorService monitorService)
         {
             _monitorService = monitorService;
-            _settingsLocation = Path.Combine(AppContext.BaseDirectory, "settings.json");
+            _settingsLocation = AllSettings.SettingsPath;
 
             if (!System.IO.File.Exists(_settingsLocation))
             {
