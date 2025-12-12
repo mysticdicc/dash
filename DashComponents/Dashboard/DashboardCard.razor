@@ -1,6 +1,5 @@
 ﻿@inject IJSRuntime JSRuntime
 
-
 <div id="dashcard" class="dashboard_card" onclick="@OnClickCard">
     @if (_dashboardItem is DirectoryItem dirItem)
     {
@@ -44,7 +43,11 @@
             {
                 @if (widget.TypeOfWidget == WidgetItem.WidgetType.Clock)
                 {
-                    <Clock/>
+                    <WidgetClock/>
+                }
+                else if (widget.TypeOfWidget == WidgetItem.WidgetType.DeviceStatus)
+                {
+                    <WidgetDeviceStatus Widget="widget as DeviceStatusWidget" />
                 }
             }
             else

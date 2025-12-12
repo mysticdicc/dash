@@ -64,6 +64,38 @@ namespace DashLib.DankAPI
             }
         }
 
+        public async Task<IP> GetIpByIdAsync(int ID)
+        {
+            string endpoint = $"{_baseEndpoint}/ips/get/byid?ID={ID}";
+            try
+            {
+                var result = await RequestHandler.GetFromJsonAsync<IP>(_httpClient, endpoint);
+                if (result is null)
+                    throw new InvalidOperationException("No IPs found.");
+                return result;
+            }
+            catch
+            {
+                throw;
+            }
+        }
+
+        public async Task<List<IP>> GetAllIpsAsync()
+        {
+            string endpoint = $"{_baseEndpoint}/ips/get/all";
+            try
+            {
+                var result = await RequestHandler.GetFromJsonAsync<List<IP>>(_httpClient, endpoint);
+                if (result is null)
+                    throw new InvalidOperationException("No IPs found.");
+                return result;
+            }
+            catch
+            {
+                throw;
+            }
+        }
+
         public async Task<List<Subnet>> GetAllAsync()
         {
             string endpoint = $"{_baseEndpoint}/get/all";

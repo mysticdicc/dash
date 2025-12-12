@@ -19,7 +19,7 @@ SharedServices.Register(builder.Services, baseAddress);
 
 builder.Services.AddControllers();
 
-builder.Services.AddDbContextFactory<danknetContext>(options =>
+builder.Services.AddDbContextFactory<DashDbContext>(options =>
     options.UseSqlite(builder.Configuration.GetConnectionString("SQLite")));
 
 builder.Services.AddSingleton<MonitorService>();

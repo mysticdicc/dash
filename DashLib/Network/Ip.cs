@@ -8,31 +8,25 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Text.Json.Serialization;
 using DashLib.Monitoring;
+using DashLib.Dashboard;
 
 namespace DashLib.Network
 {
     public class IP
     {
-        [Key]
-        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public int ID { get; set; }
-
+        [Key][DatabaseGenerated(DatabaseGeneratedOption.Identity)] public int ID { get; set; }
         required public byte[] Address { get; set; }
-
         public string? Hostname { get; set; }
-
         public int SubnetID { get; set; }
-
-        [JsonIgnore]
-        public Subnet? Subnet { get; }
-
-        [JsonIgnore]
-        public MonitorState? MonitorState { get; set; }
         public List<MonitorState>? MonitorStateList { get; set; }
-
         public bool IsMonitoredICMP { get; set; }
         public bool IsMonitoredTCP { get; set; }
         public List<int>? PortsMonitored { get; set; }
+
+        //ef mapping
+        public virtual DeviceStatusWidget? DeviceStatusWidget { get; }
+        [JsonIgnore] public virtual Subnet? Subnet { get; }
+        [JsonIgnore] public virtual MonitorState? MonitorState { get; set; }
 
         static public byte[] ConvertToByte(IPAddress ip)
         {

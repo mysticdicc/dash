@@ -1,0 +1,69 @@
+﻿@implements IDisposable
+@inject IMonitoringAPI MonitoringService
+@inject ISubnetsAPI SubnetService
+@using System.Globalization
+
+<div id="statusdashcard">
+    @if (null != ipAddress) {
+        @IP.ConvertToString(ipAddress.Address)
+        <br />
+    }
+    @if (_dateString != string.Empty)
+    {
+        <span>Last Poll: @_dateString</span>
+        <br />
+    }
+    <span>Device Status: @if (currentStatus) { <strong>Online</strong> } else { <strong>Offline</strong> } </span>
+</div>
+
+@code {
+    [Parameter] required public DeviceStatusWidget Widget { get; set; }
+    private System.Timers.Timer? _timer;
+    private bool currentStatus = false;
+    private string _dateString = string.Empty;
+    private IP? ipAddress;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        _timer = new System.Timers.Timer(30000);
+        _timer.Elapsed += TimerElapsed;
+        TimerElapsed(this, null);
+        _timer.Start();
+
+        ipAddress = await SubnetService.GetIpByIdAsync(Widget.IP_ID);
+
+        await base.OnParametersSetAsync();
+    }
+
+    private async void TimerElapsed(object? source, System.Timers.ElapsedEventArgs? e)
+    {
+        var status = await MonitoringService.GetByDeviceByIdAsync(Widget.IP_ID);
+
+        if (null != status && status.Count > 0)
+        {
+            var last = status.Where(x => x.PingState != null).OrderBy(x => x.SubmitTime).LastOrDefault();
+
+            if (last != null)
+            {
+                currentStatus = last.PingState!.Response;
+                _dateString = last.SubmitTime.ToString("HH:mm:ss");
+            }
+        }
+        else
+        {
+            _dateString = "No monitor stats for device";
+        }
+
+        await InvokeAsync(StateHasChanged);
+    }
+
+    public void Dispose()
+    {
+        if (null != _timer)
+        {
+            _timer.Elapsed -= TimerElapsed;
+            _timer?.Stop();
+            _timer?.Dispose();
+        }
+    }
+}

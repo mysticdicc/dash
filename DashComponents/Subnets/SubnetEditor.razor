@@ -112,6 +112,10 @@
             }
             catch { }
         }
+        else
+        {
+            _cidrString = string.Empty;
+        }
 
         await base.OnParametersSetAsync();
     }

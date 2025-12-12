@@ -1118,3 +1118,8 @@ div#clock {
         font-weight: 400;
     }
 }
+
+div#statusdashcard {
+    text-align: center;
+    padding: 20px;
+}

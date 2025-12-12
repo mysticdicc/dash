@@ -11,9 +11,9 @@ using System.Text.Json.Serialization;
 namespace web.Controllers
 {
     [ApiController]
-    public class SubnetsController(IDbContextFactory<danknetContext> dbContext, DiscoveryService discoveryService) : Controller
+    public class SubnetsController(IDbContextFactory<DashDbContext> dbContext, DiscoveryService discoveryService) : Controller
     {
-        private readonly IDbContextFactory<danknetContext> _DbFactory = dbContext;
+        private readonly IDbContextFactory<DashDbContext> _DbFactory = dbContext;
         private readonly DiscoveryService _discoveryService = discoveryService;
 
         private static readonly JsonSerializerOptions JsonOptions = new()
@@ -115,6 +115,29 @@ namespace web.Controllers
             {
                 return TypedResults.BadRequest(ex.Message);
             }
+        }
+
+        [HttpGet]
+        [Route("[controller]/v2/ips/get/all")]
+        public string GetAllIps()
+        {
+            using var context = _DbFactory.CreateDbContext();
+            return JsonSerializer.Serialize(context.IPs.ToList(), JsonOptions);
+        }
+
+        [HttpGet]
+        [Route("[controller]/v2/ips/get/byid")]
+        public async Task<Results<BadRequest<string>, Ok<IP>>> GetIpById(int ID)
+        {
+            using var context = _DbFactory.CreateDbContext();
+            var item = context.IPs.Find(ID);
+
+            if (null == item) 
+            { 
+                return TypedResults.BadRequest("invalid id");
+            }
+
+            return TypedResults.Ok(item);
         }
 
         [HttpGet]
@@ -279,20 +302,17 @@ namespace web.Controllers
         public async Task<Results<BadRequest<string>, Ok<int>>> DeleteIPByObject(IP ip)
         {
             using var context = _DbFactory.CreateDbContext();
-            IP? deleteItem = context.IPs.Include(x => x.Subnet).Where(x => x.ID == ip.ID).FirstOrDefault();
+            IP? deleteItem = context.IPs.Where(x => x.ID == ip.ID).FirstOrDefault();
 
             if (null != deleteItem)
             {
                 try
                 {
-                    if (null != deleteItem.Subnet)
-                    {
-                        var subnet = context.Subnets.Find(deleteItem.Subnet.ID);
+                    var subnet = context.Subnets.Find(deleteItem.SubnetID);
 
-                        if (null != subnet)
-                        {
-                            subnet.List.Remove(ip);
-                        }
+                    if (null != subnet)
+                    {
+                        subnet.List.Remove(ip);
                     }
 
                     context.IPs.Remove(deleteItem);

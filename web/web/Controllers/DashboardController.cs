@@ -10,9 +10,9 @@ using System;
 namespace web.Controllers
 {
     [ApiController]
-    public class DashboardController(IDbContextFactory<danknetContext> dbContext) : Controller
+    public class DashboardController(IDbContextFactory<DashDbContext> dbContext) : Controller
     {
-        private readonly IDbContextFactory<danknetContext> _DbFactory = dbContext;
+        private readonly IDbContextFactory<DashDbContext> _DbFactory = dbContext;
 
         private static readonly JsonSerializerOptions JsonOptions = new()
         {
@@ -22,12 +22,19 @@ namespace web.Controllers
         };
 
         [HttpGet]
-        [Route("[controller]/v2/widgets/get/all")]
+        [Route("[controller]/v2/widgets/status/get/all")]
+        public string GetAllStatusWidgets()
+        {
+            using var context = _DbFactory.CreateDbContext();
+            return JsonSerializer.Serialize(context.DeviceStatusWidgets.ToList(), JsonOptions);
+        }
+
+        [HttpGet]
+        [Route("[controller]/v2/widgets/clocks/get/all")]
         public string GetAllWidgets()
         {
             using var context = _DbFactory.CreateDbContext();
-            List<WidgetItem> items = context.WidgetItems.ToList();
-            return JsonSerializer.Serialize(items, JsonOptions);
+            return JsonSerializer.Serialize(context.ClockWidgets.ToList(), JsonOptions);
         }
 
         [HttpGet]
@@ -77,13 +84,30 @@ namespace web.Controllers
         }
 
         [HttpPost]
-        [Route("[controller]/v2/widgets/post/new")]
-        public async Task<Results<BadRequest<string>, Created<WidgetItem>>> NewWidget(WidgetItem item)
+        [Route("[controller]/v2/widgets/clocks/post/new")]
+        public async Task<Results<BadRequest<string>, Created<ClockWidget>>> NewClockWidget(ClockWidget item)
         {
             using var context = _DbFactory.CreateDbContext();
             try
             {
-                context.WidgetItems.Add(item);
+                context.ClockWidgets.Add(item);
+                await context.SaveChangesAsync();
+                return TypedResults.Created(item.Id.ToString(), item);
+            }
+            catch (Exception ex)
+            {
+                return TypedResults.BadRequest(ex.Message);
+            }
+        }
+
+        [HttpPost]
+        [Route("[controller]/v2/widgets/status/post/new")]
+        public async Task<Results<BadRequest<string>, Created<DeviceStatusWidget>>> NewDeviceStatuskWidget(DeviceStatusWidget item)
+        {
+            using var context = _DbFactory.CreateDbContext();
+            try
+            {
+                context.DeviceStatusWidgets.Add(item);
                 await context.SaveChangesAsync();
                 return TypedResults.Created(item.Id.ToString(), item);
             }
@@ -139,28 +163,6 @@ namespace web.Controllers
         }
 
         [HttpPut]
-        [Route("[controller]/v2/widgets/put/update")]
-        public async Task<Results<BadRequest<string>, Ok<WidgetItem>>> UpdateWidget(WidgetItem item)
-        {
-            using var context = _DbFactory.CreateDbContext();
-            var entity = context.WidgetItems.Find(item.Id);
-            if (entity == null) return TypedResults.BadRequest("Bad ID match");
-
-            entity.TypeOfWidget = item.TypeOfWidget;
-
-            try
-            {
-                context.WidgetItems.Update(entity);
-                await context.SaveChangesAsync();
-                return TypedResults.Ok(item);
-            }
-            catch (Exception ex)
-            {
-                return TypedResults.BadRequest(ex.Message);
-            }
-        }
-
-        [HttpPut]
         [Route("[controller]/v2/directories/put/update")]
         public async Task<Results<BadRequest<string>, Ok<DirectoryItem>>> UpdateDirectory(DirectoryItem item)
         {
@@ -186,11 +188,11 @@ namespace web.Controllers
         }
 
         [HttpDelete]
-        [Route("[controller]/v2/widgets/delete/byobject")]
-        public async Task<Results<BadRequest<string>, Ok<WidgetItem>>> DeleteWidget(WidgetItem item)
+        [Route("[controller]/v2/widgets/clocks/delete/byobject")]
+        public async Task<Results<BadRequest<string>, Ok<ClockWidget>>> DeleteClockWidget(ClockWidget item)
         {
             using var context = _DbFactory.CreateDbContext();
-            var delete = context.WidgetItems.Find(item.Id);
+            var delete = context.ClockWidgets.Find(item.Id);
 
             if (delete == null)
             {
@@ -199,7 +201,31 @@ namespace web.Controllers
 
             try
             {
-                context.WidgetItems.Remove(delete);
+                context.ClockWidgets.Remove(delete);
+                await context.SaveChangesAsync();
+                return TypedResults.Ok(item);
+            }
+            catch (Exception ex)
+            {
+                return TypedResults.BadRequest($"{ex.Message}");
+            }
+        }
+
+        [HttpDelete]
+        [Route("[controller]/v2/widgets/status/delete/byobject")]
+        public async Task<Results<BadRequest<string>, Ok<DeviceStatusWidget>>> DeleteStatusWidget(DeviceStatusWidget item)
+        {
+            using var context = _DbFactory.CreateDbContext();
+            var delete = context.DeviceStatusWidgets.Find(item.Id);
+
+            if (delete == null)
+            {
+                return TypedResults.BadRequest("Unable to track db object");
+            }
+
+            try
+            {
+                context.DeviceStatusWidgets.Remove(delete);
                 await context.SaveChangesAsync();
                 return TypedResults.Ok(item);
             }

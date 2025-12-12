@@ -15,16 +15,11 @@ namespace DashLib.Network
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int ID { get; set; }
-
         public byte[] Address { get; set; }
-
         public byte[] SubnetMask { get; set; }
-
         public byte[] StartAddress { get; set; }
-
         public byte[] EndAddress { get; set; }
-
-        public IList<IP> List { get; set; }
+        public List<IP> List { get; set; }
 
         public Subnet() { }
 

@@ -13,9 +13,9 @@ using DashLib.Settings;
 namespace web.Controllers
 {
     [ApiController]
-    public class MonitoringController(IDbContextFactory<danknetContext> dbContext, MonitorService monitor) : Controller
+    public class MonitoringController(IDbContextFactory<DashDbContext> dbContext, MonitorService monitor) : Controller
     {
-        private readonly IDbContextFactory<danknetContext> _DbFactory = dbContext;
+        private readonly IDbContextFactory<DashDbContext> _DbFactory = dbContext;
         private readonly MonitorService _monitorService = monitor;
 
         private static readonly JsonSerializerOptions JsonOptions = new()

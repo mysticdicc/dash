@@ -27,13 +27,16 @@ namespace DashLib.DankAPI
         public async Task<List<DashboardItemBase>> GetAllItemsAsync()
         {
             List<DashboardItemBase>? items = [];
+
             List<ShortcutItem>? shortcutItems = [];
             List<DirectoryItem>? directoryItems = [];
-            List<WidgetItem>? widgetItems = [];
+            List<ClockWidget>? clockItems = [];
+            List<DeviceStatusWidget>? statusItems = [];
 
             string shortcutEndpoint = $"{_shortcutBase}/get/all";
             string directoryEndpoint = $"{_directoryBase}/get/all";
-            string widgetEndpoint = $"{_widgetBase}/get/all";
+            string clockEndpoint = $"{_widgetBase}/clocks/get/all";
+            string statusEndpoint = $"{_widgetBase}/status/get/all";
 
             try
             {
@@ -65,16 +68,30 @@ namespace DashLib.DankAPI
 
             try
             {
-                widgetItems = await RequestHandler.GetFromJsonAsync<List<WidgetItem>>(_httpClient, widgetEndpoint);
+                clockItems = await RequestHandler.GetFromJsonAsync<List<ClockWidget>>(_httpClient, clockEndpoint);
             }
             catch
             {
                 throw;
             }
 
-            if (widgetItems != null && widgetItems.Count > 0)
+            if (clockItems != null && clockItems.Count > 0)
             {
-                items.AddRange(widgetItems);
+                items.AddRange(clockItems);
+            }
+
+            try
+            {
+                statusItems = await RequestHandler.GetFromJsonAsync<List<DeviceStatusWidget>>(_httpClient, statusEndpoint);
+            }
+            catch
+            {
+                throw;
+            }
+
+            if (statusItems != null && statusItems.Count > 0)
+            {
+                items.AddRange(statusItems);
             }
 
             if (items.Count > 0)
@@ -119,16 +136,40 @@ namespace DashLib.DankAPI
             }
             else if (item is WidgetItem widget)
             {
-                string endpoint = $"{_widgetBase}/delete/byobject";
-                try
+                if (widget.TypeOfWidget == WidgetItem.WidgetType.Clock)
                 {
-                    await RequestHandler.DeleteAsJsonAsync(_httpClient, endpoint, widget);
-                    return true;
+                    string endpoint = $"{_widgetBase}/clocks/delete/byobject";
+
+                    try
+                    {
+                        await RequestHandler.DeleteAsJsonAsync(_httpClient, endpoint, widget);
+                        return true;
+                    }
+                    catch
+                    {
+                        throw;
+                    }
                 }
-                catch
+                else if (widget.TypeOfWidget == WidgetItem.WidgetType.DeviceStatus)
                 {
-                    throw;
+                    string endpoint = $"{_widgetBase}/status/delete/byobject";
+
+                    try
+                    {
+                        await RequestHandler.DeleteAsJsonAsync(_httpClient, endpoint, widget);
+                        return true;
+                    }
+                    catch
+                    {
+                        throw;
+                    }
                 }
+                else
+                {
+                    throw new InvalidCastException("object is not known widget type");
+                }
+
+
             }
             else
             {
@@ -169,15 +210,40 @@ namespace DashLib.DankAPI
             else if (item is WidgetItem widgetSend)
             {
                 string endpoint = $"{_widgetBase}/post/new";
-                try
+
+                if (widgetSend.TypeOfWidget == WidgetItem.WidgetType.Clock)
                 {
-                    await RequestHandler.PostJsonAsync(_httpClient, endpoint, widgetSend);
-                    return true;
+                    endpoint = $"{_widgetBase}/clocks/post/new";
+
+                    try
+                    {
+                        await RequestHandler.PostJsonAsync(_httpClient, endpoint, widgetSend);
+                        return true;
+                    }
+                    catch
+                    {
+                        throw;
+                    }
                 }
-                catch
+                else if (widgetSend.TypeOfWidget == WidgetItem.WidgetType.DeviceStatus)
                 {
-                    throw;
+                    endpoint = $"{_widgetBase}/status/post/new";
+
+                    try
+                    {
+                        await RequestHandler.PostJsonAsync(_httpClient, endpoint, widgetSend);
+                        return true;
+                    }
+                    catch
+                    {
+                        throw;
+                    }
                 }
+                else
+                {
+                    throw new InvalidCastException("object is not known widget type");
+                }
+
             }
             else
             {
@@ -217,16 +283,7 @@ namespace DashLib.DankAPI
             }
             else if (item is WidgetItem widget)
             {
-                string endpoint = $"{_widgetBase}/put/update";
-                try
-                {
-                    await RequestHandler.PutAsJsonAsync(_httpClient, endpoint, widget);
-                    return true;
-                }
-                catch
-                {
-                    throw;
-                }
+                throw new ArgumentException("cannot edit widgets");
             }
             else
             {

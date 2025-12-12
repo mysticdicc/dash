@@ -45,7 +45,6 @@ namespace web.Client.Services
             try
             {
                 var response = await _monitoringApi.GetMonitoredIpsAsync();
-                _notificationService.ShowAsync("Success", "Retrieved all monitored IPs");
                 return response;
             }
             catch(Exception ex)
@@ -61,7 +60,6 @@ namespace web.Client.Services
             try
             {
                 var response = await _monitoringApi.GetByDeviceByIdAsync(ID);
-                _notificationService.ShowAsync("Success", $"Retrieved states for device {ID}");
                 return response;
             }
             catch(Exception ex)

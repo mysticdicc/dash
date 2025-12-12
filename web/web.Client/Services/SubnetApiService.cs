@@ -58,6 +58,32 @@ namespace web.Client.Services
             }
         }
 
+        public async Task<IP> GetIpByIdAsync(int ID)
+        {
+            try
+            {
+                return await _subnetsAPI.GetIpByIdAsync(ID);
+            }
+            catch (Exception ex)
+            {
+                _notificationService.ShowAsync($"Failed to load ip: {ID}", ex.Message);
+                return new IP() { Address = new byte[4] };
+            }
+        }
+
+        public async Task<List<IP>> GetAllIpsAsync()
+        {
+            try
+            {
+                return await _subnetsAPI.GetAllIpsAsync();
+            }
+            catch (Exception ex)
+            {
+                _notificationService.ShowAsync("Failed to load ips", ex.Message);
+                return [];
+            }
+        }
+
         public async Task<List<Subnet>> GetAllAsync()
         {
             try

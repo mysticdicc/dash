@@ -6,15 +6,16 @@ using System.Threading.Tasks;
 
 namespace DashLib.Dashboard
 {
-    public class WidgetItem : DashboardItemBase
+    public abstract class WidgetItem : DashboardItemBase
     {
         public override DashboardItemType Type => DashboardItemType.Widget;
 
         public enum WidgetType
         {
-            Clock
+            Clock,
+            DeviceStatus
         }
 
-        public WidgetType TypeOfWidget { get; set; }
+        public abstract WidgetType TypeOfWidget { get; }
     }
 }

@@ -1,4 +1,5 @@
 ﻿@inject IDashAPI DashboardService
+@inject ISubnetsAPI SubnetsService
 
 @if (!Hidden)
 {
@@ -76,18 +77,28 @@
                         {
                             <tr>
                                 <td>
-                                    @if (_dashboardItem is WidgetItem widget)
-                                    {
-                                        <select @bind="@widget.TypeOfWidget">
-                                            <option value="@WidgetItem.WidgetType.Clock">Clock</option>
-                                        </select>
-                                    }
+                                    <select @bind="@_widgetType" @bind:after="@(() => OnDeviceWidgetChange())">
+                                        @foreach (var value in Enum.GetValues<WidgetItem.WidgetType>())
+                                        {
+                                            <option value="@value">@GetWidgetTypeAsString(value)</option>
+                                        }
+                                    </select>
                                 </td>
                             </tr>
+                            @if (_dashboardItem is DeviceStatusWidget deviceStatusWidget)
+                            {
+                                <tr>
+                                    <td>
+                                        <select @bind="@deviceStatusWidget.IP_ID">
+                                            @foreach (var ip in ips)
+                                            {
+                                                <option value="@ip.ID">@IP.ConvertToString(ip.Address)</option>
+                                            }
+                                        </select>
+                                    </td>
+                                </tr>
+                            }
                         }
-                        <tr>
-
-                        </tr>
                         <tr>
                             @if (_dashboardItem.Type == DashboardItemBase.DashboardItemType.Widget)
                             {
@@ -167,14 +178,15 @@
     private string _selectedDirectory = string.Empty;
 
     [Parameter] public required DashboardItemBase Item { get; set; }
-    private DashboardItemBase _dashboardItem { set; get; }
+    private DashboardItemBase _dashboardItem;
+    private List<IP> ips = [];
 
-    private string _notificationTitle = string.Empty;
-    private string _notificationMessage = string.Empty;
+    private WidgetItem.WidgetType _widgetType = WidgetItem.WidgetType.Clock;
 
-    protected override void OnParametersSet()
+    protected override async Task OnParametersSetAsync()
     {
         _dashboardItem = Item;
+        ips = await SubnetsService.GetAllIpsAsync();
 
         if (Item is ShortcutItem shortcut)
         {
@@ -186,9 +198,17 @@
             {
                 _selectedDirectory = string.Empty;
             }
+
+            _widgetType = WidgetItem.WidgetType.Clock;
+        }
+        else if (Item is WidgetItem widget)
+        {
+            _selectedDirectory = string.Empty;
+            _widgetType = widget.TypeOfWidget;
         }
         else
         {
+            _widgetType = WidgetItem.WidgetType.Clock;
             _selectedDirectory = string.Empty;
         }
     }
@@ -252,13 +272,7 @@
         }
         else if (type == DashboardItemBase.DashboardItemType.Widget)
         {
-            _dashboardItem = new WidgetItem()
-            {
-                Id = _dashboardItem.Id,
-                DisplayName = "Clock",
-                Description = "A 24 hour digital clock",
-                TypeOfWidget = WidgetItem.WidgetType.Clock,
-            };
+            _dashboardItem = new ClockWidget();
         }
     }
 
@@ -315,8 +329,12 @@
 
     private async void OnClickSaveItem()
     {
-        if (IsNewItem)
+        if (IsNewItem || _dashboardItem is WidgetItem)
         {
+            if (Item is WidgetItem)
+            {
+                await DashboardService.DeleteItemAsync(Item);
+            }
             await DashboardService.SaveItemAsync(_dashboardItem);
         }
         else
@@ -334,5 +352,35 @@
         await EditorClosed.InvokeAsync(false);
         await HiddenChanged.InvokeAsync(true);
         Hidden = true;
+    }
+
+    private string GetWidgetTypeAsString(WidgetItem.WidgetType type)
+    {
+        if (type == WidgetItem.WidgetType.Clock)
+        {
+            return "Clock";
+        }
+        else if (type == WidgetItem.WidgetType.DeviceStatus)
+        {
+            return "Device Status";
+        }
+        else
+        {
+            return "Unknown Widget";
+        }
+    }
+
+    private void OnDeviceWidgetChange()
+    {
+        if (_widgetType == WidgetItem.WidgetType.Clock) 
+        {
+            _dashboardItem = new ClockWidget();
+        }
+        else if (_widgetType == WidgetItem.WidgetType.DeviceStatus)
+        {
+            _dashboardItem = new DeviceStatusWidget();
+        }
+
+        StateHasChanged();
     }
 }
