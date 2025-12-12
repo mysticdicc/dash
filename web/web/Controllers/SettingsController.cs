@@ -32,6 +32,13 @@ namespace web.Controllers
         public string GetCurrentSettings()
         {
             var content = AllSettings.GetCurrentSettingsFile(_settingsLocation);
+
+            if (content.MonitoringSettings.SmtpPassword != string.Empty)
+            {
+                var unencrypted = MonitoringSettings.DecryptPassword(content.MonitoringSettings);
+                content.MonitoringSettings = unencrypted;
+            }
+
             return JsonSerializer.Serialize(content, AllSettings.JsonOptions);
         }
 
@@ -47,6 +54,12 @@ namespace web.Controllers
                     settings.SubnetSettings == null)
                 {
                     return TypedResults.BadRequest("One or more child objects is missing from settings.");
+                }
+
+                if (settings.MonitoringSettings.SmtpPassword != string.Empty)
+                {
+                    var encrypted = MonitoringSettings.EncryptPassword(settings.MonitoringSettings);
+                    settings.MonitoringSettings = encrypted;
                 }
 
                 AllSettings.UpdateExistingSettingsFile(_settingsLocation, settings);

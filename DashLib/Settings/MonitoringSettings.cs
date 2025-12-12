@@ -30,5 +30,23 @@ namespace DashLib.Settings
             SmtpTargetEmail = string.Empty;
             SmtpAuthenticationIsRequired = false;
         }
+
+        static public MonitoringSettings EncryptPassword(MonitoringSettings settings)
+        {
+            if (null != settings.SmtpPassword && settings.SmtpPassword != string.Empty)
+            {
+                settings.SmtpPassword = Convert.ToBase64String(Encoding.UTF8.GetBytes(settings.SmtpPassword));
+            }
+            return settings;
+        }
+
+        static public MonitoringSettings DecryptPassword(MonitoringSettings settings)
+        {
+            if (null != settings.SmtpPassword && settings.SmtpPassword != string.Empty)
+            {
+                settings.SmtpPassword = Encoding.UTF8.GetString(Convert.FromBase64String(settings.SmtpPassword));
+            }
+            return settings;
+        }
     }
 }

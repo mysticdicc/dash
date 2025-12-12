@@ -16,6 +16,11 @@ namespace web.Controllers
         {
             var settings = AllSettings.GetCurrentSettingsFile(AllSettings.SettingsPath);
 
+            if (settings.MonitoringSettings.SmtpPassword != string.Empty)
+            {
+                settings.MonitoringSettings = MonitoringSettings.DecryptPassword(settings.MonitoringSettings);
+            }
+
             if (null == settings)
                 return TypedResults.BadRequest("couldnt fetch settings file");
 
@@ -26,8 +31,28 @@ namespace web.Controllers
             message.Body = new TextPart("plain") { Text = "Test body text" };
 
             using var client = new SmtpClient();
-            client.Connect(settings.MonitoringSettings.SmtpServerAddress, settings.MonitoringSettings.SmtpPort, false);
 
+            try
+            {
+                await client.ConnectAsync(settings.MonitoringSettings.SmtpServerAddress, settings.MonitoringSettings.SmtpPort, false);
+            }
+            catch(Exception ex)
+            {
+                return TypedResults.BadRequest(ex.Message);
+            }
+            
+            if (settings.MonitoringSettings.SmtpAuthenticationIsRequired)
+            {
+                try
+                {
+                    await client.AuthenticateAsync(settings.MonitoringSettings.SmtpUsername, settings.MonitoringSettings.SmtpPassword);
+                }
+                catch(Exception ex)
+                {
+                    return TypedResults.BadRequest(ex.Message);
+                }
+            }
+            
             try
             {
                 await client.SendAsync(message);

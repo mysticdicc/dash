@@ -1,0 +1,20 @@
+﻿<label class="switch">
+    <input type="checkbox" @bind="InternalValue" />
+    <span class="slider"></span>
+</label>
+
+@code {
+    [Parameter] required public bool ToggleIsOn { get; set; }
+    [Parameter] required public EventCallback<bool> ToggleIsOnChanged { get; set; }
+
+    private bool InternalValue
+    {
+        get => ToggleIsOn;
+        set
+        {
+            if (ToggleIsOn == value) return;
+            ToggleIsOn = value;
+            _ = ToggleIsOnChanged.InvokeAsync(value);
+        }
+    }
+}

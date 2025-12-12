@@ -40,26 +40,10 @@
                         </tr>
                         <tr>
                             <td>
-                                SMTP Username:
+                                SMTP Port:
                             </td>
                             <td>
-                                <input type="text" @bind="@_currentSettings.MonitoringSettings.SmtpUsername"/>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>
-                                SMTP Password:
-                            </td>
-                            <td>
-                                <input type="text" @bind="@_currentSettings.MonitoringSettings.SmtpPassword"/>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>
-                                SMTP Port: 
-                            </td>
-                            <td>
-                                <input type="number" @bind="@_currentSettings.MonitoringSettings.SmtpPort"/>
+                                <input type="number" @bind="@_currentSettings.MonitoringSettings.SmtpPort" />
                             </td>
                         </tr>
                         <tr>
@@ -67,9 +51,36 @@
                                 SMTP Send To:
                             </td>
                             <td>
-                                <input type="text" @bind="@_currentSettings.MonitoringSettings.SmtpTargetEmail"/>
+                                <input type="text" @bind="@_currentSettings.MonitoringSettings.SmtpTargetEmail" />
                             </td>
                         </tr>
+                        <tr>
+                            <td>
+                                SMTP Use Auth:
+                            </td>
+                            <td>
+                                <Switch @bind-ToggleIsOn="@_currentSettings.MonitoringSettings.SmtpAuthenticationIsRequired" />
+                            </td>
+                        </tr>
+                        @if (_currentSettings.MonitoringSettings.SmtpAuthenticationIsRequired)
+                        {
+                            <tr>
+                                <td>
+                                    SMTP Username:
+                                </td>
+                                <td>
+                                    <input type="text" @bind="@_currentSettings.MonitoringSettings.SmtpUsername" />
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    SMTP Password:
+                                </td>
+                                <td>
+                                    <input type="text" @bind="@_currentSettings.MonitoringSettings.SmtpPassword" />
+                                </td>
+                            </tr>
+                        }
                         <tr>
                             <td>
                                 Send Test Email: 
