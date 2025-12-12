@@ -28,7 +28,7 @@ namespace DashLib.DankAPI
             List<ShortcutItem>? shortcutItems = [];
             List<DirectoryItem>? directoryItems = [];
 
-            string shortcutEndpoint = $"{_shortcutBase}/get/noparent";
+            string shortcutEndpoint = $"{_shortcutBase}/get/all";
             string directoryEndpoint = $"{_directoryBase}/get/all";
 
             try

@@ -24,11 +24,13 @@ namespace web.Client.Services
 
                 foreach (var item in list)
                 {
-                    if (item is DirectoryItem folder && folder.Children.Count > 0)
+                    if (item is ShortcutItem shortcut)
                     {
-                        foreach (var child in folder.Children)
+                        if (shortcut.ParentId != null)
                         {
-                            child.Parent = folder;
+                            shortcut.Parent = list
+                                .OfType<DirectoryItem>()
+                                .FirstOrDefault(d => d.Id == shortcut.ParentId);
                         }
                     }
                 }

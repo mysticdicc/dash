@@ -22,6 +22,15 @@ namespace web.Controllers
         };
 
         [HttpGet]
+        [Route("[controller]/v2/shortcuts/get/all")]
+        public string GetAllShortcuts()
+        {
+            using var context = _DbFactory.CreateDbContext();
+            List<ShortcutItem> items = context.ShortcutItems.ToList();
+            return JsonSerializer.Serialize(items, JsonOptions);
+        }
+
+        [HttpGet]
         [Route("[controller]/v2/shortcuts/get/noparent")]
         public string GetShortcutsWithoutParent()
         {
@@ -37,7 +46,7 @@ namespace web.Controllers
         {
             using var context = _DbFactory.CreateDbContext();
             List<DirectoryItem> items = [];
-            items.AddRange(context.DirectoryItems.Include(x => x.Children).ToList());
+            items.AddRange(context.DirectoryItems.ToList());
             return JsonSerializer.Serialize(items, JsonOptions);
         }
 

@@ -73,7 +73,7 @@ public partial class danknetContext : DbContext
                 .IsRequired()
                 .HasMaxLength(150)
                 .IsUnicode(false);
-            entity.HasOne(e => e.Parent).WithMany(e => e.Children);
+            entity.HasOne(e => e.Parent).WithMany(e => e.Children).HasForeignKey(e => e.ParentId);
         });
 
         modelBuilder.Entity<DirectoryItem>(entity =>
