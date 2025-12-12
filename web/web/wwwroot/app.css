@@ -356,8 +356,8 @@ textarea {
                 display: flex;
                 flex-direction: column;
 
-                > img {
-                    max-height: 8rem;
+                img {
+                    height: 8rem;
                     max-width: 8rem;
                 }
 
