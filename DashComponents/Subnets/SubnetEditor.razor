@@ -28,7 +28,7 @@
                         </tr>
                         <tr id="cidr">
                             <td colspan="10">
-                                <input id="cidrinput" type="text" @bind="_cidrString" @onkeydown="@OnKeyDownCidrInput" placeholder="192.168.0.1/24"/>
+                                <input id="cidrinput" type="text" @bind-Value="_cidrString" @bind-Value:event="oninput" @onkeydown="@OnKeyDownCidrInput" placeholder="192.168.0.1/24"/>
                                 <button id="generatebutton" onclick="@OnClickCidrGenerate">
                                     <span class="material-icons">start</span>
                                 </button>

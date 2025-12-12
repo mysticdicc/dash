@@ -12,7 +12,7 @@
     </td>
     <td>
         <div>
-            <input type="text" @bind="@_searchString" @onkeydown="@OnKeyDownInSubnetInput" @onclick:stopPropagation="true" />
+            <input type="text" @bind-Value="@_searchString" @bind-Value:event="oninput" @onkeydown="@OnKeyDownInSubnetInput" @onclick:stopPropagation="true" />
             <button onclick="@OnClickSearch" @onclick:stopPropagation="true">
                 <span class="material-icons">search</span>
             </button>
