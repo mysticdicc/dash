@@ -4,24 +4,49 @@
 {
     <div class="faded_background">
         <div class="dashboard_card_editor">
-            @if (_dashboardItem.Icon != null)
+            @if (_dashboardItem is DirectoryItem directory)
             {
-                <div>
-                    <img src="@_dashboardItem.Icon"/>
-                    <button id="deleteiconbutton" onclick="@OnClickDeleteIcon">
-                        <span class="material-icons">delete</span>
-                    </button>
-                </div>
-            }
-            else
-            {
-                <div class="upload_item_box">
-                    <label for="upload_new_pic">
-                        <span class="material-icons" style="margin: auto;">add</span>
-                    </label>
+                if (null != directory.Icon)
+                {
+                    <div>
+                        <img src="@directory.Icon" />
+                        <button id="deleteiconbutton" onclick="@OnClickDeleteIcon">
+                            <span class="material-icons">delete</span>
+                        </button>
+                    </div>
+                }
+                else
+                {
+                    <div class="upload_item_box">
+                        <label for="upload_new_pic">
+                            <span class="material-icons" style="margin: auto;">add</span>
+                        </label>
 
-                    <InputFile onchange="@(args => OnUploadItem(args))" id="upload_new_pic" style="width: 0%; height: 0; overflow: hidden;" accept="*.png, *.jpg, *.jpeg" />
-                </div>
+                        <InputFile onchange="@(args => OnUploadItem(args))" id="upload_new_pic" style="width: 0%; height: 0; overflow: hidden;" accept="*.png, *.jpg, *.jpeg" />
+                    </div>
+                }
+            }
+            else if (_dashboardItem is ShortcutItem shortItem)
+            {
+                if (null != shortItem.Icon)
+                {
+                    <div>
+                        <img src="@shortItem.Icon" />
+                        <button id="deleteiconbutton" onclick="@OnClickDeleteIcon">
+                            <span class="material-icons">delete</span>
+                        </button>
+                    </div>
+                }
+                else
+                {
+                    <div class="upload_item_box">
+                        <label for="upload_new_pic">
+                            <span class="material-icons" style="margin: auto;">add</span>
+                        </label>
+
+                        <InputFile onchange="@(args => OnUploadItem(args))" id="upload_new_pic" style="width: 0%; height: 0; overflow: hidden;" accept="*.png, *.jpg, *.jpeg" />
+                    </div>
+                }
             }
             <article>
                 <header>
@@ -30,15 +55,48 @@
                 <content>
                     <table>
                         <tr>
-                            <input type="radio" name="itemtype" checked="@(_dashboardItem.Type == DashboardItemBase.DashboardItemType.Directory)" @onchange="@(() => OnChangeItemType(DashboardItemBase.DashboardItemType.Directory))"/> 
-                            Folder
+                            <td>
+                                <input type="radio" name="itemtype" checked="@(_dashboardItem.Type == DashboardItemBase.DashboardItemType.Directory)" @onchange="@(() => OnChangeItemType(DashboardItemBase.DashboardItemType.Directory))" />
+                                Folder
+                            </td>
                         </tr>
                         <tr>
-                            <input type="radio" name="itemtype" checked="@(_dashboardItem.Type == DashboardItemBase.DashboardItemType.Shortcut)" @onchange="@(() => OnChangeItemType(DashboardItemBase.DashboardItemType.Shortcut))" />
-                            Shortcut
+                            <td>
+                                <input type="radio" name="itemtype" checked="@(_dashboardItem.Type == DashboardItemBase.DashboardItemType.Shortcut)" @onchange="@(() => OnChangeItemType(DashboardItemBase.DashboardItemType.Shortcut))" />
+                                Shortcut
+                            </td>
                         </tr>
                         <tr>
-                            <input type="text" @bind="@_dashboardItem.DisplayName" />
+                            <td>
+                                <input type="radio" name="itemtype" checked="@(_dashboardItem.Type == DashboardItemBase.DashboardItemType.Widget)" @onchange="@(() => OnChangeItemType(DashboardItemBase.DashboardItemType.Widget))" />
+                                Widget
+                            </td>
+                        </tr>
+                        @if (_dashboardItem.Type == DashboardItemBase.DashboardItemType.Widget)
+                        {
+                            <tr>
+                                <td>
+                                    @if (_dashboardItem is WidgetItem widget)
+                                    {
+                                        <select @bind="@widget.TypeOfWidget">
+                                            <option value="@WidgetItem.WidgetType.Clock">Clock</option>
+                                        </select>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                        <tr>
+
+                        </tr>
+                        <tr>
+                            @if (_dashboardItem.Type == DashboardItemBase.DashboardItemType.Widget)
+                            {
+                                <input type="text" @bind="@_dashboardItem.DisplayName" readonly="readonly"/>
+                            }
+                            else
+                            {
+                                <input type="text" @bind="@_dashboardItem.DisplayName" />
+                            }
                         </tr>
                         @if (_dashboardItem is ShortcutItem shortcut)
                         {
@@ -65,9 +123,18 @@
                                 </td>
                             </tr>
                         }
-                        <tr>
-                            <textarea @bind="@_dashboardItem.Description" />
-                        </tr>
+                        @if (_dashboardItem.Type == DashboardItemBase.DashboardItemType.Widget)
+                        {
+                            <tr>
+                                <textarea @bind="@_dashboardItem.Description" readonly ="readonly"/>
+                            </tr>
+                        }
+                        else
+                        {
+                            <tr>
+                                <textarea @bind="@_dashboardItem.Description" />
+                            </tr>
+                        }
                     </table>
                 </content>
                 <footer>
@@ -138,11 +205,29 @@
 
     private async Task OnUploadItem(InputFileChangeEventArgs e)
     {
-        _dashboardItem.Icon = await PictureToBase64String(e);
+        if (_dashboardItem is ShortcutItem shortcut)
+        {
+            shortcut.Icon = await PictureToBase64String(e);
+        }
+        else if (_dashboardItem is DirectoryItem directory)
+        {
+            directory.Icon = await PictureToBase64String(e);
+        }
     }
 
     private void OnChangeItemType(DashboardItemBase.DashboardItemType type)
     {
+        string icon = string.Empty;
+
+        if (_dashboardItem is ShortcutItem shortcut)
+        {
+            icon = shortcut.Icon ?? string.Empty;
+        }
+        else if (_dashboardItem is DirectoryItem directory)
+        {
+            icon = directory.Icon ?? string.Empty;
+        }
+
         if (type == DashboardItemBase.DashboardItemType.Shortcut)
         {
             _dashboardItem = new ShortcutItem()
@@ -150,8 +235,8 @@
                 Id = _dashboardItem.Id,
                 DisplayName = _dashboardItem.DisplayName,
                 Description = _dashboardItem.Description,
-                Icon = _dashboardItem.Icon,
-                Url = "https://example.com"
+                Url = "https://example.com",
+                Icon = icon
             };
         }
         else if (type == DashboardItemBase.DashboardItemType.Directory)
@@ -161,8 +246,18 @@
                 Id = _dashboardItem.Id,
                 DisplayName = _dashboardItem.DisplayName,
                 Description = _dashboardItem.Description,
-                Icon = _dashboardItem.Icon,
-                Children = []
+                Children = [],
+                Icon = icon
+            };
+        }
+        else if (type == DashboardItemBase.DashboardItemType.Widget)
+        {
+            _dashboardItem = new WidgetItem()
+            {
+                Id = _dashboardItem.Id,
+                DisplayName = "Clock",
+                Description = "A 24 hour digital clock",
+                TypeOfWidget = WidgetItem.WidgetType.Clock,
             };
         }
     }
@@ -200,9 +295,13 @@
 
     private void OnClickDeleteIcon()
     {
-        if (null != _dashboardItem.Icon)
+        if (_dashboardItem is ShortcutItem shortcut)
         {
-            _dashboardItem.Icon = null;
+            shortcut.Icon = null;
+        }
+        else if (_dashboardItem is DirectoryItem directory)
+        {
+            directory.Icon = null;
         }
     }
 

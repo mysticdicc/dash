@@ -1,0 +1,46 @@
+﻿@implements IDisposable
+@using System.Globalization;
+
+<div id="clock">
+    @_dateString
+    <br/>
+    <span>@_currentTime.ToString("HH:mm:ss")</span>
+</div>
+
+@code {
+    private DateTime _currentTime = DateTime.Now;
+    private System.Timers.Timer? _timer;
+    private string _dateString = string.Empty;
+
+    protected override Task OnParametersSetAsync()
+    {
+        _timer = new System.Timers.Timer(1000);
+        _timer.Elapsed += (sender, e) =>
+        {
+            _currentTime = DateTime.Now;
+            _dateString = ToOrdinalDate(_currentTime);
+            InvokeAsync(StateHasChanged);
+        };
+        _timer.Start();
+
+        return base.OnParametersSetAsync();
+    }
+
+    static string ToOrdinalDate(DateTime dt, CultureInfo? culture = null)
+    {
+        culture ??= CultureInfo.GetCultureInfo("en-GB");
+
+        int day = dt.Day;
+        string suffix =
+            (day % 100 is 11 or 12 or 13) ? "th" :
+            (day % 10) switch { 1 => "st", 2 => "nd", 3 => "rd", _ => "th" };
+
+        return $"{dt.ToString("dddd d", culture)}{suffix} {dt.ToString("MMMM yyyy", culture)}";
+    }
+
+    public void Dispose()
+    {
+        _timer?.Stop();
+        _timer?.Dispose();
+    }
+}

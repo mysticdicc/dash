@@ -1108,3 +1108,13 @@ div#stats_card > article > div > table {
     justify-content: center;
     background-color: var(--light-grey);
 }
+
+div#clock {
+    padding: 20px;
+    text-align: center;
+
+    > span {
+        font-size: 30px;
+        font-weight: 400;
+    }
+}

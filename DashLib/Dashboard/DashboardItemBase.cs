@@ -14,9 +14,9 @@ namespace DashLib.Dashboard
         public enum DashboardItemType
         {
             Shortcut,
-            Directory
+            Directory,
+            Widget
         }
         abstract public DashboardItemType Type { get; }
-        public string? Icon { get; set; }
     }
 }

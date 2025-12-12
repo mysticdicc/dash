@@ -1,12 +1,24 @@
 ﻿@inject IJSRuntime JSRuntime
 
+
 <div id="dashcard" class="dashboard_card" onclick="@OnClickCard">
-    @if (_dashboardItem.Icon != null)
+    @if (_dashboardItem is DirectoryItem dirItem)
     {
-        <div id="img">
-            <img src="@_dashboardItem.Icon" />
-        </div>
-        
+        if (null != dirItem.Icon)
+        {
+            <div id="img">
+                <img src="@dirItem.Icon" />
+            </div>
+        }
+    }
+    else if (_dashboardItem is ShortcutItem shortItem)
+    {
+        if (null != shortItem.Icon)
+        {
+            <div id="img">
+                <img src="@shortItem.Icon" />
+            </div>
+        }
     }
     <article>
         <header>
@@ -18,29 +30,43 @@
             {
                 <span class="material-icons">link</span>
             }
-            <span><strong>@_dashboardItem.DisplayName</strong></span>
+
+            @if (Item.Type != DashboardItemBase.DashboardItemType.Widget)
+            {
+                <span><strong>@_dashboardItem.DisplayName</strong></span>
+            }
             <button @onclick:stopPropagation="true" @onclick="OnClickEdit">
                 <span class="material-icons">edit</span>
             </button>
         </header>
         <content>
-            <table>
-                @if (_dashboardItem.Type == DashboardItemBase.DashboardItemType.Shortcut)
+            @if (_dashboardItem is WidgetItem widget)
+            {
+                @if (widget.TypeOfWidget == WidgetItem.WidgetType.Clock)
                 {
-                    var shortcut = _dashboardItem as ShortcutItem;
+                    <Clock/>
+                }
+            }
+            else
+            {
+                <table>
+                    @if (_dashboardItem.Type == DashboardItemBase.DashboardItemType.Shortcut)
+                    {
+                        var shortcut = _dashboardItem as ShortcutItem;
 
+                        <tr>
+                            <td>
+                                <span>@shortcut!.Url</span>
+                            </td>
+                        </tr>
+                    }
                     <tr>
                         <td>
-                            <span>@shortcut!.Url</span>
+                            @_dashboardItem.Description
                         </td>
                     </tr>
-                }
-                <tr>
-                    <td>
-                        @_dashboardItem.Description
-                    </td>
-                </tr>
-            </table>
+                </table>
+            }
         </content>
     </article>
     @if (_dashboardItem is DirectoryItem directory)
@@ -54,10 +80,16 @@
     private DashboardItemBase _dashboardItem => Item;
 
     [Parameter] public List<DirectoryItem>? Directories { get; set; }
-    
+
     [Parameter] public EventCallback<DashboardItemBase> OnEditClick { get; set; }
 
     private bool _isFolderViewHidden { get; set; } = true;
+
+
+    protected override Task OnParametersSetAsync()
+    {
+        return base.OnParametersSetAsync();
+    }
 
     private async Task OnClickEdit()
     {

@@ -25,6 +25,7 @@ public partial class danknetContext : DbContext
     public virtual DbSet<Asset> Assets { get; set; }
     public virtual DbSet<ShortcutItem> ShortcutItems { get; set; }
     public virtual DbSet<DirectoryItem> DirectoryItems { get; set; }
+    public virtual DbSet<WidgetItem> WidgetItems { get; set; }
     public virtual DbSet<IP> IPs { get; set; }
     public virtual DbSet<Subnet> Subnets { get; set; }
     public virtual DbSet<MonitorState> MonitorStates { get; set; }
@@ -56,11 +57,27 @@ public partial class danknetContext : DbContext
             entity.Property(e => e.Picture).IsUnicode(false);
         });
 
+        modelBuilder.Entity<WidgetItem>(entity =>
+        {
+            entity.ToTable("widget_items");
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Id);
+            entity.Property(e => e.DisplayName)
+                .IsRequired()
+                .HasMaxLength(50)
+                .IsUnicode(false);
+            entity.Property(e => e.Description)
+                .HasMaxLength(300)
+                .IsUnicode(false);
+            entity.Property(e => e.TypeOfWidget);
+        });
+
         modelBuilder.Entity<ShortcutItem>(entity =>
         {
             entity.ToTable("shortcut_items");
 
             entity.Property(e => e.Id);
+            entity.HasKey(e => e.Id);
             entity.Property(e => e.Description)
                 .HasMaxLength(300)
                 .IsUnicode(false);
@@ -81,6 +98,7 @@ public partial class danknetContext : DbContext
             entity.ToTable("directory_items");
 
             entity.Property(e => e.Id);
+            entity.HasKey(e => e.Id);
             entity.Property(e => e.Description)
                 .HasMaxLength(300)
                 .IsUnicode(false);
@@ -98,6 +116,7 @@ public partial class danknetContext : DbContext
             entity.ToTable("ips");
 
             entity.HasIndex(e => e.ID);
+            entity.HasKey(e => e.ID);
             entity.HasIndex(e => e.Address).IsUnique();
 
             //entity.HasKey(x => new { x.ID, x.Address });

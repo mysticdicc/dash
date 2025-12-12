@@ -10,5 +10,6 @@ namespace DashLib.Dashboard
     {
         public override DashboardItemType Type => DashboardItemType.Directory;
         required public List<ShortcutItem> Children { get; set; }
+        public string? Icon { get; set; }
     }
 }

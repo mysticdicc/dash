@@ -22,6 +22,15 @@ namespace web.Controllers
         };
 
         [HttpGet]
+        [Route("[controller]/v2/widgets/get/all")]
+        public string GetAllWidgets()
+        {
+            using var context = _DbFactory.CreateDbContext();
+            List<WidgetItem> items = context.WidgetItems.ToList();
+            return JsonSerializer.Serialize(items, JsonOptions);
+        }
+
+        [HttpGet]
         [Route("[controller]/v2/shortcuts/get/all")]
         public string GetAllShortcuts()
         {
@@ -58,6 +67,23 @@ namespace web.Controllers
             try
             {
                 context.ShortcutItems.Add(item);
+                await context.SaveChangesAsync();
+                return TypedResults.Created(item.Id.ToString(), item);
+            }
+            catch (Exception ex)
+            {
+                return TypedResults.BadRequest(ex.Message);
+            }
+        }
+
+        [HttpPost]
+        [Route("[controller]/v2/widgets/post/new")]
+        public async Task<Results<BadRequest<string>, Created<WidgetItem>>> NewWidget(WidgetItem item)
+        {
+            using var context = _DbFactory.CreateDbContext();
+            try
+            {
+                context.WidgetItems.Add(item);
                 await context.SaveChangesAsync();
                 return TypedResults.Created(item.Id.ToString(), item);
             }
@@ -113,6 +139,28 @@ namespace web.Controllers
         }
 
         [HttpPut]
+        [Route("[controller]/v2/widgets/put/update")]
+        public async Task<Results<BadRequest<string>, Ok<WidgetItem>>> UpdateWidget(WidgetItem item)
+        {
+            using var context = _DbFactory.CreateDbContext();
+            var entity = context.WidgetItems.Find(item.Id);
+            if (entity == null) return TypedResults.BadRequest("Bad ID match");
+
+            entity.TypeOfWidget = item.TypeOfWidget;
+
+            try
+            {
+                context.WidgetItems.Update(entity);
+                await context.SaveChangesAsync();
+                return TypedResults.Ok(item);
+            }
+            catch (Exception ex)
+            {
+                return TypedResults.BadRequest(ex.Message);
+            }
+        }
+
+        [HttpPut]
         [Route("[controller]/v2/directories/put/update")]
         public async Task<Results<BadRequest<string>, Ok<DirectoryItem>>> UpdateDirectory(DirectoryItem item)
         {
@@ -128,6 +176,30 @@ namespace web.Controllers
             try
             {
                 context.DirectoryItems.Update(entity);
+                await context.SaveChangesAsync();
+                return TypedResults.Ok(item);
+            }
+            catch (Exception ex)
+            {
+                return TypedResults.BadRequest($"{ex.Message}");
+            }
+        }
+
+        [HttpDelete]
+        [Route("[controller]/v2/widgets/delete/byobject")]
+        public async Task<Results<BadRequest<string>, Ok<WidgetItem>>> DeleteWidget(WidgetItem item)
+        {
+            using var context = _DbFactory.CreateDbContext();
+            var delete = context.WidgetItems.Find(item.Id);
+
+            if (delete == null)
+            {
+                return TypedResults.BadRequest("Unable to track db object");
+            }
+
+            try
+            {
+                context.WidgetItems.Remove(delete);
                 await context.SaveChangesAsync();
                 return TypedResults.Ok(item);
             }

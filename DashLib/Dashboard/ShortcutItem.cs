@@ -13,7 +13,7 @@ namespace DashLib.Dashboard
         public override DashboardItemType Type => DashboardItemType.Shortcut;
         public DirectoryItem? Parent { get; set; }
         public Guid? ParentId { get; set; }
-
+        public string? Icon { get; set; }
         public static bool UrlIsValid(ShortcutItem item)
         {
             bool uriValid;

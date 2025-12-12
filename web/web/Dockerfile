@@ -9,6 +9,7 @@ ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
 COPY ["web/web/web.csproj", "web/web/"]
 COPY ["DashLib/DashLib.csproj", "DashLib/"]
+COPY ["DashComponents/DashComponents.csproj", "DashComponents/"]
 COPY ["web/web.Client/web.Client.csproj", "web/web.Client/"]
 RUN dotnet restore "./web/web/web.csproj"
 COPY . .

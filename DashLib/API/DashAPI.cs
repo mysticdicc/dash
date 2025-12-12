@@ -14,12 +14,14 @@ namespace DashLib.DankAPI
         private readonly HttpClient _httpClient;
         private string _directoryBase;
         private string _shortcutBase;
+        private string _widgetBase;
 
         public DashAPI(HttpClient httpClient)
         {
             _httpClient = httpClient;
             _directoryBase = $"{httpClient.BaseAddress}dashboard/v2/directories";
             _shortcutBase = $"{httpClient.BaseAddress}dashboard/v2/shortcuts";
+            _widgetBase = $"{httpClient.BaseAddress}dashboard/v2/widgets";
         }
 
         public async Task<List<DashboardItemBase>> GetAllItemsAsync()
@@ -27,9 +29,11 @@ namespace DashLib.DankAPI
             List<DashboardItemBase>? items = [];
             List<ShortcutItem>? shortcutItems = [];
             List<DirectoryItem>? directoryItems = [];
+            List<WidgetItem>? widgetItems = [];
 
             string shortcutEndpoint = $"{_shortcutBase}/get/all";
             string directoryEndpoint = $"{_directoryBase}/get/all";
+            string widgetEndpoint = $"{_widgetBase}/get/all";
 
             try
             {
@@ -57,6 +61,20 @@ namespace DashLib.DankAPI
             if (directoryItems != null && directoryItems.Count > 0)
             {
                 items.AddRange(directoryItems);
+            }
+
+            try
+            {
+                widgetItems = await RequestHandler.GetFromJsonAsync<List<WidgetItem>>(_httpClient, widgetEndpoint);
+            }
+            catch
+            {
+                throw;
+            }
+
+            if (widgetItems != null && widgetItems.Count > 0)
+            {
+                items.AddRange(widgetItems);
             }
 
             if (items.Count > 0)
@@ -99,9 +117,22 @@ namespace DashLib.DankAPI
                     throw;
                 }
             }
+            else if (item is WidgetItem widget)
+            {
+                string endpoint = $"{_widgetBase}/delete/byobject";
+                try
+                {
+                    await RequestHandler.DeleteAsJsonAsync(_httpClient, endpoint, widget);
+                    return true;
+                }
+                catch
+                {
+                    throw;
+                }
+            }
             else
             {
-                throw new InvalidCastException("object is not directory item or shortcut item");
+                throw new InvalidCastException("object is not known item type");
             }
         }
 
@@ -135,9 +166,22 @@ namespace DashLib.DankAPI
                     throw;
                 }
             }
+            else if (item is WidgetItem widgetSend)
+            {
+                string endpoint = $"{_widgetBase}/post/new";
+                try
+                {
+                    await RequestHandler.PostJsonAsync(_httpClient, endpoint, widgetSend);
+                    return true;
+                }
+                catch
+                {
+                    throw;
+                }
+            }
             else
             {
-                throw new InvalidCastException("object is not directory item or shortcut item");
+                throw new InvalidCastException("object is not known item type");
             }
         }
 
@@ -171,9 +215,22 @@ namespace DashLib.DankAPI
                     throw;
                 }
             }
+            else if (item is WidgetItem widget)
+            {
+                string endpoint = $"{_widgetBase}/put/update";
+                try
+                {
+                    await RequestHandler.PutAsJsonAsync(_httpClient, endpoint, widget);
+                    return true;
+                }
+                catch
+                {
+                    throw;
+                }
+            }
             else
             {
-                throw new InvalidCastException("object is not directory item or shortcut item");
+                throw new InvalidCastException("object is not known item type");
             }
         }
     }
