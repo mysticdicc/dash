@@ -197,6 +197,28 @@ textarea {
     background-color: var(--grey);
 }
 
+@-webkit-keyframes shake {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    10% {
+        transform: rotate(0deg);
+    }
+
+    25% {
+        transform: rotate(0.5deg);
+    }
+
+    55% {
+        transform: rotate(-0.5deg);
+    }
+
+    70% {
+        transform: rotate(0deg);
+    }
+}
+
 .switch {
     position: relative;
     display: inline-block;
