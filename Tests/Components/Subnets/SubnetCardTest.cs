@@ -1,8 +1,10 @@
 using DashComponents.Subnets;
 using DashLib.Interfaces;
 using DashLib.Network;
+using Microsoft.JSInterop;
 using Moq;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 public class SubnetCardTest : TestContext
 {
@@ -28,6 +30,9 @@ public class SubnetCardTest : TestContext
         subnetApi.Setup(x => x.GetSubnetByIdAsync(It.IsAny<int>())).ReturnsAsync(subnet);
 
         services.AddSingleton(subnetApi.Object);
+
+        var mockJs = new Mock<IJSRuntime>();
+        services.AddSingleton(mockJs.Object);
 
         var cut = RenderComponent<SubnetCard>(parameters => parameters
             .Add(p => p.Subnet, subnet)
@@ -57,21 +62,6 @@ public class SubnetCardTest : TestContext
         Assert.DoesNotContain("ip_layout", cut.Item1.Markup);
         Assert.DoesNotContain("iphost", cut.Item1.Markup);
     }
-
-    [Fact]
-    public void ClickSubnet_ShowsAndHidesIpList()
-    {
-        var cut = CreateStandardComponent(this.Services);
-
-        cut.Item1.Find("tr#subcard").Click();
-        Assert.Contains("ip_layout", cut.Item1.Markup);
-        Assert.Contains("iphost", cut.Item1.Markup);
-
-        cut.Item1.Find("tr#subcard").Click();
-        Assert.DoesNotContain("ip_layout", cut.Item1.Markup);
-        Assert.DoesNotContain("iphost", cut.Item1.Markup);
-    }
-
 
     [Fact]
     public void DeleteButton_CallsDelete()

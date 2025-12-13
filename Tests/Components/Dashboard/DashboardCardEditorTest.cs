@@ -58,6 +58,9 @@ public class DashboardCardEditorTest : TestContext
         var mockSubnets = new Mock<ISubnetsAPI>();
         services.AddSingleton<ISubnetsAPI>(mockSubnets.Object);
 
+        var mockMonitoring = new Mock<IMonitoringAPI>();
+        services.AddSingleton<IMonitoringAPI>(mockMonitoring.Object);
+
         var list = new List<DirectoryItem> { folder };
 
         var cut = RenderComponent<DashboardCardEditor>(parameters => parameters

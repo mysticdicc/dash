@@ -67,7 +67,7 @@ public class SubnetEditorTest : TestContext
         var (cut, _) = CreateStandardComponent(this.Services);
 
         var cidrInput = cut.Find("input#cidrinput");
-        cidrInput.Change("10.0.0.0/24");
+        cidrInput.Input("10.0.0.0/24");
         cidrInput.KeyDown(new KeyboardEventArgs { Code = "Enter" });
 
         var expandButton = cut.Find("button#iplist");
@@ -85,7 +85,7 @@ public class SubnetEditorTest : TestContext
         var cidrInput = cut.Find("input#cidrinput");
         var generateButton = cut.Find("button#generatebutton");
 
-        cidrInput.Change("172.16.0.0/16");
+        cidrInput.Input("172.16.0.0/16");
         generateButton.Click();
 
         var expandButton = cut.Find("button#iplist");

@@ -1,7 +1,7 @@
 ﻿@inject ISubnetsAPI SubnetService
 @inject IJSRuntime JSRuntime
 
-<tr id="@_subnet.ID" class="subnet_card" @onclick="@OnClickSubnetCard">
+<tr id=@($"subcard-{_subnet.ID}") class="subnet_card" @onclick="@OnClickSubnetCard">
     <td>
         @IP.ConvertToString(_subnet.Address)
     </td>
@@ -153,8 +153,8 @@
     private async Task OnClickSubnetCard()
     {
         _ipListVisible = !_ipListVisible;
-        await JSRuntime.InvokeVoidAsync("shakeonclick", Subnet.ID);
         StateHasChanged();
+        await JSRuntime.InvokeVoidAsync("shakeonclick", Subnet.ID);
     }
 
     private async Task OnClickDeleteIp()
