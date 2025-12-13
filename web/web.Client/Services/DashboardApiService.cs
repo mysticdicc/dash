@@ -155,6 +155,31 @@ namespace web.Client.Services
 
                 return false;
             }
-        }   
+        }
+
+        public async Task<bool> ReplaceWholeDashboardAsync(List<DashboardItemBase> newItems)
+        {
+            bool success = false;
+            
+            try
+            {
+                success = await _dashAPI.ReplaceWholeDashboardAsync(newItems);
+                _notificationService.ShowAsync("Dashboard Replaced", 
+                    "The dashboard has been successfully replaced.");
+            }
+            catch (Exception ex)
+            {
+                _notificationService.ShowAsync("Error Replacing Dashboard", 
+                    $"Failed to replace the dashboard. {ex.Message}");
+            }
+
+            if (!success)
+            {
+                _notificationService.ShowAsync("Dashboard Upload Finished With Errors", 
+                    "Dashboard loaded but an uncounted number of errors has occured with either saving or deleting dashboard items.");
+            }
+
+            return success;
+        }
     }
 }

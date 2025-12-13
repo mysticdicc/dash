@@ -241,7 +241,7 @@ namespace DashLib.DankAPI
                 }
                 else
                 {
-                    throw new InvalidCastException("object is not known widget type");
+                    throw new InvalidOperationException("object is not known widget type");
                 }
 
             }
@@ -289,6 +289,43 @@ namespace DashLib.DankAPI
             {
                 throw new InvalidCastException("object is not known item type");
             }
+        }
+
+        public async Task<bool> ReplaceWholeDashboardAsync(List<DashboardItemBase> newItems)
+        {
+            List<DashboardItemBase> oldItems = [];
+            try
+            {
+                oldItems = await GetAllItemsAsync();
+            } catch { }
+            
+            bool success = true;
+
+            foreach (var item in oldItems)
+            {
+                try
+                {
+                    await DeleteItemAsync(item);
+                }
+                catch 
+                {
+                    throw;
+                }
+            }
+
+            foreach (var item in newItems)
+            {
+                try
+                {
+                    await SaveItemAsync(item);
+                }
+                catch 
+                {
+                    throw;
+                }
+            }
+
+            return success;
         }
     }
 }

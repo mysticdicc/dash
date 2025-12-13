@@ -73,7 +73,7 @@ namespace web.Services
             {
                 while (!token.IsCancellationRequested)
                 {
-                    _logger.LogInformation($"Entered execution action, task delay is {(_delay * 1000)}s");
+                    _logger.LogInformation($"Entered execution action, task delay is {_delay}s");
                     await Task.Delay(1500);
 
                     DateTime submit = DateTime.UtcNow;

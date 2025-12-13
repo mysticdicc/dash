@@ -14,6 +14,7 @@ namespace DashLib.Settings
         public float AlertIfDownForPercent { get; set; }
         public bool AlertsEnabled { get; set; }
         public int AlertTimePeriodInMinutes { get; set; }
+        public int AlertAgainAfterInMinutes { get; set; }
         public string SmtpServerAddress { get; set; }
         public bool SmtpAuthenticationIsRequired { get; set; }
         public string SmtpUsername { get; set; }
@@ -38,6 +39,7 @@ namespace DashLib.Settings
             SmtpTargetEmail = string.Empty;
             SmtpAuthenticationIsRequired = false;
             AlertTimePeriodInMinutes = 30;
+            AlertAgainAfterInMinutes = 30;
         }
 
         static public MonitoringSettings EncryptPassword(MonitoringSettings settings)

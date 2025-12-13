@@ -5,6 +5,7 @@
 @page "/"
 @using DashLib.Dashboard
 @using DashLib.Interfaces
+@using System.Text.Json
 
 <PageTitle>dashboard</PageTitle>
 
@@ -22,14 +23,23 @@
     </div>
 }
 
+<InputFile OnChange="@OnClickUpload" id="upload" style="overflow: hidden; width: 0; height: 0;" accept="*.png" />
 <article>
     <header>
-        <button @onclick="@(() => OnClickAdd())">
+        <button @onclick="@OnClickAdd">
             <span class="material-icons">add</span>
         </button>
-        <button @onclick="@(() => OnInitializedAsync())">
+        <button @onclick="@OnInitializedAsync">
             <span class="material-icons">refresh</span>
         </button>
+        <span>
+            <button @onclick="@OnClickUploadButton">
+                <span title="Upload dashboard export" class="material-icons">upload</span>
+            </button>
+            <button @onclick="@OnClickSave">
+                <span title="Download dashboard export" class="material-icons">save</span>
+            </button>
+        </span>
     </header>
     <content>
         <div class="dashboard_layout">
@@ -147,5 +157,33 @@
         {
             await OnInitializedAsync();
         }
+    }
+
+    async void OnClickSave()
+    {
+        if (null != _dashboardItems && _dashboardItems.Count > 0)
+        {
+            await File.SaveAs(JSRuntime, "dashboard.json", JsonSerializer.Serialize(_dashboardItems, AllSettings.JsonOptions));
+        }
+    }
+
+    async void OnClickUpload(InputFileChangeEventArgs eventArgs)
+    {
+        MemoryStream ms = new MemoryStream();
+        await eventArgs.File.OpenReadStream().CopyToAsync(ms);
+        var bytes = ms.ToArray();
+        var str = System.Text.Encoding.UTF8.GetString(bytes);
+
+        var items = JsonSerializer.Deserialize<List<DashboardItemBase>>(str, AllSettings.JsonOptions);
+
+        if (null != items && items.Count > 0)
+        {
+            await DashboardService.ReplaceWholeDashboardAsync(items);
+        }
+    }
+
+    async void OnClickUploadButton()
+    {
+        await JSRuntime.InvokeVoidAsync("clickUpload");
     }
 }

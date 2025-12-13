@@ -79,15 +79,30 @@ namespace web.Controllers
         [Route("[controller]/v1/send/downtimealert")]
         public async Task<Results<BadRequest<string>, Ok<List<IP>>>> SendDowntimeAlerts(List<IP> ipList)
         {
+            var settings = AllSettings.GetCurrentSettingsFile(AllSettings.SettingsPath);
+
             using var client = ConnectMail();
             using var context = _dbFactory.CreateDbContext();
-            var hourAgo = DateTime.UtcNow.AddMinutes(-5);
+
+            var oldDate = DateTime.UtcNow.AddMinutes(-60);
             bool send = false;
 
-            string body = "<h2>Downtime Alert</h2><p>The following have been down for more than 50% of the last hour::</p><ul>";
+            string body = string.Empty;
+            
+            if (settings != null)
+            {
+                body = $"<h2>Downtime Alert</h2><p>The following have been down for more than {settings.MonitoringSettings.AlertIfDownForPercent}% of the last {settings.MonitoringSettings.AlertTimePeriodInMinutes} minutes::</p><ul>";
+                oldDate = DateTime.UtcNow.AddMinutes(settings.MonitoringSettings.AlertAgainAfterInMinutes);
+            }
+            else
+            {
+                body = "<h2>Downtime Alert</h2><p>The following have been down for more than 50% of the last hour::</p><ul>";
+            }
+
+                
             foreach (var ip in ipList)
             {
-                if (ip.LastAlertSent < hourAgo)
+                if (ip.LastAlertSent < oldDate)
                 {
                     body += $"<li>{IP.ConvertToString(ip.Address)}</li>";
                     send = true;
@@ -104,6 +119,7 @@ namespace web.Controllers
             body += "</ul>";
 
             var message = CreateMessage("Downtime Alert", body);
+
             try
             {
                 if (send)

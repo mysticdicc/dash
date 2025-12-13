@@ -83,6 +83,12 @@
                 > select {
                     max-width: 10rem;
                 }
+
+                > span {
+                    margin-left: auto;
+                    margin-right: 0;
+                    display: flex;
+                }
             }
 
             > content {
