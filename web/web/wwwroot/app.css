@@ -114,10 +114,6 @@ button {
     text-wrap: nowrap;
     display: flex;
     align-items: center;
-
-    > span {
-        padding-right: 5px;
-    }
 }
 
     button:hover {
