@@ -1,5 +1,6 @@
 ﻿using DashLib.DankAPI;
 using DashLib.Interfaces;
+using DashLib.Network;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -33,6 +34,24 @@ namespace DashLib.API
                 {
                     throw new HttpRequestException("Mail failed to send");
                 }
+            }
+            catch
+            {
+                throw;
+            }
+        }
+
+        public async Task<bool> SendAlertEmailAsync(List<IP> iplList)
+        {
+            try
+            {
+                var response = await RequestHandler.PostJsonAsync(_httpClient, $"{_mailBase}/send/downtimealert", iplList);
+
+                if (response is null)
+                {
+                    throw new HttpRequestException("Mail failed to send");
+                }
+                return true;
             }
             catch
             {

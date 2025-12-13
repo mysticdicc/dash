@@ -22,6 +22,7 @@ namespace DashLib.Network
         public bool IsMonitoredICMP { get; set; }
         public bool IsMonitoredTCP { get; set; }
         public List<int>? PortsMonitored { get; set; }
+        public DateTime LastAlertSent { get; set;  }
 
         //ef mapping
         public virtual DeviceStatusWidget? DeviceStatusWidget { get; }
@@ -60,7 +61,8 @@ namespace DashLib.Network
                 IsMonitoredTCP = ip.IsMonitoredTCP,
                 PortsMonitored = ip.PortsMonitored,
                 Hostname = ip.Hostname,
-                SubnetID = ip.SubnetID
+                SubnetID = ip.SubnetID,
+                LastAlertSent = ip.LastAlertSent
             };
 
             return _ip;

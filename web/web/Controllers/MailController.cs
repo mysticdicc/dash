@@ -1,18 +1,39 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Http.HttpResults;
+﻿using dankweb.API;
+using DashLib.Network;
 using DashLib.Settings;
 using MailKit;
-using MimeKit;
 using MailKit.Net.Smtp;
+using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using MimeKit;
+using web.Client.Pages;
+using web.Services;
 
 namespace web.Controllers
 {
     [ApiController]
-    public class MailController
+    public class MailController(IDbContextFactory<DashDbContext> dbContext) : Controller
     {
-        [HttpGet]
-        [Route("[controller]/v1/send/test")]
-        public async Task<Results<BadRequest<string>, Ok<string>>> SendTestEmail()
+        private readonly IDbContextFactory<DashDbContext> _dbFactory = dbContext;
+
+        private MimeMessage CreateMessage(string title, string body)
+        {
+            var settings = AllSettings.GetCurrentSettingsFile(AllSettings.SettingsPath);
+
+            if (null == settings)
+                throw new InvalidDataException("couldnt fetch settings file");
+
+            var message = new MimeMessage();
+            message.From.Add(new MailboxAddress("dash Alert Service", "alerts@dash.net"));
+            message.To.Add(new MailboxAddress("username", settings.MonitoringSettings.SmtpTargetEmail));
+            message.Subject = title;
+            message.Body = new TextPart("html") { Text = body };
+
+            return message;
+        }
+
+        private SmtpClient ConnectMail()
         {
             var settings = AllSettings.GetCurrentSettingsFile(AllSettings.SettingsPath);
 
@@ -22,42 +43,75 @@ namespace web.Controllers
             }
 
             if (null == settings)
-                return TypedResults.BadRequest("couldnt fetch settings file");
+                throw new InvalidDataException("couldnt fetch settings file");
 
-            var message = new MimeMessage();
-            message.From.Add(new MailboxAddress("dash Test Service", "dash@test.com"));
-            message.To.Add(new MailboxAddress("username", settings.MonitoringSettings.SmtpTargetEmail));
-            message.Subject = "Test Email";
-            message.Body = new TextPart("plain") { Text = "Test body text" };
+            var client = new SmtpClient();
+            client.Connect(settings.MonitoringSettings.SmtpServerAddress, settings.MonitoringSettings.SmtpPort, false);
 
-            using var client = new SmtpClient();
-
-            try
-            {
-                await client.ConnectAsync(settings.MonitoringSettings.SmtpServerAddress, settings.MonitoringSettings.SmtpPort, false);
-            }
-            catch(Exception ex)
-            {
-                return TypedResults.BadRequest(ex.Message);
-            }
-            
             if (settings.MonitoringSettings.SmtpAuthenticationIsRequired)
             {
-                try
-                {
-                    await client.AuthenticateAsync(settings.MonitoringSettings.SmtpUsername, settings.MonitoringSettings.SmtpPassword);
-                }
-                catch(Exception ex)
-                {
-                    return TypedResults.BadRequest(ex.Message);
-                }
+                client.Authenticate(settings.MonitoringSettings.SmtpUsername, settings.MonitoringSettings.SmtpPassword);
             }
+
+            return client;
+        }
+
+        [HttpGet]
+        [Route("[controller]/v1/send/test")]
+        public async Task<Results<BadRequest<string>, Ok<string>>> SendTestEmail()
+        {
+            var message = CreateMessage("Test Email", "Test body text");
+            using var client = ConnectMail();
             
             try
             {
                 await client.SendAsync(message);
                 client.Disconnect(true);
                 return TypedResults.Ok("success");
+            }
+            catch (Exception ex)
+            {
+                return TypedResults.BadRequest(ex.Message);
+            }
+        }
+
+        [HttpPost]
+        [Route("[controller]/v1/send/downtimealert")]
+        public async Task<Results<BadRequest<string>, Ok<List<IP>>>> SendDowntimeAlerts(List<IP> ipList)
+        {
+            using var client = ConnectMail();
+            using var context = _dbFactory.CreateDbContext();
+            var hourAgo = DateTime.UtcNow.AddMinutes(-5);
+            bool send = false;
+
+            string body = "<h2>Downtime Alert</h2><p>The following have been down for more than 50% of the last hour::</p><ul>";
+            foreach (var ip in ipList)
+            {
+                if (ip.LastAlertSent < hourAgo)
+                {
+                    body += $"<li>{IP.ConvertToString(ip.Address)}</li>";
+                    send = true;
+
+                    var dbIp = context.IPs.Find(ip.ID);
+                    if (dbIp != null)
+                    {
+                        dbIp.LastAlertSent = DateTime.UtcNow;
+                        context.IPs.Update(dbIp);
+                    }
+                }
+                
+            }
+            body += "</ul>";
+
+            var message = CreateMessage("Downtime Alert", body);
+            try
+            {
+                if (send)
+                {
+                    await client.SendAsync(message);
+                    await context.SaveChangesAsync();
+                }
+                return TypedResults.Ok(ipList);
             }
             catch (Exception ex)
             {

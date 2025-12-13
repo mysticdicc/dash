@@ -1,6 +1,7 @@
 ﻿using DashLib.API;
 using DashLib.DankAPI;
 using DashLib.Interfaces;
+using DashLib.Network;
 
 namespace web.Client.Services
 {
@@ -26,6 +27,19 @@ namespace web.Client.Services
             catch (Exception ex)
             {
                 _notificationService.ShowAsync("Failed to send test email", ex.Message);
+                return false;
+            }
+        }
+
+        async public Task<bool> SendAlertEmailAsync(List<IP> ipList)
+        {
+            try
+            {
+                await _mailAPI.SendAlertEmailAsync(ipList);
+                return true;
+            }
+            catch 
+            {
                 return false;
             }
         }

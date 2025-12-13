@@ -32,65 +32,101 @@
                         </tr>
                         <tr>
                             <td>
-                                SMTP Server Address:
+                                Alert Service Polling Interval (Seconds):
                             </td>
                             <td>
-                                <input type="text" @bind="@_currentSettings.MonitoringSettings.SmtpServerAddress"/>
+                                <input type="number" @bind="@_currentSettings.MonitoringSettings.AlertIntervalInSeconds"/>
                             </td>
                         </tr>
                         <tr>
                             <td>
-                                SMTP Port:
+                                Enable Downtime Alerts:
                             </td>
                             <td>
-                                <input type="number" @bind="@_currentSettings.MonitoringSettings.SmtpPort" />
+                                <Switch @bind-ToggleIsOn="@_currentSettings.MonitoringSettings.AlertsEnabled" />
                             </td>
                         </tr>
-                        <tr>
-                            <td>
-                                SMTP Send To:
-                            </td>
-                            <td>
-                                <input type="text" @bind="@_currentSettings.MonitoringSettings.SmtpTargetEmail" />
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>
-                                SMTP Use Auth:
-                            </td>
-                            <td>
-                                <Switch @bind-ToggleIsOn="@_currentSettings.MonitoringSettings.SmtpAuthenticationIsRequired" />
-                            </td>
-                        </tr>
-                        @if (_currentSettings.MonitoringSettings.SmtpAuthenticationIsRequired)
+                        @if (_currentSettings.MonitoringSettings.AlertsEnabled)
                         {
                             <tr>
                                 <td>
-                                    SMTP Username:
+                                    Alert Percentage Threshold:
                                 </td>
                                 <td>
-                                    <input type="text" @bind="@_currentSettings.MonitoringSettings.SmtpUsername" />
+                                    <input type="number" @bind="@_currentSettings.MonitoringSettings.AlertIfDownForPercent"/>
                                 </td>
                             </tr>
                             <tr>
                                 <td>
-                                    SMTP Password:
+                                    Alert Evaluation Period (Minutes):
                                 </td>
                                 <td>
-                                    <input type="text" @bind="@_currentSettings.MonitoringSettings.SmtpPassword" />
+                                    <input type="number" @bind="@_currentSettings.MonitoringSettings.AlertTimePeriodInMinutes"/>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    SMTP Server Address:
+                                </td>
+                                <td>
+                                    <input type="text" @bind="@_currentSettings.MonitoringSettings.SmtpServerAddress"/>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    SMTP Port:
+                                </td>
+                                <td>
+                                    <input type="number" @bind="@_currentSettings.MonitoringSettings.SmtpPort" />
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    SMTP Send To:
+                                </td>
+                                <td>
+                                    <input type="text" @bind="@_currentSettings.MonitoringSettings.SmtpTargetEmail" />
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    SMTP Use Auth:
+                                </td>
+                                <td>
+                                    <Switch @bind-ToggleIsOn="@_currentSettings.MonitoringSettings.SmtpAuthenticationIsRequired" />
+                                </td>
+                            </tr>
+                            @if (_currentSettings.MonitoringSettings.SmtpAuthenticationIsRequired)
+                            {
+                                <tr>
+                                    <td>
+                                        SMTP Username:
+                                    </td>
+                                    <td>
+                                        <input type="text" @bind="@_currentSettings.MonitoringSettings.SmtpUsername" />
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        SMTP Password:
+                                    </td>
+                                    <td>
+                                        <input type="text" @bind="@_currentSettings.MonitoringSettings.SmtpPassword" />
+                                    </td>
+                                </tr>
+                            }
+
+                            <tr>
+                                <td>
+                                    Send Test Email:
+                                </td>
+                                <td>
+                                    <button @onclick="@OnClickSendTestEmail">
+                                        <span class="material-symbols-outlined">send</span>
+                                    </button>
                                 </td>
                             </tr>
                         }
-                        <tr>
-                            <td>
-                                Send Test Email: 
-                            </td>
-                            <td>
-                                <button @onclick="@OnClickSendTestEmail">
-                                    <span class="material-symbols-outlined">send</span>
-                                </button>
-                            </td>
-                        </tr>
                     </table>
                 }
 

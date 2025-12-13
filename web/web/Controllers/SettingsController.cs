@@ -11,11 +11,13 @@ namespace web.Controllers
     {
         private static string _settingsLocation = string.Empty;
         private readonly MonitorService _monitorService;
+        private readonly AlertService _alertService;
 
-        public SettingsController(MonitorService monitorService)
+        public SettingsController(MonitorService monitorService, AlertService alertService)
         {
             _monitorService = monitorService;
             _settingsLocation = AllSettings.SettingsPath;
+            _alertService = alertService;
 
             if (!System.IO.File.Exists(_settingsLocation))
             {
@@ -64,6 +66,7 @@ namespace web.Controllers
 
                 AllSettings.UpdateExistingSettingsFile(_settingsLocation, settings);
                 _monitorService.Restart();
+                _alertService.Restart();
                 return TypedResults.Ok(settings);
             }
             catch (Exception ex)

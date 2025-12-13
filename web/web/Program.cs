@@ -29,6 +29,9 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddSingleton<MonitorService>();
 builder.Services.AddHostedService(x => x.GetRequiredService<MonitorService>());
 
+builder.Services.AddSingleton<AlertService>();
+builder.Services.AddHostedService(x => x.GetRequiredService<AlertService>());
+
 builder.Services.AddSingleton<DiscoveryService>();
 
 var app = builder.Build();

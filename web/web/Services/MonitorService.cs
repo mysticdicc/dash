@@ -78,15 +78,6 @@ namespace web.Services
 
                     DateTime submit = DateTime.UtcNow;
 
-                    //fetch monitored devices
-                    var handler = new HttpClientHandler();
-                    handler.ClientCertificateOptions = ClientCertificateOption.Manual;
-                    handler.ServerCertificateCustomValidationCallback =
-                        (httpRequestMessage, cert, cetChain, policyErrors) =>
-                        {
-                            return true;
-                        };
-
                     List<IP>? ips = [];
 
                     _logger.LogInformation("Fetching monitored devices from API endpoint");
