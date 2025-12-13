@@ -17,7 +17,13 @@ namespace DashLib.DankAPI
         {
             for (int i = 0; i < maxRetries; i++)
             {
-                HttpResponseMessage response = await httpClient.SendAsync(request, cancellationToken);
+                var newRequest = new HttpRequestMessage()
+                {
+                    Method = request.Method,
+                    Content = request.Content,
+                    RequestUri = request.RequestUri
+                };
+                HttpResponseMessage response = await httpClient.SendAsync(newRequest, cancellationToken);
 
                 if (response.IsSuccessStatusCode)
                 {

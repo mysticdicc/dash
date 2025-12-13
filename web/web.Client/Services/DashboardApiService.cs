@@ -173,12 +173,6 @@ namespace web.Client.Services
                     $"Failed to replace the dashboard. {ex.Message}");
             }
 
-            if (!success)
-            {
-                _notificationService.ShowAsync("Dashboard Upload Finished With Errors", 
-                    "Dashboard loaded but an uncounted number of errors has occured with either saving or deleting dashboard items.");
-            }
-
             return success;
         }
     }

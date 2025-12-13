@@ -183,6 +183,12 @@ namespace DashLib.DankAPI
             {
                 string endpoint = $"{_shortcutBase}/post/new";
 
+                if (null != shortcutSend.Parent)
+                {
+                    shortcutSend.ParentId = shortcutSend.Parent.Id;
+                    shortcutSend.Parent = null;
+                }
+
                 try
                 {
                     await RequestHandler.PostJsonAsync(_httpClient, endpoint, shortcutSend);
@@ -196,6 +202,11 @@ namespace DashLib.DankAPI
             else if (item is DirectoryItem directorySend)
             {
                 string endpoint = $"{_directoryBase}/post/new";
+
+                if (null != directorySend.Children && directorySend.Children.Count > 0)
+                {
+                    directorySend.Children = [];
+                }
 
                 try
                 {
@@ -294,10 +305,12 @@ namespace DashLib.DankAPI
         public async Task<bool> ReplaceWholeDashboardAsync(List<DashboardItemBase> newItems)
         {
             List<DashboardItemBase> oldItems = [];
+
             try
             {
                 oldItems = await GetAllItemsAsync();
-            } catch { }
+            } 
+            catch { }
             
             bool success = true;
 
@@ -313,13 +326,36 @@ namespace DashLib.DankAPI
                 }
             }
 
+            List<ShortcutItem> parentShortcuts = [];
+
             foreach (var item in newItems)
             {
+                if (item is ShortcutItem shortcut)
+                {
+                    if (null != shortcut.Parent || null != shortcut.ParentId)
+                    {
+                        parentShortcuts.Add(shortcut);
+                        continue;
+                    }
+                }
+
                 try
                 {
                     await SaveItemAsync(item);
                 }
                 catch 
+                {
+                    throw;
+                }
+            }
+
+            foreach (var shortcut in parentShortcuts)
+            {
+                try
+                {
+                    await SaveItemAsync(shortcut);
+                }
+                catch
                 {
                     throw;
                 }
