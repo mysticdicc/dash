@@ -1,15 +1,28 @@
 ﻿@inject ISettingsAPI SettingsService
 @inject IMailAPI MailService
+@inject IJSRuntime JSRuntime
 
 @page "/settings/home"
 @using DashLib.Interfaces
+@using System.Text.Json
 
 <PageTitle>settings</PageTitle>
+
+<InputFile OnChange="@OnClickUpload" id="upload" style="overflow: hidden; width: 0; height: 0;" accept="*.png" />
+
 <article>
     <header>
         <button onclick="@OnClickSave">
             <span class="material-icons">save</span>
         </button>
+        <span>
+            <button @onclick="@OnClickUploadButton">
+                <span title="Upload settings export" class="material-icons">upload</span>
+            </button>
+            <button @onclick="@OnClickDownloadButton">
+                <span title="Download settings export" class="material-icons">download</span>
+            </button>
+        </span>
     </header>
     <content class="settings_layout">
         <div>
@@ -225,5 +238,30 @@
     private async void OnClickSendTestEmail()
     {
         await MailService.SendTestEmailAsync();
+    }
+
+    async void OnClickDownloadButton()
+    {
+        if (null != _currentSettings)
+        {
+            await File.SaveAs(JSRuntime, "settings.json", JsonSerializer.Serialize(_currentSettings, AllSettings.JsonOptions));
+        }
+    }
+
+    async void OnClickUpload(InputFileChangeEventArgs eventArgs)
+    {
+        var str = await File.InputFileToString(eventArgs);
+        var items = JsonSerializer.Deserialize<AllSettings>(str, AllSettings.JsonOptions);
+
+        if (null != items)
+        {
+            await SettingsService.CreateNewSettingsAsync(items);
+            await OnInitializedAsync();
+        }
+    }
+
+    async void OnClickUploadButton()
+    {
+        await JSRuntime.InvokeVoidAsync("clickUpload");
     }
 }
