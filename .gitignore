@@ -43,3 +43,6 @@ artifacts/
 
 /web/web/Data/danknetlocal.db
 /web/web/Data/danknetlocal.db-wal
+/web/web/Data/dashboard.db
+/web/web/Data/dashboard.db-shm
+/web/web/Data/dashboard.db-wal
