@@ -16,5 +16,6 @@ namespace DashLib.Interfaces
         public Task<bool> DiscoveryUpdateAsync(Subnet subnet);
         public Task<Subnet> GetSubnetByIdAsync(int ID);
         public Task<bool> DeleteIpByObjectAsync(IP ip);
+        public Task<bool> ReplaceAllSubnetsAsync(List<Subnet> subnets);
     }
 }

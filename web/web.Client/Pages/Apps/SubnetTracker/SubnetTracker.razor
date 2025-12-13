@@ -5,6 +5,7 @@
 @using NetTools
 @using DashLib.Interfaces
 @using web.Client.Services
+@using System.Text.Json
 
 @inject ISubnetsAPI SubnetService
 @inject IJSRuntime JSRuntime
@@ -12,6 +13,8 @@
 @page "/subtrackr/home"
 
 <PageTitle>subnet trackr</PageTitle>
+
+<InputFile OnChange="@OnClickUpload" id="upload" style="overflow: hidden; width: 0; height: 0;" accept="*.png" />
 
 <article>
     <header>
@@ -33,7 +36,14 @@
         <button @onclick="@OnInitializedAsync">
             <span class="material-icons">refresh</span>
         </button>
-        @*filter controls here*@
+        <span>
+            <button @onclick="@OnClickUploadButton">
+                <span title="Upload subnet export" class="material-icons">upload</span>
+            </button>
+            <button @onclick="@OnClickSave">
+                <span title="Download subnet export" class="material-icons">save</span>
+            </button>
+        </span>
     </header>
     <content class="subnet_layout">
         <table>
@@ -127,5 +137,30 @@
             await Task.Delay(100);
             await OnInitializedAsync();
         }
+    }
+
+    async void OnClickSave()
+    {
+        if (null != SubnetList && SubnetList.Count > 0)
+        {
+            await File.SaveAs(JSRuntime, "subnets.json", JsonSerializer.Serialize(SubnetList, AllSettings.JsonOptions));
+        }
+    }
+
+    async void OnClickUpload(InputFileChangeEventArgs eventArgs)
+    {
+        var str = await File.InputFileToString(eventArgs);
+        var items = JsonSerializer.Deserialize<List<Subnet>>(str, AllSettings.JsonOptions);
+
+        if (null != items && items.Count > 0)
+        {
+            await SubnetService.ReplaceAllSubnetsAsync(items);
+            await OnInitializedAsync();
+        }
+    }
+
+    async void OnClickUploadButton()
+    {
+        await JSRuntime.InvokeVoidAsync("clickUpload");
     }
 }

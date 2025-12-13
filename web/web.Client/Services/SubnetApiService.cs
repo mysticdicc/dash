@@ -193,5 +193,20 @@ namespace web.Client.Services
                 return false;
             }
         }
+
+        public async Task<bool> ReplaceAllSubnetsAsync(List<Subnet> subnets)
+        {
+            try
+            {
+                await _subnetsAPI.ReplaceAllSubnetsAsync(subnets);
+                _notificationService.ShowAsync("Success", "All subnets replaced successfully");
+                return true;
+            }
+            catch(Exception ex)
+            {
+                _notificationService.ShowAsync("Failed to replace all subnets", ex.Message);
+                return false;
+            }
+        }
     }
 }

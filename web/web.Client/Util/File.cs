@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using static System.Net.Mime.MediaTypeNames;
 using Microsoft.JSInterop;
+using Microsoft.AspNetCore.Components.Forms;
 
 namespace web.Client.Util
 {
@@ -18,6 +19,15 @@ namespace web.Client.Util
                 "saveAsFile",
                 filename,
                 Convert.ToBase64String(data));
+        }
+
+        public async static Task<string> InputFileToString(InputFileChangeEventArgs eventArgs)
+        {
+            MemoryStream ms = new MemoryStream();
+            await eventArgs.File.OpenReadStream().CopyToAsync(ms);
+            var bytes = ms.ToArray();
+            var str = Encoding.UTF8.GetString(bytes);
+            return str;
         }
     }
 }

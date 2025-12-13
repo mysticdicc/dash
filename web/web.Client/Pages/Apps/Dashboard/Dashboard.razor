@@ -169,16 +169,13 @@
 
     async void OnClickUpload(InputFileChangeEventArgs eventArgs)
     {
-        MemoryStream ms = new MemoryStream();
-        await eventArgs.File.OpenReadStream().CopyToAsync(ms);
-        var bytes = ms.ToArray();
-        var str = System.Text.Encoding.UTF8.GetString(bytes);
-
+        var str = await File.InputFileToString(eventArgs);
         var items = JsonSerializer.Deserialize<List<DashboardItemBase>>(str, AllSettings.JsonOptions);
 
         if (null != items && items.Count > 0)
         {
             await DashboardService.ReplaceWholeDashboardAsync(items);
+            await OnInitializedAsync();
         }
     }
 

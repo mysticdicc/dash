@@ -209,5 +209,60 @@ namespace DashLib.DankAPI
                 throw;
             }
         }
+
+        public async Task<bool> ReplaceAllSubnetsAsync(List<Subnet> subnets) 
+        {
+            List<IP> oldIps = [];
+            List<Subnet> oldSubnets = [];
+
+            bool success = true;
+
+            try
+            {
+                oldIps = await GetAllIpsAsync();
+            }
+            catch { }
+
+            try
+            {
+                oldSubnets = await GetAllAsync();
+            }
+            catch { }
+
+            if (oldSubnets.Count > 0)
+            {
+                foreach (var subnet in oldSubnets)
+                {
+                    try
+                    {
+                        await DeleteSubnetByObjectAsync(subnet);
+                    } 
+                    catch { success = false; }
+                }
+            }
+
+            if (oldIps.Count > 0)
+            {
+                foreach (var ip in oldIps)
+                {
+                    try
+                    {
+                        await DeleteIpByObjectAsync(ip);
+                    } 
+                    catch { success = false; }
+                }
+            }
+
+            foreach (var subnet in subnets)
+            {
+                try
+                {
+                    await AddSubnetByObjectAsync(subnet);
+                } 
+                catch { success = false; }
+            }
+
+            return success;
+        }
     }
 }
