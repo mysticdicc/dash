@@ -170,6 +170,7 @@ namespace web.Services
 
             if (alertIps.Count > 0)
             {
+                _logger.LogInformation($"Alert service submitting {alertIps.Count} IP addresses for alert consideration.");
                 await _mailApi.SendAlertEmailAsync(alertIps);
             }
         }

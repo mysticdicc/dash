@@ -196,15 +196,26 @@
                 <table>
                     <tr>
                         <td>
+                            Open Swagger UI (API Explorer):
+                        </td>
+                        <td>
                             <a href="/swagger">
                                 <button>
                                     <span class="material-symbols-outlined">open_in_browser</span>
                                 </button>
                             </a>
                         </td>
+                    </tr>
+                    <tr>
                         <td>
-                            Open Swagger UI (API Explorer)
+                            Reset Settings to Default:
                         </td>
+                        <td>
+                            <button @onclick="@OnCLickResetToDefault">
+                                <span class="material-icons">replay</span>
+                            </button>
+                        </td>
+
                     </tr>
                 </table>
             </content>
@@ -229,9 +240,7 @@
         if (null != _currentSettings)
         {
             await SettingsService.CreateNewSettingsAsync(_currentSettings);
-            await Task.Delay(100);
-            _currentSettings = await SettingsService.GetCurrentSettingsAsync();
-            StateHasChanged();
+            await RefreshSettings();
         }
     }
 
@@ -240,7 +249,7 @@
         await MailService.SendTestEmailAsync();
     }
 
-    async void OnClickDownloadButton()
+    private async void OnClickDownloadButton()
     {
         if (null != _currentSettings)
         {
@@ -248,7 +257,7 @@
         }
     }
 
-    async void OnClickUpload(InputFileChangeEventArgs eventArgs)
+    private async void OnClickUpload(InputFileChangeEventArgs eventArgs)
     {
         var str = await File.InputFileToString(eventArgs);
         var items = JsonSerializer.Deserialize<AllSettings>(str, AllSettings.JsonOptions);
@@ -256,12 +265,27 @@
         if (null != items)
         {
             await SettingsService.CreateNewSettingsAsync(items);
-            await OnInitializedAsync();
+            await RefreshSettings();
         }
     }
 
-    async void OnClickUploadButton()
+    private async void OnClickUploadButton()
     {
         await JSRuntime.InvokeVoidAsync("clickUpload");
+    }
+
+    private async void OnCLickResetToDefault()
+    {
+        var settings = new AllSettings(true);
+
+        await SettingsService.CreateNewSettingsAsync(settings);
+        await RefreshSettings();
+    }
+
+    private async Task RefreshSettings()
+    {
+        await Task.Delay(100);
+        _currentSettings = await SettingsService.GetCurrentSettingsAsync();
+        StateHasChanged();
     }
 }

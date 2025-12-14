@@ -92,7 +92,7 @@ namespace web.Controllers
             if (settings != null)
             {
                 body = $"<h2>Downtime Alert</h2><p>The following have been down for more than {settings.MonitoringSettings.AlertIfDownForPercent}% of the last {settings.MonitoringSettings.AlertTimePeriodInMinutes} minutes::</p><ul>";
-                oldDate = DateTime.UtcNow.AddMinutes(settings.MonitoringSettings.AlertAgainAfterInMinutes);
+                oldDate = DateTime.UtcNow.AddMinutes(-settings.MonitoringSettings.AlertAgainAfterInMinutes);
             }
             else
             {

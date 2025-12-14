@@ -35,7 +35,7 @@ namespace DashLib.DankAPI
                 await Task.Delay(delayMs, cancellationToken);
             }
 
-            throw new HttpRequestException($"Request failed after {maxRetries} attempts.");
+            throw new HttpRequestException($"HTTP request to {request.RequestUri} using {request.Method} failed after {maxRetries} attempts.");
         }
 
         public static async Task<T?> GetFromJsonAsync<T>(HttpClient httpClient, string endpoint)
