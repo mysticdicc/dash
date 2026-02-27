@@ -11,9 +11,9 @@ using Moq;
 using DashLib.Interfaces;
 using System.Collections.Generic;
 
-public class DashboardCardTest : TestContext
+public class DashboardCardTest : BunitContext
 {
-    public (IRenderedComponent<DashboardCard>, Mock<IDashAPI>, Mock<IJSRuntime>) CreateStandardComponent(TestServiceProvider services)
+    public (IRenderedComponent<DashboardCard>, Mock<IDashAPI>, Mock<IJSRuntime>) CreateStandardComponent(BunitServiceProvider services)
     {
         var shortcut = new ShortcutItem
         {
@@ -52,7 +52,7 @@ public class DashboardCardTest : TestContext
             .Returns(new ValueTask<object?>(result: null));
         services.AddSingleton<IJSRuntime>(jsRuntimeMock.Object);
 
-        var cut = RenderComponent<DashboardCard>(parameters => parameters
+        var cut = Render<DashboardCard>(parameters => parameters
             .Add(p => p.Item, shortcut)
         );
 
@@ -60,7 +60,7 @@ public class DashboardCardTest : TestContext
 
     }
 
-    public (IRenderedComponent<DashboardCard>, Mock<IDashAPI>) CreateFolderComponent(TestServiceProvider services)
+    public (IRenderedComponent<DashboardCard>, Mock<IDashAPI>) CreateFolderComponent(BunitServiceProvider services)
     {
         var shortcut = new ShortcutItem
         {
@@ -85,7 +85,7 @@ public class DashboardCardTest : TestContext
         dashApi.Setup(api => api.EditItemAsync(It.IsAny<DashboardItemBase>())).ReturnsAsync(true);
         services.AddSingleton(dashApi.Object);
 
-        var cut = RenderComponent<DashboardCard>(parameters => parameters
+        var cut = Render<DashboardCard>(parameters => parameters
             .Add(p => p.Item, folder)
         );
 
@@ -141,7 +141,7 @@ public class DashboardCardTest : TestContext
         };
 
         bool called = false;
-        var cut = RenderComponent<DashboardCard>(parameters => parameters
+        var cut = Render<DashboardCard>(parameters => parameters
             .Add(p => p.OnEditClick, EventCallback.Factory.Create<DashboardItemBase>(this, (DashboardItemBase _) => { called = true; return Task.CompletedTask; }))
             .Add(p => p.Item, shortcut)
         );

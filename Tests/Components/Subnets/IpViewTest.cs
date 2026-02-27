@@ -7,9 +7,9 @@ using Moq;
 using System.Collections.Generic;
 using Xunit;
 
-public class IpViewTest : TestContext
+public class IpViewTest : BunitContext
 {
-    public (IRenderedComponent<IpView>, Mock<ISubnetsAPI>) CreateStandardComponent(TestServiceProvider services)
+    public (IRenderedComponent<IpView>, Mock<ISubnetsAPI>) CreateStandardComponent(BunitServiceProvider services)
     {
         var subnetApi = new Mock<ISubnetsAPI>();
 
@@ -32,7 +32,7 @@ public class IpViewTest : TestContext
 
         services.AddSingleton(subnetApi.Object);
 
-        var cut = RenderComponent<IpView>(parameters => parameters
+        var cut = Render<IpView>(parameters => parameters
             .Add(p => p.IpAddress, ip)
             .Add(p => p.IpViewVisible, true)
         );

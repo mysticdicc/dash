@@ -10,9 +10,9 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Xunit;
 
-public class DashboardFolderViewTest : TestContext
+public class DashboardFolderViewTest : BunitContext
 {
-    public (IRenderedComponent<DashboardFolderView>, Mock<IDashAPI>, Mock<IJSRuntime>) CreateFolderComponent(TestServiceProvider services)
+    public (IRenderedComponent<DashboardFolderView>, Mock<IDashAPI>, Mock<IJSRuntime>) CreateFolderComponent(BunitServiceProvider services)
     {
         var shortcut1 = new ShortcutItem
         {
@@ -51,7 +51,7 @@ public class DashboardFolderViewTest : TestContext
             .Returns(new ValueTask<object?>(result: null));
         services.AddSingleton<IJSRuntime>(jsRuntimeMock.Object);
 
-        var cut = RenderComponent<DashboardFolderView>(parameters => parameters
+        var cut = Render<DashboardFolderView>(parameters => parameters
             .Add(p => p.Item, folder)
             .Add(p => p.Hidden, false)
         );

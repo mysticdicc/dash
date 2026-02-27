@@ -11,9 +11,9 @@ using System.Threading.Tasks;
 using Xunit;
 using Microsoft.AspNetCore.Components;
 
-public class UptimeChartTest : TestContext
+public class UptimeChartTest : BunitContext
 {
-    public (IRenderedComponent<UptimeChart>, Mock<IMonitoringAPI>) CreateStandardComponent(TestServiceProvider services, bool visible)
+    public (IRenderedComponent<UptimeChart>, Mock<IMonitoringAPI>) CreateStandardComponent(BunitServiceProvider services, bool visible)
     {
         var monitoringApi = new Mock<IMonitoringAPI>();
         services.AddSingleton(monitoringApi.Object);
@@ -26,7 +26,7 @@ public class UptimeChartTest : TestContext
             ip.MonitorStateList = MonitorState.CreateRandomListOfMonitorStates(ip);
         };
 
-        var cut = RenderComponent<UptimeChart>(parameters => parameters
+        var cut = Render<UptimeChart>(parameters => parameters
             .Add(p => p.IPAddresses, ips)
             .Add(p => p.Visible, visible)
         );
@@ -65,7 +65,7 @@ public class UptimeChartTest : TestContext
         var (cut, api) = CreateStandardComponent(Services, true);
         bool callbackInvoked = false;
 
-        cut.SetParametersAndRender(parameters => parameters
+        cut.Render(parameters => parameters
             .Add(p => p.ExpandChanged, EventCallback.Factory.Create<string>(this, (expanded) =>
             {
                 callbackInvoked = true;

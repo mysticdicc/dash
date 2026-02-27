@@ -8,9 +8,9 @@ using Moq;
 using System.Collections.Generic;
 using Xunit;
 
-public class IpEditorTest : TestContext
+public class IpEditorTest : BunitContext
 {
-    public (IRenderedComponent<IpEditor>, Mock<ISubnetsAPI>) CreateStandardComponent(TestServiceProvider services)
+    public (IRenderedComponent<IpEditor>, Mock<ISubnetsAPI>) CreateStandardComponent(BunitServiceProvider services)
     {
         var subnetApi = new Mock<ISubnetsAPI>();
 
@@ -33,7 +33,7 @@ public class IpEditorTest : TestContext
 
         services.AddSingleton(subnetApi.Object);
 
-        var cut = RenderComponent<IpEditor>(parameters => parameters
+        var cut = Render<IpEditor>(parameters => parameters
             .Add(p => p.IpAddress, ip)
             .Add(p => p.EditorVisible, true)
         );

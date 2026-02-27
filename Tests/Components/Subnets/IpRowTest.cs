@@ -9,9 +9,9 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Xunit;
 
-public class IpRowTest : TestContext
+public class IpRowTest : BunitContext
 {
-    public (IRenderedComponent<IpRow>, Mock<ISubnetsAPI>) CreateStandardComponent(TestServiceProvider services)
+    public (IRenderedComponent<IpRow>, Mock<ISubnetsAPI>) CreateStandardComponent(BunitServiceProvider services)
     {
         var subnetApi = new Mock<ISubnetsAPI>();
 
@@ -34,7 +34,7 @@ public class IpRowTest : TestContext
 
         services.AddSingleton(subnetApi.Object);
 
-        var cut = RenderComponent<IpRow>(parameters => parameters
+        var cut = Render<IpRow>(parameters => parameters
             .Add(p => p.IpAddress, subnet.List[0])
         );
 

@@ -6,9 +6,9 @@ using Moq;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-public class SubnetCardTest : TestContext
+public class SubnetCardTest : BunitContext
 {
-    public (IRenderedComponent<SubnetCard>, Mock<ISubnetsAPI>) CreateStandardComponent(TestServiceProvider services)
+    public (IRenderedComponent<SubnetCard>, Mock<ISubnetsAPI>) CreateStandardComponent(BunitServiceProvider services)
     {
         var subnetApi = new Mock<ISubnetsAPI>();
 
@@ -34,7 +34,7 @@ public class SubnetCardTest : TestContext
         var mockJs = new Mock<IJSRuntime>();
         services.AddSingleton(mockJs.Object);
 
-        var cut = RenderComponent<SubnetCard>(parameters => parameters
+        var cut = Render<SubnetCard>(parameters => parameters
             .Add(p => p.Subnet, subnet)
         );
 

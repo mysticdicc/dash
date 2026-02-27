@@ -9,9 +9,9 @@ using System;
 using System.Collections.Generic;
 using Xunit;
 
-public class StatsChartTest : TestContext
+public class StatsChartTest : BunitContext
 {
-    public (IRenderedComponent<StatsChart>, Mock<IMonitoringAPI>) CreateStandardComponent(TestServiceProvider services, bool visible)
+    public (IRenderedComponent<StatsChart>, Mock<IMonitoringAPI>) CreateStandardComponent(BunitServiceProvider services, bool visible)
     {
         var monitoringApi = new Mock<IMonitoringAPI>();
         services.AddSingleton(monitoringApi.Object);
@@ -24,7 +24,7 @@ public class StatsChartTest : TestContext
             ip.MonitorStateList = MonitorState.CreateRandomListOfMonitorStates(ip);
         };
 
-        var cut = RenderComponent<StatsChart>(parameters => parameters
+        var cut = Render<StatsChart>(parameters => parameters
             .Add(p => p.IPAddresses, ips)
             .Add(p => p.Visible, visible)
         );
@@ -63,7 +63,7 @@ public class StatsChartTest : TestContext
         var (cut, api) = CreateStandardComponent(Services, true);
         bool invoked = false;
 
-        cut.SetParametersAndRender(parameters => parameters.Add(p => p.ExpandChanged, EventCallback.Factory.Create<string>(this, ip =>
+        cut.Render(parameters => parameters.Add(p => p.ExpandChanged, EventCallback.Factory.Create<string>(this, ip =>
         {
             invoked = true;
         })));

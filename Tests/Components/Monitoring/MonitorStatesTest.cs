@@ -9,9 +9,9 @@ using System.Collections.Generic;
 using Xunit;
 using Microsoft.AspNetCore.Components;
 
-public class MonitorStatesTest : TestContext
+public class MonitorStatesTest : BunitContext
 {
-    public (IRenderedComponent<MonitorStates>, Mock<IMonitoringAPI>) CreateStandardComponent(TestServiceProvider services, bool visible)
+    public (IRenderedComponent<MonitorStates>, Mock<IMonitoringAPI>) CreateStandardComponent(BunitServiceProvider services, bool visible)
     {
         var monitoringApi = new Mock<IMonitoringAPI>();
         services.AddSingleton(monitoringApi.Object);
@@ -30,7 +30,7 @@ public class MonitorStatesTest : TestContext
             }
         };
 
-        var cut = RenderComponent<MonitorStates>(parameters => parameters
+        var cut = Render<MonitorStates>(parameters => parameters
             .Add(p => p.IPAddresses, ips)
             .Add(p => p.Visible, visible)
         );
@@ -81,7 +81,7 @@ public class MonitorStatesTest : TestContext
         var callbackInvoked = false;
         IP? callbackIp = null;
 
-        cut.SetParametersAndRender(parameters => parameters.Add(p => p.ViewClicked, EventCallback.Factory.Create<IP>(this, ip =>
+        cut.Render(parameters => parameters.Add(p => p.ViewClicked, EventCallback.Factory.Create<IP>(this, ip =>
         {
             callbackInvoked = true;
             callbackIp = ip;
@@ -102,7 +102,7 @@ public class MonitorStatesTest : TestContext
         var callbackInvoked = false;
         IP? callbackIp = null;
 
-        cut.SetParametersAndRender(parameters => parameters.Add(p => p.EditClicked, EventCallback.Factory.Create<IP>(this, ip =>
+        cut.Render(parameters => parameters.Add(p => p.EditClicked, EventCallback.Factory.Create<IP>(this, ip =>
         {
             callbackInvoked = true;
             callbackIp = ip;
@@ -122,7 +122,7 @@ public class MonitorStatesTest : TestContext
         var callbackInvoked = false;
         IP? callbackIp = null;
 
-        cut.SetParametersAndRender(parameters => parameters.Add(p => p.HistoryClicked, EventCallback.Factory.Create<IP>(this, ip =>
+        cut.Render(parameters => parameters.Add(p => p.HistoryClicked, EventCallback.Factory.Create<IP>(this, ip =>
         {
             callbackInvoked = true;
             callbackIp = ip;

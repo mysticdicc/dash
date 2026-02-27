@@ -9,9 +9,9 @@ using System.Collections.Generic;
 using Xunit;
 using Microsoft.AspNetCore.Components;
 
-public class StatsTest : TestContext
+public class StatsTest : BunitContext
 {
-    public (IRenderedComponent<Stats>, Mock<IMonitoringAPI>) CreateStandardComponent(TestServiceProvider services, bool visible)
+    public (IRenderedComponent<Stats>, Mock<IMonitoringAPI>) CreateStandardComponent(BunitServiceProvider services, bool visible)
     {
         var monitoringApi = new Mock<IMonitoringAPI>();
         services.AddSingleton(monitoringApi.Object);
@@ -24,7 +24,7 @@ public class StatsTest : TestContext
             ip.MonitorStateList = MonitorState.CreateRandomListOfMonitorStates(ip);
         };
 
-        var cut = RenderComponent<Stats>(parameters => parameters
+        var cut = Render<Stats>(parameters => parameters
             .Add(p => p.IPAddresses, ips)
             .Add(p => p.Visible, visible)
         );
@@ -64,7 +64,7 @@ public class StatsTest : TestContext
         var (cut, api) = CreateStandardComponent(Services, true);
         bool invoked = false;
 
-        cut.SetParametersAndRender(parameters => parameters.Add(p => p.ExpandChanged, EventCallback.Factory.Create<string>(this, ip =>
+        cut.Render(parameters => parameters.Add(p => p.ExpandChanged, EventCallback.Factory.Create<string>(this, ip =>
         {
             invoked = true;
         })));

@@ -10,9 +10,9 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Xunit;
 
-public class DashboardCardEditorTest : TestContext
+public class DashboardCardEditorTest : BunitContext
 {
-    public (IRenderedComponent<DashboardCardEditor>, Mock<IDashAPI>, Mock<IJSRuntime>) CreateStandardComponent(TestServiceProvider services, bool isNew)
+    public (IRenderedComponent<DashboardCardEditor>, Mock<IDashAPI>, Mock<IJSRuntime>) CreateStandardComponent(BunitServiceProvider services, bool isNew)
     {
         var shortcut1 = new ShortcutItem
         {
@@ -63,7 +63,7 @@ public class DashboardCardEditorTest : TestContext
 
         var list = new List<DirectoryItem> { folder };
 
-        var cut = RenderComponent<DashboardCardEditor>(parameters => parameters
+        var cut = Render<DashboardCardEditor>(parameters => parameters
             .Add(p => p.Hidden, false)
             .Add(p => p.Item, shortcut1)
             .Add(p => p.IsNewItem, isNew)
@@ -91,7 +91,7 @@ public class DashboardCardEditorTest : TestContext
     {
         var (cut, api, js) = CreateStandardComponent(this.Services, true);
 
-        cut.SetParametersAndRender(parameters => parameters
+        cut.Render(parameters => parameters
             .Add(p => p.Hidden, true)
         );
 

@@ -8,9 +8,9 @@ using Xunit;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Components.Web;
 
-public class SubnetEditorTest : TestContext
+public class SubnetEditorTest : BunitContext
 {
-    public (IRenderedComponent<SubnetEditor>, Mock<ISubnetsAPI>) CreateStandardComponent(TestServiceProvider services)
+    public (IRenderedComponent<SubnetEditor>, Mock<ISubnetsAPI>) CreateStandardComponent(BunitServiceProvider services)
     {
         var subnetApi = new Mock<ISubnetsAPI>();
 
@@ -33,7 +33,7 @@ public class SubnetEditorTest : TestContext
 
         services.AddSingleton(subnetApi.Object);
 
-        var cut = RenderComponent<SubnetEditor>(parameters => parameters
+        var cut = Render<SubnetEditor>(parameters => parameters
             .Add(p => p.Subnet, subnet)
             .Add(p => p.EditorVisible, true)
         );

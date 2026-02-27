@@ -10,9 +10,9 @@ using Microsoft.AspNetCore.Components;
 using System.Linq;
 using Xunit;
 
-public class MonitorStatesHistoryTest : TestContext
+public class MonitorStatesHistoryTest : BunitContext
 {
-    public (IRenderedComponent<MonitorStatesHistory>, Mock<IMonitoringAPI>) CreateStandardComponent(TestServiceProvider services, bool visible)
+    public (IRenderedComponent<MonitorStatesHistory>, Mock<IMonitoringAPI>) CreateStandardComponent(BunitServiceProvider services, bool visible)
     {
         var monitoringApi = new Mock<IMonitoringAPI>();
         services.AddSingleton(monitoringApi.Object);
@@ -29,7 +29,7 @@ public class MonitorStatesHistoryTest : TestContext
             states.AddRange(stateList);
         };
 
-        var cut = RenderComponent<MonitorStatesHistory>(parameters => parameters
+        var cut = Render<MonitorStatesHistory>(parameters => parameters
             .Add(p => p.MonitorStates, states)
             .Add(p => p.MonitorHistoryVisible, visible)
         );
@@ -73,7 +73,7 @@ public class MonitorStatesHistoryTest : TestContext
         var (cut, api) = CreateStandardComponent(Services, true);
         bool invoked = false;
 
-        cut.SetParametersAndRender(parameters => parameters.Add(p => p.ViewClicked, EventCallback.Factory.Create<IP>(this, ip =>
+        cut.Render(parameters => parameters.Add(p => p.ViewClicked, EventCallback.Factory.Create<IP>(this, ip =>
         {
             invoked = true;
         })));
