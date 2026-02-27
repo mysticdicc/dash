@@ -5,7 +5,7 @@ updates:
     schedule:
       interval: "weekly"
 
-  - package-ecosystem: "NuGet" # See documentation for possible values
+  - package-ecosystem: "nuget" # See documentation for possible values
     directories:
       - "/*"
       - "/web/*"
