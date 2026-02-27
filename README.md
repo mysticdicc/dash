@@ -54,5 +54,10 @@ Once running you can access the website at http://dockerip:8080 by default, if y
 |:---:|:---:|
 | The settings window currently can be used to set the delay between polls from the monitoring service. More functionality planned soon. | This is an example of the notifications you will receive from the application to inform you of any errors etc. |
 
+### Notes about AI Usage and Automation:
+I have used Copilot to assist in the creation of some bug reports and enhancements to practice with things like branches and merge requests, I would not endorse doing this to other people's repos but as a creative resource for your own repos I have found it useful. Light AI assistance was used in the form of VS Copilot when creating the application, largely for problem solving and to avoid tabbing out to Google, and never in Agent mode. Less than 200 lines of this project were written by an LLM and 0 without human review.
+
+I have also enabled dependabot and allowed it to create pull requests to ensure my Nuget packages and Dockerfile are kept up to date, the application will be retested before new Docker images are deployed with the updated files. I am experimenting with various GitHub workflows and you may see commits related to their configuration.
+
 ## License
 Available under the [GPLv3](https://www.gnu.org/licenses/gpl-3.0.en.html#license-text) license
