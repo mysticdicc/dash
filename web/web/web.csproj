@@ -70,7 +70,7 @@
     <PackageReference Include="Blazor-ApexCharts" Version="6.1.0" />
     <PackageReference Include="IPAddressRange" Version="6.3.0" />
     <PackageReference Include="MailKit" Version="4.15.0" />
-    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="10.0.1" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="10.0.3" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.1" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.3">
       <PrivateAssets>all</PrivateAssets>
