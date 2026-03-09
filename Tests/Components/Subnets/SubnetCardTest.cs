@@ -1,5 +1,5 @@
 using DashComponents.Subnets;
-using DashLib.Interfaces;
+using DashLib.Interfaces.Network;
 using DashLib.Network;
 using Microsoft.JSInterop;
 using Moq;

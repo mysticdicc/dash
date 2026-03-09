@@ -1,6 +1,6 @@
 using DashLib.Dashboard;
 
-namespace DashLib.Interfaces
+namespace DashLib.Interfaces.Dashboard
 {
     public interface IDashAPI
     {

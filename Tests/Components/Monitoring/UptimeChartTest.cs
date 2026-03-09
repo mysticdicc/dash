@@ -1,7 +1,6 @@
 using ApexCharts;
 using Bunit;
 using DashComponents.Monitoring;
-using DashLib.Interfaces;
 using DashLib.Monitoring;
 using DashLib.Network;
 using Moq;
@@ -10,6 +9,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Xunit;
 using Microsoft.AspNetCore.Components;
+using DashLib.Interfaces.Monitoring;
 
 public class UptimeChartTest : BunitContext
 {

@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace DashLib.Interfaces
+namespace DashLib.Interfaces.Monitoring
 {
     public interface IMonitoringAPI
     {

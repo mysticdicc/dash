@@ -142,18 +142,13 @@ namespace web.Controllers
 
         [HttpGet]
         [Route("[controller]/v2/get/all")]
-        public string GetAllSubnets()
+        public async Task<IActionResult> GetAllSubnets()
         {
             using var context = _DbFactory.CreateDbContext();
 
-            List<Subnet> tempSubnet = context.Subnets.ToList();
+            var subnets = await context.Subnets.Include(x => x.List).ToListAsync();
 
-            foreach (Subnet subnet in tempSubnet)
-            {
-                subnet.List = context.IPs.Where(x => x.SubnetID == subnet.ID).ToList();
-            }
-
-            return JsonSerializer.Serialize(tempSubnet, JsonOptions);
+            return Ok(subnets);
         }
 
         [HttpDelete]

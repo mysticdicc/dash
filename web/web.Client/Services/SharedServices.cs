@@ -2,6 +2,9 @@
 using ApexCharts;
 using DashLib.Interfaces;
 using DashLib.API;
+using DashLib.Interfaces.Dashboard;
+using DashLib.Interfaces.Monitoring;
+using DashLib.Interfaces.Network;
 
 namespace web.Client.Services
 {

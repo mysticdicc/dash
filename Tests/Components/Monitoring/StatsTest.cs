@@ -1,6 +1,5 @@
 using Bunit;
 using DashComponents.Monitoring;
-using DashLib.Interfaces;
 using DashLib.Monitoring;
 using DashLib.Network;
 using Moq;
@@ -8,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using Xunit;
 using Microsoft.AspNetCore.Components;
+using DashLib.Interfaces.Monitoring;
 
 public class StatsTest : BunitContext
 {

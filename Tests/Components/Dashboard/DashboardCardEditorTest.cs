@@ -1,7 +1,9 @@
 using Bunit;
 using DashComponents.Dashboard;
 using DashLib.Dashboard;
-using DashLib.Interfaces;
+using DashLib.Interfaces.Dashboard;
+using DashLib.Interfaces.Monitoring;
+using DashLib.Interfaces.Network;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.JSInterop;
 using Moq;

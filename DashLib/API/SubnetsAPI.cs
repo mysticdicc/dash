@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading.Tasks;
-using DashLib.Interfaces;
+using DashLib.Interfaces.Network;
 using DashLib.Network;
 
 namespace DashLib.DankAPI

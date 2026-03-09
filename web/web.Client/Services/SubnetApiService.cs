@@ -1,5 +1,5 @@
 using DashLib.DankAPI;
-using DashLib.Interfaces;
+using DashLib.Interfaces.Network;
 using DashLib.Network;
 using web.Client.Components;
 

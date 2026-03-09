@@ -1,6 +1,6 @@
 using Bunit;
 using DashComponents.Monitoring;
-using DashLib.Interfaces;
+using DashLib.Interfaces.Monitoring;
 using DashLib.Monitoring;
 using DashLib.Network;
 using Microsoft.AspNetCore.Components;

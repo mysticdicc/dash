@@ -8,8 +8,8 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using Moq;
-using DashLib.Interfaces;
 using System.Collections.Generic;
+using DashLib.Interfaces.Dashboard;
 
 public class DashboardCardTest : BunitContext
 {

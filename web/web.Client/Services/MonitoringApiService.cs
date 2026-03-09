@@ -1,5 +1,5 @@
 ﻿using DashLib.DankAPI;
-using DashLib.Interfaces;
+using DashLib.Interfaces.Monitoring;
 using DashLib.Monitoring;
 using DashLib.Network;
 

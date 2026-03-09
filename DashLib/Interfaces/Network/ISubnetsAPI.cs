@@ -1,6 +1,6 @@
 using DashLib.Network;
 
-namespace DashLib.Interfaces
+namespace DashLib.Interfaces.Network
 {
     public interface ISubnetsAPI
     {

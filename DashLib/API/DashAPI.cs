@@ -1,5 +1,5 @@
 ﻿using DashLib.Dashboard;
-using DashLib.Interfaces;
+using DashLib.Interfaces.Dashboard;
 using System;
 using System.Collections.Generic;
 using System.Linq;
