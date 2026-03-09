@@ -1,0 +1,78 @@
+﻿@if (IsVisible)
+{
+    <tr>
+        <td>
+            Alert Service Polling Interval (Seconds):
+        </td>
+        <td>
+            <input type="number" @bind="@_currentSettings.AlertIntervalInSeconds" />
+        </td>
+    </tr>
+    <tr>
+        <td>
+            Enable Downtime Alerts:
+        </td>
+        <td>
+            <Switch @bind-ToggleIsOn="@_currentSettings.AlertsEnabled" />
+        </td>
+    </tr>
+    <tr>
+        <td>
+            Alert Repeat Time (Minutes):
+        </td>
+        <td>
+            <input type="number" @bind="@_currentSettings.AlertAgainAfterInMinutes" />
+        </td>
+    </tr>
+    <tr>
+        <td>
+            Alert Percentage Threshold:
+        </td>
+        <td>
+            <input type="number" @bind="@_currentSettings.AlertIfDownForPercent" />
+        </td>
+    </tr>
+    <tr>
+        <td>
+            Alert Evaluation Period (Minutes):
+        </td>
+        <td>
+            <input type="number" @bind="@_currentSettings.AlertTimePeriodInMinutes" />
+        </td>
+    </tr>
+    <tr>
+        <td>
+            SMTP Alerts Enabled:
+        </td>
+        <td>
+            <Switch @bind-ToggleIsOn="@_currentSettings.SmtpSettings.AlertsEnabled"/>
+        </td>
+    </tr>
+    <SmtpSettingsDisplay CurrentSettings="@_currentSettings.SmtpSettings" @bind-IsVisible="@_currentSettings.SmtpSettings.AlertsEnabled"/>
+    <tr>
+        <td>
+            Discord Alerts Enabled:
+        </td>
+        <td>
+            <Switch @bind-ToggleIsOn="@_currentSettings.DiscordSettings.AlertsEnabled"/>
+        </td>
+    </tr>
+    <DiscordSettingsDisplay CurrentSettings="@_currentSettings.DiscordSettings" @bind-IsVisible="@_currentSettings.DiscordSettings.AlertsEnabled"/>
+}
+
+@code {
+    [Parameter] required public MonitoringSettings CurrentSettings { get; set; }
+    [Parameter] public bool IsVisible { get; set; } = true;
+    [Parameter] public EventCallback<bool> IsVisibleChanged { get; set; }
+    private MonitoringSettings _currentSettings = new MonitoringSettings(true);
+
+    protected override void OnParametersSet()
+    {
+        if (null != CurrentSettings && _currentSettings != CurrentSettings)
+        {
+            _currentSettings = CurrentSettings;
+        }
+
+        base.OnParametersSet();
+    }
+}

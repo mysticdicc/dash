@@ -5,7 +5,7 @@ using System.Text;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
-namespace DashLib.Dashboard
+namespace DashLib.Models.Dashboard
 {
     [JsonPolymorphic(TypeDiscriminatorPropertyName = "WidgetIsType")]
     [JsonDerivedType(typeof(ClockWidget), "ClockWidget")]

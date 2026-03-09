@@ -1,6 +1,7 @@
 ﻿using dankweb.API;
-using DashLib.Network;
-using DashLib.Settings;
+using DashLib.Models.Network;
+using DashLib.Models.Settings;
+using DashLib.Models.Settings.Monitoring;
 using MailKit;
 using MailKit.Net.Smtp;
 using Microsoft.AspNetCore.Http.HttpResults;
@@ -26,7 +27,7 @@ namespace web.Controllers
 
             var message = new MimeMessage();
             message.From.Add(new MailboxAddress("dash Alert Service", "alerts@dash.net"));
-            message.To.Add(new MailboxAddress("username", settings.MonitoringSettings.SmtpTargetEmail));
+            message.To.Add(new MailboxAddress("username", settings.MonitoringSettings.SmtpSettings.TargetEmail));
             message.Subject = title;
             message.Body = new TextPart("html") { Text = body };
 
@@ -37,20 +38,20 @@ namespace web.Controllers
         {
             var settings = AllSettings.GetCurrentSettingsFile(AllSettings.SettingsPath);
 
-            if (settings.MonitoringSettings.SmtpPassword != string.Empty)
+            if (settings.MonitoringSettings.SmtpSettings.Password != string.Empty)
             {
-                settings.MonitoringSettings = MonitoringSettings.DecryptPassword(settings.MonitoringSettings);
+                settings.MonitoringSettings.SmtpSettings = SmtpSettings.DecryptPassword(settings.MonitoringSettings.SmtpSettings);
             }
 
             if (null == settings)
                 throw new InvalidDataException("couldnt fetch settings file");
 
             var client = new SmtpClient();
-            client.Connect(settings.MonitoringSettings.SmtpServerAddress, settings.MonitoringSettings.SmtpPort, false);
+            client.Connect(settings.MonitoringSettings.SmtpSettings.ServerAddress, settings.MonitoringSettings.SmtpSettings.Port, false);
 
-            if (settings.MonitoringSettings.SmtpAuthenticationIsRequired)
+            if (settings.MonitoringSettings.SmtpSettings.AuthenticationIsRequired)
             {
-                client.Authenticate(settings.MonitoringSettings.SmtpUsername, settings.MonitoringSettings.SmtpPassword);
+                client.Authenticate(settings.MonitoringSettings.SmtpSettings.Username, settings.MonitoringSettings.SmtpSettings.Password);
             }
 
             return client;

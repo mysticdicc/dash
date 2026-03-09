@@ -1,5 +1,6 @@
-﻿using DashLib.Monitoring;
-using DashLib.Network;
+﻿using DashLib.DTO;
+using DashLib.Models.Monitoring;
+using DashLib.Models.Network;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,5 +15,7 @@ namespace DashLib.Interfaces.Monitoring
         public Task<List<IP>> GetMonitoredIpsAsync();
         public Task<List<MonitorState>> GetByDeviceByIdAsync(int ID);
         public Task<bool> RestartServiceAsync();
+        public Task<IP> GetDeviceAndMonitorStatesByStringIpAsync(string ip);
+        public Task<PingResponseDto> PingDeviceByStringIpAsync(string ip);
     }
 }

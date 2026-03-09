@@ -1,7 +1,7 @@
 using DashLib.DankAPI;
-using DashLib.Monitoring;
-using DashLib.Network;
-using DashLib.Settings;
+using DashLib.Models.Monitoring;
+using DashLib.Models.Network;
+using DashLib.Models.Settings;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;

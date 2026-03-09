@@ -1,5 +1,5 @@
-﻿using DashLib.Monitoring;
-using DashLib.Network;
+﻿using DashLib.Models.Monitoring;
+using DashLib.Models.Network;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -13,5 +13,6 @@ namespace DashLib.Interfaces.Monitoring
         public Task<IReadOnlyList<MonitorState>> GetMonitorStatesByDeviceIdAsync(int ID);
         public Task<bool> AddMonitorStatesFromListIpAsync(List<IP> ips);
         public Task<IReadOnlyList<MonitorState>> GetAllMonitorStatesAsync();
+        public Task<IP> GetDeviceAndMonitorStatesByStringIpAsync(string ip);
     }
 }

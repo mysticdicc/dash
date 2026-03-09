@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using DashLib.Interfaces;
-using DashLib.Settings;
+using DashLib.Models.Settings;
 
 namespace DashLib.DankAPI
 {

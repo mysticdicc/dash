@@ -1,6 +1,6 @@
 using DashLib.DankAPI;
-using DashLib.Dashboard;
 using DashLib.Interfaces.Dashboard;
+using DashLib.Models.Dashboard;
 using System.Collections.Generic;
 
 namespace web.Client.Services

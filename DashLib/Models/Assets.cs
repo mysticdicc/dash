@@ -1,4 +1,4 @@
-﻿namespace DashLib
+﻿namespace DashLib.Models
 {
     public class Asset
     {

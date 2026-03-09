@@ -1,7 +1,7 @@
 ﻿using dankweb.API;
 using DashLib.Interfaces.Monitoring;
-using DashLib.Monitoring;
-using DashLib.Network;
+using DashLib.Models.Monitoring;
+using DashLib.Models.Network;
 using Microsoft.EntityFrameworkCore;
 using web.Services;
 
@@ -66,6 +66,23 @@ namespace web.Data.Repos
                 .ToListAsync();
 
             return list;
+        }
+
+        public async Task<IP> GetDeviceAndMonitorStatesByStringIpAsync(string ip)
+        {
+            using var ctx = await _dbFactory.CreateDbContextAsync();
+
+            var byteIp = IP.ConvertToByte(ip);
+            var entity = await ctx.IPs.Where(x => x.Address.SequenceEqual(byteIp))
+                .Include(x => x.MonitorStateList!)
+                    .ThenInclude(x => x.PortState)
+                .Include(x => x.MonitorStateList!)
+                    .ThenInclude(x => x.PingState)
+                .FirstOrDefaultAsync();
+
+            if (null == entity) throw new InvalidDataException($"No entity with IP: {ip}");
+
+            return entity;
         }
     }
 }

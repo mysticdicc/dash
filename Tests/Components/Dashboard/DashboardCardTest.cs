@@ -1,7 +1,6 @@
 using Bunit;
 using Xunit;
 using DashComponents.Dashboard;
-using DashLib.Dashboard;
 using Microsoft.JSInterop;
 using Microsoft.Extensions.DependencyInjection;
 using System;
@@ -10,6 +9,7 @@ using Microsoft.AspNetCore.Components;
 using Moq;
 using System.Collections.Generic;
 using DashLib.Interfaces.Dashboard;
+using DashLib.Models.Dashboard;
 
 public class DashboardCardTest : BunitContext
 {

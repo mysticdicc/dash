@@ -1,4 +1,4 @@
-﻿using DashLib.Network;
+﻿using DashLib.Models.Network;
 using System;
 using System.Collections.Generic;
 using System.Text;

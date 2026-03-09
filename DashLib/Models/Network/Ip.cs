@@ -7,10 +7,10 @@ using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 using System.Text.Json.Serialization;
-using DashLib.Monitoring;
-using DashLib.Dashboard;
+using DashLib.Models.Monitoring;
+using DashLib.Models.Dashboard;
 
-namespace DashLib.Network
+namespace DashLib.Models.Network
 {
     public class IP
     {

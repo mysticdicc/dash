@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace DashLib.Dashboard
+namespace DashLib.Models.Dashboard
 {
     public class DirectoryItem : DashboardItemBase
     {

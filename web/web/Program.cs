@@ -2,7 +2,7 @@ using dankweb.API;
 using DashLib.Interfaces.Dashboard;
 using DashLib.Interfaces.Monitoring;
 using DashLib.Interfaces.Network;
-using DashLib.Monitoring;
+using DashLib.Models.Monitoring;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Components;
 using Microsoft.EntityFrameworkCore;
@@ -32,6 +32,8 @@ builder.Services.AddControllers();
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+builder.Services.AddSingleton<DiscordService>();
 
 builder.Services.AddSingleton<MonitorService>();
 builder.Services.AddHostedService(x => x.GetRequiredService<MonitorService>());

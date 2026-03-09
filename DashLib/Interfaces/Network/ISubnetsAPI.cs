@@ -1,4 +1,4 @@
-using DashLib.Network;
+using DashLib.Models.Network;
 
 namespace DashLib.Interfaces.Network
 {

@@ -1,6 +1,6 @@
 using DashLib.DankAPI;
 using DashLib.Interfaces.Network;
-using DashLib.Network;
+using DashLib.Models.Network;
 using web.Client.Components;
 
 namespace web.Client.Services

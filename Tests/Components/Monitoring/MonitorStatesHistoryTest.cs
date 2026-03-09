@@ -1,6 +1,5 @@
 using Bunit;
 using DashComponents.Monitoring;
-using DashLib.Monitoring;
 using DashLib.Network;
 using Moq;
 using System;
@@ -9,6 +8,8 @@ using Microsoft.AspNetCore.Components;
 using System.Linq;
 using Xunit;
 using DashLib.Interfaces.Monitoring;
+using DashLib.Models.Monitoring;
+using DashLib.Models.Network;
 
 public class MonitorStatesHistoryTest : BunitContext
 {

@@ -1,5 +1,4 @@
-﻿using DashLib.Dashboard;
-using dankweb.API;
+﻿using dankweb.API;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -7,6 +6,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using System;
 using DashLib.Interfaces.Dashboard;
+using DashLib.Models.Dashboard;
 
 namespace web.Controllers
 {

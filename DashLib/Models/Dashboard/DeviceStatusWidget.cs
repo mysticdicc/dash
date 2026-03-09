@@ -4,9 +4,9 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using DashLib.Network;
+using DashLib.Models.Network;
 
-namespace DashLib.Dashboard
+namespace DashLib.Models.Dashboard
 {
     public class DeviceStatusWidget : WidgetItem
     {

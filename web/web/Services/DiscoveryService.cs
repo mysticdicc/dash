@@ -2,7 +2,7 @@
 using System.Net.NetworkInformation;
 using System.Net;
 using System.Net.Sockets;
-using DashLib.Network;
+using DashLib.Models.Network;
 
 namespace web.Services
 {

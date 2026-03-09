@@ -1,7 +1,7 @@
 using Bunit;
 using DashComponents.Subnets;
 using DashLib.Interfaces.Network;
-using DashLib.Network;
+using DashLib.Models.Network;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;

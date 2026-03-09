@@ -1,6 +1,6 @@
 ﻿using dankweb.API;
-using DashLib.Dashboard;
 using DashLib.Interfaces.Dashboard;
+using DashLib.Models.Dashboard;
 using Microsoft.EntityFrameworkCore;
 
 namespace web.Data.Repos

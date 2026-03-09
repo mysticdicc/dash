@@ -1,4 +1,5 @@
-﻿using DashLib.Settings;
+﻿using DashLib.Models.Settings;
+using DashLib.Models.Settings.Monitoring;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using System.Text.Json;
@@ -33,12 +34,12 @@ namespace web.Controllers
         [Route("[controller]/v2/get/current")]
         public string GetCurrentSettings()
         {
-            var content = AllSettings.GetCurrentSettingsFile(_settingsLocation);
+            var content = AllSettings.GetOrCreateDefaultSettingsFile();
 
-            if (content.MonitoringSettings.SmtpPassword != string.Empty)
+            if (!string.IsNullOrEmpty(content.MonitoringSettings.SmtpSettings.Password))
             {
-                var unencrypted = MonitoringSettings.DecryptPassword(content.MonitoringSettings);
-                content.MonitoringSettings = unencrypted;
+                var unencrypted = SmtpSettings.DecryptPassword(content.MonitoringSettings.SmtpSettings);
+                content.MonitoringSettings.SmtpSettings = unencrypted;
             }
 
             return JsonSerializer.Serialize(content, AllSettings.JsonOptions);
@@ -53,15 +54,17 @@ namespace web.Controllers
                 if (settings == null ||
                     settings.DashboardSettings == null ||
                     settings.MonitoringSettings == null ||
-                    settings.SubnetSettings == null)
+                    settings.SubnetSettings == null ||
+                    settings.MonitoringSettings.SmtpSettings == null ||
+                    settings.MonitoringSettings.DiscordSettings == null)
                 {
                     return TypedResults.BadRequest("One or more child objects is missing from settings.");
                 }
 
-                if (settings.MonitoringSettings.SmtpPassword != string.Empty)
+                if (settings.MonitoringSettings.SmtpSettings.Password != string.Empty)
                 {
-                    var encrypted = MonitoringSettings.EncryptPassword(settings.MonitoringSettings);
-                    settings.MonitoringSettings = encrypted;
+                    var encrypted = SmtpSettings.EncryptPassword(settings.MonitoringSettings.SmtpSettings);
+                    settings.MonitoringSettings.SmtpSettings = encrypted;
                 }
 
                 AllSettings.UpdateExistingSettingsFile(_settingsLocation, settings);

@@ -1,9 +1,12 @@
 ﻿using DashComponents.Monitoring;
 using DashLib.DankAPI;
-using DashLib.Settings;
-using DashLib.Monitoring;
-using DashLib.Network;
 using DashLib.API;
+using DashLib.Models.Monitoring;
+using DashLib.Models.Network;
+using DashLib.Models.Settings;
+using DashLib.Interfaces;
+using DashLib.Interfaces.Monitoring;
+using System.Text;
 
 namespace web.Services
 {
@@ -15,59 +18,38 @@ namespace web.Services
         CancellationTokenSource _cancellationToken;
         MonitoringAPI _monitoringApi;
         MailAPI _mailApi;
+        DiscordService _discordApi;
         AllSettings _currentSettings;
         private float _alertPercent;
         private bool _alertsEnabled;
         private int _alertEvalTimeInMinutes;
 
-        public AlertService(ILogger<MonitorService> logger, MonitoringAPI monitoringApi, MailAPI mailApi)
+        public AlertService(ILogger<MonitorService> logger, MonitoringAPI monitoringApi, MailAPI mailApi, DiscordService discordAPI)
         {
             _logger = logger;
             _monitoringApi = monitoringApi;
             _mailApi = mailApi;
-            _cancellationToken = new CancellationTokenSource();
+            _discordApi = discordAPI;
+            _cancellationToken = new CancellationTokenSource(); 
 
             try
             {
-                _logger.LogInformation("Fetching current settings");
-                _currentSettings = AllSettings.GetCurrentSettingsFile(AllSettings.SettingsPath);
+                _logger.LogInformation("Fetching or creating default settings");
+                _currentSettings = AllSettings.GetOrCreateDefaultSettingsFile();
             }
             catch (Exception ex)
             {
-                _logger.LogError("Failed to fetch current settings: ");
+                _logger.LogError("Failed to fetch or create ");
                 _logger.LogError(ex.Message);
-                _logger.LogInformation("Creating new settings file");
+                _logger.LogInformation("Will use default settings.");
 
-                try
-                {
-                    AllSettings.CreateNewSettingsFile(AllSettings.SettingsPath);
-                    _currentSettings = AllSettings.GetCurrentSettingsFile(AllSettings.SettingsPath);
-                }
-                catch (Exception ex2)
-                {
-                    _logger.LogError("Failed to create new settings:");
-                    _logger.LogError(ex2.Message);
-
-                    _logger.LogInformation("Using default settings");
-                    _currentSettings = new AllSettings(true);
-                }
+                _currentSettings = new AllSettings(true);
             }
 
-            if (null != _currentSettings.MonitoringSettings)
-            {
-                _delay = _currentSettings.MonitoringSettings.AlertIntervalInSeconds;
-                _alertPercent = _currentSettings.MonitoringSettings.AlertIfDownForPercent;
-                _alertsEnabled = _currentSettings.MonitoringSettings.AlertsEnabled;
-                _alertEvalTimeInMinutes = _currentSettings.MonitoringSettings.AlertTimePeriodInMinutes;
-            }
-            else
-            {
-                _delay = 600;
-                _alertPercent = 50.0F;
-                _alertsEnabled = false;
-                _alertEvalTimeInMinutes = 60;
-                _logger.LogWarning("Monitoring settings not found in settings file, using default values");
-            }
+            _delay = _currentSettings.MonitoringSettings.AlertIntervalInSeconds;
+            _alertPercent = _currentSettings.MonitoringSettings.AlertIfDownForPercent;
+            _alertsEnabled = _currentSettings.MonitoringSettings.AlertsEnabled;
+            _alertEvalTimeInMinutes = _currentSettings.MonitoringSettings.AlertTimePeriodInMinutes;
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -171,7 +153,54 @@ namespace web.Services
             if (alertIps.Count > 0)
             {
                 _logger.LogInformation($"Alert service submitting {alertIps.Count} IP addresses for alert consideration.");
-                await _mailApi.SendAlertEmailAsync(alertIps);
+
+                if (_currentSettings.MonitoringSettings.SmtpSettings.AlertsEnabled)
+                {
+                    try
+                    {
+                        await _mailApi.SendAlertEmailAsync(alertIps);
+                    }
+                    catch { }
+                }
+
+                if (_currentSettings.MonitoringSettings.DiscordSettings.AlertsEnabled)
+                {
+                    try
+                    {
+                        var sb = new StringBuilder();
+                        sb.AppendLine("Device Uptime Alert");
+                        sb.AppendLine($"Offline Devices: {alertIps.Count}");
+                        sb.AppendLine();
+
+                        foreach (var ip in alertIps)
+                        {
+                            sb.AppendLine($"IP: {IP.ConvertToString(ip.Address)}");
+
+                            if (null != ip.MonitorStateList)
+                            {
+                                var last = ip.MonitorStateList
+                                    .Where(x => x.PingState != null)
+                                    .OrderByDescending(x => x.SubmitTime)
+                                    .FirstOrDefault();
+
+                                if (null == last)
+                                {
+                                    sb.AppendLine("No monitoring data found for this device.");
+                                }
+                                else
+                                {
+                                    sb.AppendLine($"Last Poll Time: {last.SubmitTime}");
+                                    sb.AppendLine($"Last Status: {(last.PingState!.Response == true ? "Online" : "Offline")}");
+                                }
+                            }
+
+                            sb.AppendLine();
+                        }    
+                        
+                        await _discordApi.SendMessageAsync(sb.ToString());
+                    }
+                    catch(Exception ex) { _logger.LogError(ex, ex.Message); }
+                }
             }
         }
 

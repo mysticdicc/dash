@@ -4,10 +4,10 @@ using DashLib;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
 using web.Services;
-using DashLib.Network;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using DashLib.Interfaces.Network;
+using DashLib.Models.Network;
 
 namespace web.Controllers
 {

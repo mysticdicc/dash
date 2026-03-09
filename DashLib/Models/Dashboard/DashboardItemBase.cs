@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Text.Json.Serialization;
 
-namespace DashLib.Dashboard
+namespace DashLib.Models.Dashboard
 {
     [JsonPolymorphic(TypeDiscriminatorPropertyName = "DashItemType")]
     [JsonDerivedType(typeof(ShortcutItem), "Shortcut")]

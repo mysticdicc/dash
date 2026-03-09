@@ -1,6 +1,6 @@
 ﻿using DashLib.DankAPI;
 using DashLib.Interfaces;
-using DashLib.Settings;
+using DashLib.Models.Settings;
 
 namespace web.Client.Services
 {

@@ -1,7 +1,8 @@
 ﻿using DashLib.DankAPI;
+using DashLib.DTO;
 using DashLib.Interfaces.Monitoring;
-using DashLib.Monitoring;
-using DashLib.Network;
+using DashLib.Models.Monitoring;
+using DashLib.Models.Network;
 
 namespace web.Client.Services
 {
@@ -83,6 +84,16 @@ namespace web.Client.Services
                 _notificationService.ShowAsync("Failure restarting monitoring service", ex.Message);
                 return false;
             }
+        }
+
+        public Task<IP> GetDeviceAndMonitorStatesByStringIpAsync(string ip)
+        {
+            throw new NotImplementedException(); //required for discord bot only
+        }
+
+        public Task<PingResponseDto> PingDeviceByStringIpAsync(string ip)
+        {
+            throw new NotImplementedException(); //required for discord bot only
         }
     }
 }

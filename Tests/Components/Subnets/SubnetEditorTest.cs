@@ -1,5 +1,4 @@
 using Bunit;
-using DashLib.Network;
 using DashComponents.Subnets;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
@@ -7,6 +6,7 @@ using Xunit;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Components.Web;
 using DashLib.Interfaces.Network;
+using DashLib.Models.Network;
 
 public class SubnetEditorTest : BunitContext
 {

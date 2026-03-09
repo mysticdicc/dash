@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using DashLib.Settings;
+using DashLib.Models.Settings;
 
 namespace DashLib.Interfaces
 {

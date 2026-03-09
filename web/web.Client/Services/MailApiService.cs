@@ -1,7 +1,7 @@
 ﻿using DashLib.API;
 using DashLib.DankAPI;
 using DashLib.Interfaces;
-using DashLib.Network;
+using DashLib.Models.Network;
 
 namespace web.Client.Services
 {

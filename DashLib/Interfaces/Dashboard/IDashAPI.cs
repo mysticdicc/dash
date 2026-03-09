@@ -1,4 +1,4 @@
-using DashLib.Dashboard;
+using DashLib.Models.Dashboard;
 
 namespace DashLib.Interfaces.Dashboard
 {

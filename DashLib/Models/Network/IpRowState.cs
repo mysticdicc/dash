@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace DashLib.Network
+namespace DashLib.Models.Network
 {
     public class IpRowState
     {

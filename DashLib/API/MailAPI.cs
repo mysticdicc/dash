@@ -1,6 +1,6 @@
 ﻿using DashLib.DankAPI;
 using DashLib.Interfaces;
-using DashLib.Network;
+using DashLib.Models.Network;
 using System;
 using System.Collections.Generic;
 using System.Linq;

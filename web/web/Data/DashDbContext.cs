@@ -2,10 +2,10 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
-using DashLib;
-using DashLib.Dashboard;
-using DashLib.Network;
-using DashLib.Monitoring;
+using DashLib.Models.Monitoring;
+using DashLib.Models.Network;
+using DashLib.Models.Dashboard;
+using DashLib.Models;
 
 namespace dankweb.API;
 public partial class DashDbContext : DbContext

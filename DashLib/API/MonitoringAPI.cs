@@ -2,9 +2,10 @@
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading.Tasks;
+using DashLib.DTO;
 using DashLib.Interfaces.Monitoring;
-using DashLib.Monitoring;
-using DashLib.Network;
+using DashLib.Models.Monitoring;
+using DashLib.Models.Network;
 
 namespace DashLib.DankAPI
 {
@@ -102,32 +103,41 @@ namespace DashLib.DankAPI
         public async Task<bool> RestartServiceAsync()
         {
             string endpoint = $"{_base}/v2/service/restart";
-            try
-            {
-                var response = await RequestHandler.GetFromJsonAsync<HttpResponseMessage>(_httpClient, endpoint);
-                if (response is null)
-                    throw new InvalidOperationException("No response from restart service.");
-                return true;
-            }
-            catch
-            {
-                throw;
-            }
+            var response = await RequestHandler.GetFromJsonAsync<HttpResponseMessage>(_httpClient, endpoint);
+
+            if (response is null)
+                throw new InvalidOperationException("No response from restart service.");
+
+            return true;
         }
 
         public async Task<bool> PostNewDevicePollAsync(List<IP> ips)
         {
             string endpoint = $"{_base}/v2/new/polls";
+            var result = await RequestHandler.PostJsonAsync(_httpClient, endpoint, ips);
 
-            try
-            {
-                await RequestHandler.PostJsonAsync(_httpClient, endpoint, ips);
-                return true;
-            }
-            catch
-            {
-                throw;
-            }
+            if (result == null) return false;
+            if (result.IsSuccessStatusCode) return true;
+            return false;
+        }
+
+        public async Task<IP> GetDeviceAndMonitorStatesByStringIpAsync(string ip)
+        {
+            string endpoint = $"{_base}/v2/get/deviceandstatus/byip?ip={ip}";
+            var result = await RequestHandler.GetFromJsonAsync<IP>(_httpClient, endpoint);
+
+            if (result == null) throw new InvalidOperationException("No response from device and monitor state query.");
+            return result!;
+        }
+
+        public async Task<PingResponseDto> PingDeviceByStringIpAsync(string ip)
+        {
+            string endpoint = $"{_base}/v2/get/pingstatus?ip={ip}";
+            var result = await RequestHandler.GetFromJsonAsync<PingResponseDto>(_httpClient, endpoint);
+
+            if (result == null) throw new InvalidDataException("No response from API");
+
+            return result;
         }
     }
 }

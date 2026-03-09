@@ -1,0 +1,36 @@
+﻿@if (IsVisible)
+{
+    <tr>
+        <td>
+            Discord Token:
+        </td>
+        <td>
+            <input type="text" @bind="@_currentSettings.Token" />
+        </td>
+    </tr>
+    <tr>
+        <td>
+            Discord Channel ID:
+        </td>
+        <td>
+            <input type="number" @bind="@_currentSettings.ChannelID" />
+        </td>
+    </tr>
+}
+
+@code {
+    [Parameter] required public DiscordSettings CurrentSettings { get; set; }
+    [Parameter] public bool IsVisible { get; set; }
+    [Parameter] public EventCallback<bool> IsVisibleChanged { get; set; }
+    private DiscordSettings _currentSettings = new DiscordSettings();
+
+    protected override void OnParametersSet()
+    {
+        if (null != CurrentSettings && CurrentSettings != _currentSettings)
+        {
+            _currentSettings = CurrentSettings;
+        }
+
+        base.OnParametersSet();
+    }
+}

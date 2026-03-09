@@ -1,4 +1,4 @@
-﻿using DashLib.Network;
+﻿using DashLib.Models.Network;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -9,7 +9,7 @@ using System.Text;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
-namespace DashLib.Monitoring
+namespace DashLib.Models.Monitoring
 {
     public class MonitorState
     {

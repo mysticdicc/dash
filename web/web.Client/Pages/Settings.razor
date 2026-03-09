@@ -1,8 +1,8 @@
 ﻿@inject ISettingsAPI SettingsService
-@inject IMailAPI MailService
 @inject IJSRuntime JSRuntime
 
 @page "/settings/home"
+@using DashComponents.Settings
 @using DashLib.Interfaces
 @using System.Text.Json
 
@@ -40,114 +40,18 @@
                                 Polling Interval (Seconds):
                             </td>
                             <td>
-                                <input type="number" @bind="@_currentSettings.MonitoringSettings.PollingIntervalInSeconds"/>
+                                <input type="number" @bind="@_currentSettings.MonitoringSettings.PollingIntervalInSeconds" />
                             </td>
                         </tr>
                         <tr>
                             <td>
-                                Alert Service Polling Interval (Seconds):
+                                Alerts Enabled:
                             </td>
                             <td>
-                                <input type="number" @bind="@_currentSettings.MonitoringSettings.AlertIntervalInSeconds"/>
+                                <Switch @bind-ToggleIsOn="@_currentSettings.MonitoringSettings.AlertsEnabled"/>
                             </td>
                         </tr>
-                        <tr>
-                            <td>
-                                Enable Downtime Alerts:
-                            </td>
-                            <td>
-                                <Switch @bind-ToggleIsOn="@_currentSettings.MonitoringSettings.AlertsEnabled" />
-                            </td>
-                        </tr>
-                        @if (_currentSettings.MonitoringSettings.AlertsEnabled)
-                        {
-                            <tr>
-                                <td>
-                                    Alert Percentage Threshold:
-                                </td>
-                                <td>
-                                    <input type="number" @bind="@_currentSettings.MonitoringSettings.AlertIfDownForPercent"/>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>
-                                    Alert Evaluation Period (Minutes):
-                                </td>
-                                <td>
-                                    <input type="number" @bind="@_currentSettings.MonitoringSettings.AlertTimePeriodInMinutes"/>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>
-                                    Email Repeat Time (Minutes):
-                                </td>
-                                <td>
-                                    <input type="number" @bind="@_currentSettings.MonitoringSettings.AlertAgainAfterInMinutes"/>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>
-                                    SMTP Server Address:
-                                </td>
-                                <td>
-                                    <input type="text" @bind="@_currentSettings.MonitoringSettings.SmtpServerAddress"/>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>
-                                    SMTP Port:
-                                </td>
-                                <td>
-                                    <input type="number" @bind="@_currentSettings.MonitoringSettings.SmtpPort" />
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>
-                                    SMTP Send To:
-                                </td>
-                                <td>
-                                    <input type="text" @bind="@_currentSettings.MonitoringSettings.SmtpTargetEmail" />
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>
-                                    SMTP Use Auth:
-                                </td>
-                                <td>
-                                    <Switch @bind-ToggleIsOn="@_currentSettings.MonitoringSettings.SmtpAuthenticationIsRequired" />
-                                </td>
-                            </tr>
-                            @if (_currentSettings.MonitoringSettings.SmtpAuthenticationIsRequired)
-                            {
-                                <tr>
-                                    <td>
-                                        SMTP Username:
-                                    </td>
-                                    <td>
-                                        <input type="text" @bind="@_currentSettings.MonitoringSettings.SmtpUsername" />
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>
-                                        SMTP Password:
-                                    </td>
-                                    <td>
-                                        <input type="text" @bind="@_currentSettings.MonitoringSettings.SmtpPassword" />
-                                    </td>
-                                </tr>
-                            }
-
-                            <tr>
-                                <td>
-                                    Send Test Email:
-                                </td>
-                                <td>
-                                    <button @onclick="@OnClickSendTestEmail">
-                                        <span class="material-symbols-outlined">send</span>
-                                    </button>
-                                </td>
-                            </tr>
-                        }
+                        <AlertSettings CurrentSettings="@_currentSettings.MonitoringSettings" @bind-IsVisible="@_currentSettings.MonitoringSettings.AlertsEnabled"/>
                     </table>
                 }
 
@@ -242,11 +146,6 @@
             await SettingsService.CreateNewSettingsAsync(_currentSettings);
             await RefreshSettings();
         }
-    }
-
-    private async void OnClickSendTestEmail()
-    {
-        await MailService.SendTestEmailAsync();
     }
 
     private async void OnClickDownloadButton()

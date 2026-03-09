@@ -1,6 +1,6 @@
-﻿using DashLib.Dashboard;
-using DashLib.Monitoring;
-using DashLib.Network;
+﻿using DashLib.Models.Dashboard;
+using DashLib.Models.Monitoring;
+using DashLib.Models.Network;
 using System;
 using System.Collections.Generic;
 using System.Text;

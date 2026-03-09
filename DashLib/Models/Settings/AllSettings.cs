@@ -1,4 +1,5 @@
-﻿using System;
+﻿using DashLib.Models.Settings.Monitoring;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -6,7 +7,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
-namespace DashLib.Settings
+namespace DashLib.Models.Settings
 {
     public class AllSettings
     {
@@ -33,6 +34,30 @@ namespace DashLib.Settings
             DashboardSettings = new DashboardSettings();
             MonitoringSettings = new MonitoringSettings(true);
             SubnetSettings = new SubnetSettings();
+        }
+
+        static public AllSettings GetOrCreateDefaultSettingsFile()
+        {
+            AllSettings returnSettings = new(true);
+
+            try
+            {
+                returnSettings = GetCurrentSettingsFile(SettingsPath);
+            }
+            catch
+            {
+                try
+                {
+                    CreateNewSettingsFile(SettingsPath);
+                    returnSettings = GetCurrentSettingsFile(SettingsPath);
+                }
+                catch 
+                { 
+                    returnSettings = new AllSettings(true);
+                }
+            }
+
+            return returnSettings;
         }
 
         static public void CreateNewSettingsFile(string path)
@@ -81,6 +106,7 @@ namespace DashLib.Settings
                 var settings = JsonSerializer.Deserialize<AllSettings>(content, JsonOptions);
                 if (settings != null)
                 {
+                    settings.Normalize();
                     return settings;
                 }
                 else
@@ -92,6 +118,22 @@ namespace DashLib.Settings
             {
                 throw;
             }
+        }
+
+        public void Normalize()
+        {
+            DashboardSettings ??= new DashboardSettings();
+            MonitoringSettings ??= new MonitoringSettings(true);
+            SubnetSettings ??= new SubnetSettings();
+
+            MonitoringSettings.SmtpSettings ??= new SmtpSettings();
+            MonitoringSettings.DiscordSettings ??= new DiscordSettings();
+
+            try
+            {
+                UpdateExistingSettingsFile(SettingsPath, this);
+            }
+            catch { }
         }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using System.Net.Http;
 using System.Net.Http.Json;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -15,6 +16,9 @@ namespace DashLib.DankAPI
             HttpRequestMessage request,
             CancellationToken cancellationToken = default)
         {
+            HttpResponseMessage lastMessage = new();
+            string lastBody = string.Empty;
+
             for (int i = 0; i < maxRetries; i++)
             {
                 var newRequest = new HttpRequestMessage()
@@ -24,6 +28,29 @@ namespace DashLib.DankAPI
                     RequestUri = request.RequestUri
                 };
                 HttpResponseMessage response = await httpClient.SendAsync(newRequest, cancellationToken);
+                
+                if (i == maxRetries - 1)
+                {
+                    lastMessage = response;
+                    string rawBody = await lastMessage.Content.ReadAsStringAsync() ?? string.Empty;
+
+                    try
+                    {
+                        using var doc = JsonDocument.Parse(rawBody);
+                        if (doc.RootElement.TryGetProperty("detail", out var detailElement))
+                        {
+                            lastBody = detailElement.GetString() ?? rawBody;
+                        }
+                        else
+                        {
+                            lastBody = rawBody;
+                        }
+                    }
+                    catch
+                    {
+                        lastBody = rawBody;
+                    }
+                }
 
                 if (response.IsSuccessStatusCode)
                 {
@@ -35,7 +62,14 @@ namespace DashLib.DankAPI
                 await Task.Delay(delayMs, cancellationToken);
             }
 
-            throw new HttpRequestException($"HTTP request to {request.RequestUri} using {request.Method} failed after {maxRetries} attempts.");
+            if (null != lastMessage)
+            {
+                throw new HttpRequestException($"FAILURE: HTTP-{request.Method} : {(int)lastMessage.StatusCode} : {lastBody}");
+            }
+            else
+            {
+                throw new HttpRequestException($"HTTP request to {request.RequestUri} using {request.Method} failed after {maxRetries} attempts.");
+            }
         }
 
         public static async Task<T?> GetFromJsonAsync<T>(HttpClient httpClient, string endpoint)
