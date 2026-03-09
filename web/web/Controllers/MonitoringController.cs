@@ -9,13 +9,14 @@ using DashLib.Network;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using DashLib.Settings;
+using DashLib.Interfaces.Monitoring;
 
 namespace web.Controllers
 {
     [ApiController]
-    public class MonitoringController(IDbContextFactory<DashDbContext> dbContext, MonitorService monitor) : Controller
+    public class MonitoringController(IMonitoringRepository monitoringRepository, MonitorService monitor) : Controller
     {
-        private readonly IDbContextFactory<DashDbContext> _DbFactory = dbContext;
+        private readonly IMonitoringRepository _dbRepo = monitoringRepository;
         private readonly MonitorService _monitorService = monitor;
 
         private static readonly JsonSerializerOptions JsonOptions = new()
@@ -24,6 +25,11 @@ namespace web.Controllers
             PropertyNamingPolicy = null,
             WriteIndented = true
         };
+
+        private static string SerializeObject(object obj)
+        {
+            return JsonSerializer.Serialize(obj, JsonOptions);
+        }
 
         [HttpGet]
         [Route("[controller]/v2/service/restart")]
@@ -35,70 +41,85 @@ namespace web.Controllers
 
         [HttpGet]
         [Route("[controller]/v2/get/devicesandstatus")]
-        public string GetDevicesAndMonitorStates()
+        public async Task<IActionResult> GetDevicesAndMonitorStates()
         {
-            using var context = _DbFactory.CreateDbContext();
-            var result = context.IPs
-                .Where(x => (x.IsMonitoredTCP || x.IsMonitoredICMP) && x.MonitorStateList != null)
-                .Include(x => x.MonitorStateList!)
-                    .ThenInclude(x => x.PortState)
-                .Include(x => x.MonitorStateList!)
-                    .ThenInclude(x => x.PingState)
-                .ToList();
-            return JsonSerializer.Serialize(result, JsonOptions);
+            try
+            {
+                var ips = await _dbRepo.GetMonitoredDevicesAndStatusAsync();
+                return Ok(SerializeObject(ips));
+            }
+            catch (Exception ex)
+            {
+                return Problem(ex.Message);
+            }
         }
 
         [HttpGet]
         [Route("[controller]/v2/get/all")]
-        public string GetAllMonitoredDevices()
+        public async Task<IActionResult> GetAllMonitoredDevices()
         {
-            using var context = _DbFactory.CreateDbContext();
-            var result = context.IPs.Where(x => x.IsMonitoredICMP || x.IsMonitoredTCP).ToList();
-            return JsonSerializer.Serialize(result, JsonOptions);
+            try
+            {
+                var ips = await _dbRepo.GetAllMonitoredDevicesAsync();
+                return Ok(SerializeObject(ips));
+            }
+            catch (Exception ex)
+            {
+                return Problem(ex.Message);
+            }
         }
 
         [HttpGet]
         [Route("[controller]/v2/get/byid")]
-        public string GetByDeviceID(int ID)
+        public async Task<IActionResult> GetByDeviceID(int ID)
         {
-            using var context = _DbFactory.CreateDbContext();
-            var result = context.MonitorStates
-                .Where(x => x.IP_ID == ID)
-                .Include(x => x.PortState)
-                .Include(x => x.PingState)
-                .ToList();
-            return JsonSerializer.Serialize(result, JsonOptions);
+            try
+            {
+                var states = await _dbRepo.GetMonitorStatesByDeviceIdAsync(ID);
+                return Ok(SerializeObject(states));
+            }
+            catch (Exception ex)
+            {
+                return Problem(ex.Message);
+            }
         }
 
         [HttpPost]
         [Route("[controller]/v2/new/polls")]
-        public async Task<Results<BadRequest<string>, Ok>> NewDevicePoll(List<IP> ips)
+        public async Task<IActionResult> NewDevicePoll(List<IP> ips)
         {
-            using var context = _DbFactory.CreateDbContext();
-            var monitorStates = ips.SelectMany(x => x.MonitorStateList!);
-
             try
             {
-                context.MonitorStates.AddRange(monitorStates);
-                await context.SaveChangesAsync();
-                return TypedResults.Ok();
-            } 
+                var result = await _dbRepo.AddMonitorStatesFromListIpAsync(ips);
+
+                if (result)
+                {
+                    return Ok(SerializeObject(ips));
+                }
+                else
+                {
+                    return Problem("No changed were made to the database.");
+                }
+            }
             catch (Exception ex)
             {
-                return TypedResults.BadRequest(ex.Message);
+                return Problem(ex.Message);
             }
         }
 
         [HttpGet]
         [Route("[controller]/v2/get/allpolls")]
-        public string GetAllPolls()
+        public async Task<IActionResult> GetAllPolls()
         {
-            using var context = _DbFactory.CreateDbContext();
-            var allStates = context.MonitorStates
-                .Include(x => x.PingState)
-                .Include(x => x.PortState)
-                .ToList();
-            return JsonSerializer.Serialize(allStates, JsonOptions);
+            try
+            {
+                var states = await _dbRepo.GetAllMonitorStatesAsync();
+                return Ok(SerializeObject(states));
+            }
+            catch (Exception ex)
+            {
+                return Problem(ex.Message);
+            }
         }
     }
 }

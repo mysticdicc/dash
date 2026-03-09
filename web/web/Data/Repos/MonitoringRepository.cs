@@ -3,36 +3,69 @@ using DashLib.Interfaces.Monitoring;
 using DashLib.Monitoring;
 using DashLib.Network;
 using Microsoft.EntityFrameworkCore;
+using web.Services;
 
 namespace web.Data.Repos
 {
     public class MonitoringRepository(IDbContextFactory<DashDbContext> dbContext) : IMonitoringRepository
     {
-        private readonly IDbContextFactory<DashDbContext> _DbFactory = dbContext;
+        private readonly IDbContextFactory<DashDbContext> _dbFactory = dbContext;
 
-        public Task<IReadOnlyList<IP>> GetMonitoredDevicesAndStatusAsync()
+        public async Task<IReadOnlyList<IP>> GetMonitoredDevicesAndStatusAsync()
         {
-            throw new NotImplementedException();
+            using var ctx = await _dbFactory.CreateDbContextAsync();
+
+            var list = await ctx.IPs
+                .Where(x => (x.IsMonitoredTCP || x.IsMonitoredICMP) && x.MonitorStateList != null)
+                .Include(x => x.MonitorStateList!)
+                    .ThenInclude(x => x.PortState)
+                .Include(x => x.MonitorStateList!)
+                    .ThenInclude(x => x.PingState)
+                .ToListAsync();
+
+            return list;
         }
 
-        public Task<IReadOnlyList<IP>> GetAllMonitoredDevicesAsync()
+        public async Task<IReadOnlyList<IP>> GetAllMonitoredDevicesAsync()
         {
-            throw new NotImplementedException();
+            using var ctx = await _dbFactory.CreateDbContextAsync();
+            var list = await ctx.IPs.Where(x => (x.IsMonitoredTCP || x.IsMonitoredICMP)).ToListAsync();
+
+            return list;
         }
 
-        public Task<IReadOnlyList<MonitorState>> GetMonitorStatesByDeviceIdAsync(int ID)
+        public async Task<IReadOnlyList<MonitorState>> GetMonitorStatesByDeviceIdAsync(int ID)
         {
-            throw new NotImplementedException();
+            using var ctx = await _dbFactory.CreateDbContextAsync();
+
+            var list = await ctx.MonitorStates.Where(x => x.IP_ID == ID)
+                .Include(x => x.PortState)
+                .Include(x => x.PingState)
+                .ToListAsync();
+
+            return list;
         }
 
-        Task<bool> IMonitoringRepository.AddMonitorStatesFromListIpAsync(List<IP> ips)
+        public async Task<bool> AddMonitorStatesFromListIpAsync(List<IP> ips)
         {
-            throw new NotImplementedException();
+            using var ctx = await _dbFactory.CreateDbContextAsync();
+
+            var states = ips.SelectMany(ips => ips.MonitorStateList ?? []).ToList();
+            await ctx.MonitorStates.AddRangeAsync(states);
+            var rows = await ctx.SaveChangesAsync();
+
+            return rows > 0;
         }
 
-        Task<IReadOnlyList<MonitorState>> IMonitoringRepository.GetAllMonitorStatesAsync()
+        public async Task<IReadOnlyList<MonitorState>> GetAllMonitorStatesAsync()
         {
-            throw new NotImplementedException();
+            using var ctx = await _dbFactory.CreateDbContextAsync();
+            var list = await ctx.MonitorStates
+                .Include(x => x.PortState)
+                .Include(x => x.PingState)
+                .ToListAsync();
+
+            return list;
         }
     }
 }
