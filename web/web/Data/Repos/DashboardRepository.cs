@@ -7,81 +7,158 @@ namespace web.Data.Repos
 {
     public class DashboardRepository(IDbContextFactory<DashDbContext> dbContext) : IDashboardRepository
     {
-        private readonly IDbContextFactory<DashDbContext> _DbFactory = dbContext;
+        private readonly IDbContextFactory<DashDbContext> _dbFactory = dbContext;
 
-        public Task<bool> AddClockWidgetAsync(ClockWidget widget)
+        public async Task<bool> AddClockWidgetAsync(ClockWidget widget)
         {
-            throw new NotImplementedException();
+            using var ctx = await _dbFactory.CreateDbContextAsync();
+            await ctx.ClockWidgets.AddAsync(widget);
+            var rows = await ctx.SaveChangesAsync();
+
+            return rows > 0;
         }
 
-        public Task<bool> AddDirectoryAsync(DirectoryItem directory)
+        public async Task<bool> AddDirectoryAsync(DirectoryItem directory)
         {
-            throw new NotImplementedException();
+            using var ctx = await _dbFactory.CreateDbContextAsync();
+            await ctx.DirectoryItems.AddAsync(directory);
+            var rows = await ctx.SaveChangesAsync();
+
+            return rows > 0;
         }
 
-        public Task<bool> AddShortcutAsync(ShortcutItem shortcut)
+        public async Task<bool> AddShortcutAsync(ShortcutItem shortcut)
         {
-            throw new NotImplementedException();
+            using var ctx = await _dbFactory.CreateDbContextAsync();
+            await ctx.ShortcutItems.AddAsync(shortcut);
+            var rows = await ctx.SaveChangesAsync();
+
+            return rows > 0;
         }
 
-        public Task<bool> AddStatusWidgetAsync(DeviceStatusWidget widget)
+        public async Task<bool> AddStatusWidgetAsync(DeviceStatusWidget widget)
         {
-            throw new NotImplementedException();
+            using var ctx = _dbFactory.CreateDbContext();
+            await ctx.DeviceStatusWidgets.AddAsync(widget);
+            var rows = await ctx.SaveChangesAsync();
+
+            return rows > 0;
         }
 
-        public Task<bool> DeleteClockWidgetAsync(ClockWidget widget)
+        public async Task<bool> DeleteClockWidgetAsync(ClockWidget widget)
         {
-            throw new NotImplementedException();
+            using var ctx = _dbFactory.CreateDbContext();
+            var entity = await ctx.ClockWidgets.FirstOrDefaultAsync(x => x.Id == widget.Id);
+
+            if (entity == null) throw new InvalidDataException($"No entity with ID: {widget.Id}");
+
+            ctx.ClockWidgets.Remove(entity);
+            var rows = await ctx.SaveChangesAsync();
+            return rows > 0;
         }
 
-        public Task<bool> DeleteDirectoryAsync(DirectoryItem directory)
+        public async Task<bool> DeleteDirectoryAsync(DirectoryItem directory)
         {
-            throw new NotImplementedException();
+            using var ctx = _dbFactory.CreateDbContext();
+            var entity = await ctx.DirectoryItems.FirstOrDefaultAsync(x => x.Id == directory.Id);
+
+            if (entity == null) throw new InvalidDataException($"No entity with ID: {directory.Id}");
+
+            ctx.DirectoryItems.Remove(entity);
+            var rows = await ctx.SaveChangesAsync();
+            return rows > 0;
         }
 
-        public Task<bool> DeleteShortcutAsync(ShortcutItem shortcut)
+        public async Task<bool> DeleteShortcutAsync(ShortcutItem shortcut)
         {
-            throw new NotImplementedException();
+            using var ctx = await _dbFactory.CreateDbContextAsync();
+            var entity = await ctx.ShortcutItems.FirstOrDefaultAsync(x => x.Id == shortcut.Id);
+
+            if (entity == null) throw new InvalidDataException($"No entity with ID: {shortcut.Id}");
+
+            ctx.ShortcutItems.Remove(entity);
+            var rows = await ctx.SaveChangesAsync();
+            return rows > 0;
         }
 
-        public Task<bool> DeleteStatusWidgetAsync(DeviceStatusWidget widget)
+        public async Task<bool> DeleteStatusWidgetAsync(DeviceStatusWidget widget)
         {
-            throw new NotImplementedException();
+            using var ctx = await _dbFactory.CreateDbContextAsync();
+            var entity = await ctx.DeviceStatusWidgets.FirstOrDefaultAsync(x => x.Id == widget.Id);
+
+            if (entity == null) throw new InvalidDataException($"No entity with ID: {widget.Id}");
+
+            ctx.DeviceStatusWidgets.Remove(entity);
+            var rows = await ctx.SaveChangesAsync();
+            return rows > 0;
         }
 
-        public Task<IReadOnlyList<DirectoryItem>> GetAllDirectoriesAsync()
+        public async Task<IReadOnlyList<DirectoryItem>> GetAllDirectoriesAsync()
         {
-            throw new NotImplementedException();
+            using var ctx = await _dbFactory.CreateDbContextAsync();
+            var list = await ctx.DirectoryItems.ToListAsync();
+            return list;
         }
 
-        public Task<IReadOnlyList<ShortcutItem>> GetAllShortcutsAsync()
+        public async Task<IReadOnlyList<ShortcutItem>> GetAllShortcutsAsync()
         {
-            throw new NotImplementedException();
+            using var ctx = await _dbFactory.CreateDbContextAsync();
+            var list = await ctx.ShortcutItems.ToListAsync();
+            return list;
         }
 
-        public Task<IReadOnlyList<ClockWidget>> GetClockWidgetsAsync()
+        public async Task<IReadOnlyList<ClockWidget>> GetClockWidgetsAsync()
         {
-            throw new NotImplementedException();
+            using var ctx = await _dbFactory.CreateDbContextAsync();
+            var list = await ctx.ClockWidgets.ToListAsync();
+            return list;
         }
 
-        public Task<IReadOnlyList<ShortcutItem>> GetShortcutsWithNoParentAsync()
+        public async Task<IReadOnlyList<ShortcutItem>> GetShortcutsWithNoParentAsync()
         {
-            throw new NotImplementedException();
+            using var ctx = await _dbFactory.CreateDbContextAsync();
+            var list = await ctx.ShortcutItems.Where(x => x.Parent == null).ToListAsync();
+            return list;
         }
 
-        public Task<IReadOnlyList<DeviceStatusWidget>> GetStatusWidgetsAsync()
+        public async Task<IReadOnlyList<DeviceStatusWidget>> GetStatusWidgetsAsync()
         {
-            throw new NotImplementedException();
+            using var ctx = await _dbFactory.CreateDbContextAsync();
+            var list = await ctx.DeviceStatusWidgets.ToListAsync();
+            return list;
         }
 
-        public Task<bool> UpdateDirectoryAsync(DirectoryItem directory)
+        public async Task<bool> UpdateDirectoryAsync(DirectoryItem directory)
         {
-            throw new NotImplementedException();
+            using var ctx = await _dbFactory.CreateDbContextAsync();
+            var entity = await ctx.DirectoryItems.FirstOrDefaultAsync(x => x.Id == directory.Id);
+
+            if (entity == null) throw new InvalidDataException($"No entity with ID: {directory.Id}");
+
+            entity.DisplayName = directory.DisplayName;
+            entity.Children = directory.Children;
+            entity.Icon = directory.Icon;
+            entity.Description = directory.Description;
+
+            var rows = await ctx.SaveChangesAsync();
+            return rows > 0;
         }
 
-        public Task<bool> UpdateShortcutAsync(ShortcutItem shortcut)
+        public async Task<bool> UpdateShortcutAsync(ShortcutItem shortcut)
         {
-            throw new NotImplementedException();
+            using var ctx = await _dbFactory.CreateDbContextAsync();
+            var entity = await ctx.ShortcutItems.FirstOrDefaultAsync(x => x.Id == shortcut.Id);
+
+            if (entity == null) throw new InvalidDataException($"No entity with ID: {shortcut.Id}");
+
+            entity.DisplayName = shortcut.DisplayName;
+            entity.Url = shortcut.Url;
+            entity.ParentId = shortcut.ParentId;
+            entity.Icon = shortcut.Icon;
+            entity.Description = shortcut.Description;
+
+            var rows = await ctx.SaveChangesAsync();
+            return rows > 0;
         }
     }
 }

@@ -6,13 +6,14 @@ using Microsoft.EntityFrameworkCore;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System;
+using DashLib.Interfaces.Dashboard;
 
 namespace web.Controllers
 {
     [ApiController]
-    public class DashboardController(IDbContextFactory<DashDbContext> dbContext) : Controller
+    public class DashboardController(IDashboardRepository dashboardRepository) : Controller
     {
-        private readonly IDbContextFactory<DashDbContext> _DbFactory = dbContext;
+        private readonly IDashboardRepository _dbRepo = dashboardRepository;
 
         private static readonly JsonSerializerOptions JsonOptions = new()
         {
@@ -21,279 +22,313 @@ namespace web.Controllers
             WriteIndented = true
         };
 
+        private static string SerializeObject(object obj)
+        {
+            return JsonSerializer.Serialize(obj, JsonOptions);
+        }
+
         [HttpGet]
         [Route("[controller]/v2/widgets/status/get/all")]
-        public string GetAllStatusWidgets()
+        public async Task<IActionResult> GetAllStatusWidgets()
         {
-            using var context = _DbFactory.CreateDbContext();
-            return JsonSerializer.Serialize(context.DeviceStatusWidgets.ToList(), JsonOptions);
+            try
+            {
+                var widgets = await _dbRepo.GetStatusWidgetsAsync();
+                return Ok(SerializeObject(widgets));
+            }
+            catch (Exception ex)
+            {
+                return Problem(ex.Message);
+            }
         }
 
         [HttpGet]
         [Route("[controller]/v2/widgets/clocks/get/all")]
-        public string GetAllWidgets()
+        public async Task<IActionResult> GetAllClockWidgets()
         {
-            using var context = _DbFactory.CreateDbContext();
-            return JsonSerializer.Serialize(context.ClockWidgets.ToList(), JsonOptions);
+            try
+            {
+                var widgets = await _dbRepo.GetClockWidgetsAsync();
+                return Ok(SerializeObject(widgets));
+            }
+            catch (Exception ex)
+            {
+                return Problem(ex.Message);
+            }
         }
 
         [HttpGet]
         [Route("[controller]/v2/shortcuts/get/all")]
-        public string GetAllShortcuts()
+        public async Task<IActionResult> GetAllShortcuts()
         {
-            using var context = _DbFactory.CreateDbContext();
-            List<ShortcutItem> items = context.ShortcutItems.ToList();
-            return JsonSerializer.Serialize(items, JsonOptions);
+            try
+            {
+                var shortcuts = await _dbRepo.GetAllShortcutsAsync();
+                return Ok(SerializeObject(shortcuts));
+            }
+            catch (Exception ex)
+            {
+                return Problem(ex.Message); 
+            }
         }
 
         [HttpGet]
         [Route("[controller]/v2/shortcuts/get/noparent")]
-        public string GetShortcutsWithoutParent()
+        public async Task<IActionResult> GetShortcutsWithoutParent()
         {
-            using var context = _DbFactory.CreateDbContext();
-            List<ShortcutItem> items = [];
-            items.AddRange([.. context.ShortcutItems.Where(x => x.Parent == null)]);
-            return JsonSerializer.Serialize(items, JsonOptions);
+            try
+            {
+                var shortcuts = await _dbRepo.GetShortcutsWithNoParentAsync();
+                return Ok(SerializeObject(shortcuts));
+            }
+            catch (Exception ex)
+            {
+                return Problem(ex.Message);
+            }
         }
 
         [HttpGet]
         [Route("[controller]/v2/directories/get/all")]
-        public string GetAllDirectories()
+        public async Task<IActionResult> GetAllDirectories()
         {
-            using var context = _DbFactory.CreateDbContext();
-            List<DirectoryItem> items = [];
-            items.AddRange(context.DirectoryItems.ToList());
-            return JsonSerializer.Serialize(items, JsonOptions);
+            try
+            {
+                var directories = await _dbRepo.GetAllDirectoriesAsync();
+                return Ok(SerializeObject(directories));
+            }
+            catch (Exception ex)
+            {
+                return Problem(ex.Message);
+            }
         }
 
         [HttpPost]
         [Route("[controller]/v2/shortcuts/post/new")]
-        public async Task<Results<BadRequest<string>, Created<ShortcutItem>>> NewShortcut(ShortcutItem item)
+        public async Task<IActionResult> NewShortcut(ShortcutItem item)
         {
-            using var context = _DbFactory.CreateDbContext();
             try
             {
-                context.ShortcutItems.Add(item);
-                await context.SaveChangesAsync();
-                return TypedResults.Created(item.Id.ToString(), item);
+                var result = await _dbRepo.AddShortcutAsync(item);
+
+                if (result)
+                {
+                    return Created(item.Id.ToString(), SerializeObject(item));
+                }
+                else
+                {
+                    return Problem("No changed were made to the database.");
+                }
             }
-            catch (Exception ex)
-            {
-                return TypedResults.BadRequest(ex.Message);
+            catch(Exception ex)
+            { 
+                return Problem(ex.Message); 
             }
         }
 
         [HttpPost]
         [Route("[controller]/v2/widgets/clocks/post/new")]
-        public async Task<Results<BadRequest<string>, Created<ClockWidget>>> NewClockWidget(ClockWidget item)
+        public async Task<IActionResult> NewClockWidget(ClockWidget item)
         {
-            using var context = _DbFactory.CreateDbContext();
             try
             {
-                context.ClockWidgets.Add(item);
-                await context.SaveChangesAsync();
-                return TypedResults.Created(item.Id.ToString(), item);
+                var result = await _dbRepo.AddClockWidgetAsync(item);
+
+                if (result)
+                {
+                    return Created(item.Id.ToString(), SerializeObject(item));
+                }
+                else
+                {
+                    return Problem("No changed were made to the database.");
+                }
             }
-            catch (Exception ex)
+            catch(Exception ex)
             {
-                return TypedResults.BadRequest(ex.Message);
+                return Problem(ex.Message);
             }
         }
 
         [HttpPost]
         [Route("[controller]/v2/widgets/status/post/new")]
-        public async Task<Results<BadRequest<string>, Created<DeviceStatusWidget>>> NewDeviceStatuskWidget(DeviceStatusWidget item)
+        public async Task<IActionResult> NewDeviceStatuskWidget(DeviceStatusWidget item)
         {
-            using var context = _DbFactory.CreateDbContext();
             try
             {
-                context.DeviceStatusWidgets.Add(item);
-                await context.SaveChangesAsync();
-                return TypedResults.Created(item.Id.ToString(), item);
+                var result = await _dbRepo.AddStatusWidgetAsync(item);
+
+                if (result)
+                {
+                    return Created(item.Id.ToString(), SerializeObject(item));
+                }
+                else
+                {
+                    return Problem("No changed were made to the database.");
+                }
             }
             catch (Exception ex)
             {
-                return TypedResults.BadRequest(ex.Message);
+                return Problem(ex.Message);
             }
         }
 
         [HttpPost]
         [Route("[controller]/v2/directories/post/new")]
-        public async Task<Results<BadRequest<string>, Created<DirectoryItem>>> NewDirectory(DirectoryItem item)
+        public async Task<IActionResult> NewDirectory(DirectoryItem item)
         {
-            using var ctx = _DbFactory.CreateDbContext();
-
             try
             {
-                ctx.DirectoryItems.Add(item);
-                await ctx.SaveChangesAsync();
-                return TypedResults.Created(item.Id.ToString(), item);
+                var result = await _dbRepo.AddDirectoryAsync(item);
+
+                if (result)
+                {
+                    return Created(item.Id.ToString(), SerializeObject(item));
+                }
+                else
+                {
+                    return Problem("No changed were made to the database.");
+                }
             }
             catch (Exception ex)
             {
-                return TypedResults.BadRequest(ex.Message);
+                return Problem(ex.Message);
             }
         }
 
         [HttpPut]
         [Route("[controller]/v2/shortcuts/put/update")]
-        public async Task<Results<BadRequest<string>, Ok<ShortcutItem>>> UpdateShortcut(ShortcutItem item)
+        public async Task<IActionResult> UpdateShortcut(ShortcutItem item)
         {
-            using var context = _DbFactory.CreateDbContext();
-            var entity = await context.ShortcutItems.Include(x => x.Parent)
-                                                .FirstOrDefaultAsync(x => x.Id == item.Id);
-            if (entity == null) return TypedResults.BadRequest("Bad ID match");
-
-            entity.DisplayName = item.DisplayName;
-            entity.Url = item.Url;
-            entity.ParentId = item.ParentId;
-            entity.Icon = item.Icon;
-            entity.Description = item.Description;
-
             try
             {
-                context.ShortcutItems.Update(entity);
-                await context.SaveChangesAsync();
-                return TypedResults.Ok(item);
+                var result = await _dbRepo.UpdateShortcutAsync(item);
+
+                if (result)
+                {
+                    return Created(item.Id.ToString(), SerializeObject(item));
+                }
+                else
+                {
+                    return Problem("No changed were made to the database.");
+                }
             }
             catch (Exception ex)
             {
-                return TypedResults.BadRequest(ex.Message);
+                return Problem(ex.Message);
             }
         }
 
         [HttpPut]
         [Route("[controller]/v2/directories/put/update")]
-        public async Task<Results<BadRequest<string>, Ok<DirectoryItem>>> UpdateDirectory(DirectoryItem item)
+        public async Task<IActionResult> UpdateDirectory(DirectoryItem item)
         {
-            using var context = _DbFactory.CreateDbContext();
-            var entity = await context.DirectoryItems.FirstOrDefaultAsync(x => x.Id == item.Id);
-            if (entity == null) return TypedResults.BadRequest("Bad ID match");
-
-            entity.DisplayName = item.DisplayName;
-            entity.Children = item.Children;
-            entity.Icon = item.Icon;
-            entity.Description = item.Description;
-
             try
             {
-                context.DirectoryItems.Update(entity);
-                await context.SaveChangesAsync();
-                return TypedResults.Ok(item);
+                var result = await _dbRepo.UpdateDirectoryAsync(item);
+
+                if (result)
+                {
+                    return Created(item.Id.ToString(), SerializeObject(item));
+                }
+                else
+                {
+                    return Problem("No changed were made to the database.");
+                }
             }
             catch (Exception ex)
             {
-                return TypedResults.BadRequest($"{ex.Message}");
+                return Problem(ex.Message);
             }
         }
 
         [HttpDelete]
         [Route("[controller]/v2/widgets/clocks/delete/byobject")]
-        public async Task<Results<BadRequest<string>, Ok<ClockWidget>>> DeleteClockWidget(ClockWidget item)
+        public async Task<IActionResult> DeleteClockWidget(ClockWidget item)
         {
-            using var context = _DbFactory.CreateDbContext();
-            var delete = context.ClockWidgets.Find(item.Id);
-
-            if (delete == null)
-            {
-                return TypedResults.BadRequest("Unable to track db object");
-            }
-
             try
             {
-                context.ClockWidgets.Remove(delete);
-                await context.SaveChangesAsync();
-                return TypedResults.Ok(item);
+                var result = await _dbRepo.DeleteClockWidgetAsync(item);
+
+                if (result)
+                {
+                    return Ok(SerializeObject(item));
+                }
+                else
+                {
+                    return Problem("No changed were made to the database.");
+                }
             }
             catch (Exception ex)
             {
-                return TypedResults.BadRequest($"{ex.Message}");
+                return Problem(ex.Message);
             }
         }
 
         [HttpDelete]
         [Route("[controller]/v2/widgets/status/delete/byobject")]
-        public async Task<Results<BadRequest<string>, Ok<DeviceStatusWidget>>> DeleteStatusWidget(DeviceStatusWidget item)
+        public async Task<IActionResult> DeleteStatusWidget(DeviceStatusWidget item)
         {
-            using var context = _DbFactory.CreateDbContext();
-            var delete = context.DeviceStatusWidgets.Find(item.Id);
-
-            if (delete == null)
-            {
-                return TypedResults.BadRequest("Unable to track db object");
-            }
-
             try
             {
-                context.DeviceStatusWidgets.Remove(delete);
-                await context.SaveChangesAsync();
-                return TypedResults.Ok(item);
+                var result = await _dbRepo.DeleteStatusWidgetAsync(item);
+
+                if (result)
+                {
+                    return Ok(SerializeObject(item));
+                }
+                else
+                {
+                    return Problem("No changed were made to the database.");
+                }
             }
             catch (Exception ex)
             {
-                return TypedResults.BadRequest($"{ex.Message}");
+                return Problem(ex.Message);
             }
         }
 
         [HttpDelete]
         [Route("[controller]/v2/shortcuts/delete/byobject")]
-        public async Task<Results<BadRequest<string>, Ok<ShortcutItem>>> DeleteShortcut(ShortcutItem item)
+        public async Task<IActionResult> DeleteShortcut(ShortcutItem item)
         {
-            using var context = _DbFactory.CreateDbContext();
-            var delete = await context.ShortcutItems.Include(x => x.Parent).FirstOrDefaultAsync(x => x.Id == item.Id);
-
-            if (delete == null)
-            {
-                return TypedResults.BadRequest("Unable to track db object");
-            }
-
-            if (delete.Parent != null)
-            {
-                var parent = await context.DirectoryItems.Include(d => d.Children).FirstOrDefaultAsync(d => d.Id == delete.Parent.Id);
-                if (parent != null)
-                {
-                    parent.Children.Remove(delete);
-                }
-            }
-
             try
             {
-                context.ShortcutItems.Remove(delete);
-                await context.SaveChangesAsync();
-                return TypedResults.Ok(item);
+                var result = await _dbRepo.DeleteShortcutAsync(item);
+
+                if (result)
+                {
+                    return Ok(SerializeObject(item));
+                }
+                else
+                {
+                    return Problem("No changed were made to the database.");
+                }
             }
             catch (Exception ex)
             {
-                return TypedResults.BadRequest($"{ex.Message}");
+                return Problem(ex.Message);
             }
         }
 
         [HttpDelete]
         [Route("[controller]/v2/directories/delete/byobject")]
-        public async Task<Results<BadRequest<string>, Ok<DirectoryItem>>> DeleteDirectory(DirectoryItem item)
+        public async Task<IActionResult> DeleteDirectory(DirectoryItem item)
         {
-            using var context = _DbFactory.CreateDbContext();
-            var delete = await context.DirectoryItems.Include(d => d.Children).FirstOrDefaultAsync(x => x.Id == item.Id);
-
-            if (delete == null)
-            {
-                return TypedResults.BadRequest("Unable to track db object");
-            }
-
             try
             {
-                foreach (var child in delete.Children)
-                {
-                    context.ShortcutItems.Remove(child);
-                }
+                var result = await _dbRepo.DeleteDirectoryAsync(item);
 
-                context.DirectoryItems.Remove(delete);
-                await context.SaveChangesAsync();
-                return TypedResults.Ok(item);
+                if (result)
+                {
+                    return Ok(SerializeObject(item));
+                }
+                else
+                {
+                    return Problem("No changed were made to the database.");
+                }
             }
             catch (Exception ex)
             {
-                return TypedResults.BadRequest($"{ex.Message}");
+                return Problem(ex.Message);
             }
         }
     }
