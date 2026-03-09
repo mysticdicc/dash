@@ -148,23 +148,6 @@ namespace web.Client.Services
             }
         }
 
-        public async Task<bool> DiscoveryUpdateAsync(Subnet subnet)
-        {
-            try
-            {
-                await _subnetsAPI.DiscoveryUpdateAsync(subnet);
-                _notificationService.ShowAsync("Success", "Discovery results updated successfully");
-
-                return true;
-            }
-            catch (Exception ex)
-            {
-                _notificationService.ShowAsync("Failed to update discovery results", ex.Message);
-
-                return false;
-            }
-        }
-
         public async Task<Subnet> GetSubnetByIdAsync(int ID)
         {
             try

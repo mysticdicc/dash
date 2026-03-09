@@ -7,14 +7,15 @@ using web.Services;
 using DashLib.Network;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using DashLib.Interfaces.Network;
 
 namespace web.Controllers
 {
     [ApiController]
-    public class SubnetsController(IDbContextFactory<DashDbContext> dbContext, DiscoveryService discoveryService) : Controller
+    public class SubnetsController(DiscoveryService discoveryService, ISubnetRepository subnetRepository) : Controller
     {
-        private readonly IDbContextFactory<DashDbContext> _DbFactory = dbContext;
         private readonly DiscoveryService _discoveryService = discoveryService;
+        private readonly ISubnetRepository _dbRepo = subnetRepository;
 
         private static readonly JsonSerializerOptions JsonOptions = new()
         {
@@ -23,307 +24,249 @@ namespace web.Controllers
             WriteIndented = true
         };
 
+        private static string SerializeObject(object obj)
+        {
+            return JsonSerializer.Serialize(obj, JsonOptions);
+        }
+
         [HttpPost]
         [Route("[controller]/v2/startdiscovery")]
-        public async Task<Results<BadRequest<string>, Ok<Subnet>>> StartSubnetDiscovery(Subnet subnet)
+        public async Task<IActionResult> StartSubnetDiscovery(Subnet subnet)
         {
-
-            using var context = _DbFactory.CreateDbContext();
-            var _subnet = await _discoveryService.StartDiscovery(subnet);
-
-            if (null != _subnet)
+            try
             {
-                var dbSubnet = context.Subnets.Include(x => x.List).FirstOrDefault(x => x.ID == _subnet.ID);
+                var discovered = await _discoveryService.ExecuteDiscoveryTasksAsync(subnet);
 
-                if (null != dbSubnet)
+                if (discovered == null) return Problem("No response from discovery tasks");
+
+                var result = await _dbRepo.SubmitDiscoveryTaskAsync(discovered);
+
+                if (result)
                 {
-                    try
-                    {
-                        dbSubnet = _subnet;
-
-                        foreach (var ip in _subnet.List)
-                        {
-                            var dbIp = context.IPs.Find(ip.ID);
-
-                            if (null != dbIp)
-                            {
-                                dbIp = ip;
-                            }
-                        }
-
-                        await context.SaveChangesAsync();
-                        return TypedResults.Ok(_subnet);
-                    }
-                    catch (Exception ex)
-                    {
-                        return TypedResults.BadRequest(ex.Message);
-                    }
-
+                    return Ok(result);
                 }
                 else
                 {
-                    return TypedResults.BadRequest("Unable to find db object");
+                    return Problem("No changes were made to the database.");
                 }
             }
-            else
+            catch (Exception ex)
             {
-                return TypedResults.BadRequest("Null object return from discovery service");
+                return Problem(ex.Message);
             }
         }
 
         [HttpPost]
         [Route("[controller]/v2/new/byobject")]
-        public async Task<Results<BadRequest<string>, Created<Subnet>>> AddSubnetByObject(Subnet subnet)
+        public async Task<IActionResult> AddSubnetByObject(Subnet subnet)
         {
-            using var context = _DbFactory.CreateDbContext();
-
             try
             {
-                context.Subnets.Add(subnet);
-                await context.SaveChangesAsync();
+                var result = await _dbRepo.AddSubnetAsync(subnet);
 
-                return TypedResults.Created(subnet.ID.ToString(), subnet);
+                if (result)
+                {
+                    return Ok(SerializeObject(subnet)); 
+                }
+                else
+                {
+                    return Problem("No changes were made to the database.");
+                }
             }
             catch (Exception ex)
             {
-                return TypedResults.BadRequest(ex.Message);
+                return Problem(ex.Message);
             }
         }
 
         [HttpPut]
         [Route("[controller]/v2/update/byobject")]
-        public async Task<Results<BadRequest<string>, Ok<Subnet>>> EditSubnetByObject(Subnet subnet)
+        public async Task<IActionResult> EditSubnetByObject(Subnet subnet)
         {
-            using var context = _DbFactory.CreateDbContext();
-            var item = context.Subnets.Find(subnet.ID);
-
-            if (null == item)
-                return TypedResults.BadRequest("Unable to find matching ID");
-
-            item.List = subnet.List;
-            item.Address = subnet.Address;
-            item.StartAddress = subnet.StartAddress;
-            item.EndAddress = subnet.EndAddress;
-            item.SubnetMask = subnet.SubnetMask;
-
             try
             {
-                await context.SaveChangesAsync();
-                return TypedResults.Ok(subnet);
+                var result = await _dbRepo.UpdateSubnetAsync(subnet);
+
+                if (result)
+                {
+                    return Ok(SerializeObject(subnet));
+                }
+                else
+                {
+                    return Problem("No changes were made to the database.");
+                }
             }
             catch (Exception ex)
             {
-                return TypedResults.BadRequest(ex.Message);
+                return Problem(ex.Message);
             }
         }
 
         [HttpGet]
         [Route("[controller]/v2/ips/get/all")]
-        public string GetAllIps()
+        public async Task<IActionResult> GetAllIps()
         {
-            using var context = _DbFactory.CreateDbContext();
-            return JsonSerializer.Serialize(context.IPs.ToList(), JsonOptions);
+            try
+            {
+                var list = await _dbRepo.GetAllIpsAsync();
+                return Ok(SerializeObject(list));
+            }
+            catch (Exception ex)
+            {
+                return Problem(ex.Message);
+            }
         }
 
         [HttpGet]
         [Route("[controller]/v2/ips/get/byid")]
-        public async Task<Results<BadRequest<string>, Ok<IP>>> GetIpById(int ID)
+        public async Task<IActionResult> GetIpById(int ID)
         {
-            using var context = _DbFactory.CreateDbContext();
-            var item = context.IPs.Find(ID);
-
-            if (null == item) 
-            { 
-                return TypedResults.BadRequest("invalid id");
+            try
+            {
+                var ip = await _dbRepo.GetIpByIdAsync(ID);
+                return Ok(SerializeObject(ip));
             }
-
-            return TypedResults.Ok(item);
+            catch (Exception ex)
+            {
+                return Problem(ex.Message); 
+            }
         }
 
         [HttpGet]
         [Route("[controller]/v2/get/all")]
         public async Task<IActionResult> GetAllSubnets()
         {
-            using var context = _DbFactory.CreateDbContext();
-
-            var subnets = await context.Subnets.Include(x => x.List).ToListAsync();
-
-            return Ok(subnets);
+            try
+            {
+                var list = await _dbRepo.GetAllSubnetsWithIpsAsync();
+                return Ok(SerializeObject(list));
+            }
+            catch (Exception ex)
+            {
+                return Problem(ex.Message);
+            }
         }
 
         [HttpDelete]
         [Route("[controller]/v2/delete/byobject")]
-        public async Task<Results<BadRequest<string>, Ok<int>>> DeleteSubnetByObject(Subnet subnet)
+        public async Task<IActionResult> DeleteSubnetByObject(Subnet subnet)
         {
-            using var context = _DbFactory.CreateDbContext();
-            Subnet? deleteItem = context.Subnets.Find(subnet.ID);
-
-            if (null != deleteItem)
+            try
             {
-                try
+                var result = await _dbRepo.DeleteSubnetAsync(subnet);
+
+                if (result)
                 {
-                    context.Subnets.Remove(deleteItem);
-                    await context.SaveChangesAsync();
-                    return TypedResults.Ok(deleteItem.ID);
+                    return Ok(SerializeObject(subnet));
                 }
-                catch (Exception ex)
+                else
                 {
-                    return TypedResults.BadRequest(ex.Message);
+                    return Problem("No changes were made to the database.");
                 }
             }
-            else
+            catch (Exception ex)
             {
-                return TypedResults.BadRequest("unable to find ID in db");
+                return Problem(ex.Message);
             }
         }
 
         [HttpPost]
         [Route("[controller]/v2/ip/post/new")]
-        public async Task<Results<BadRequest<string>, Created<IP>>> AddIP(IP ip)
+        public async Task<IActionResult> AddIP(IP ip)
         {
-            using var context = _DbFactory.CreateDbContext();
-
-            //validate
-            bool validObject = true;
-
-            if (validObject)
+            try
             {
-                try
+                var result = await _dbRepo.AddNewIpAsync(ip);
+
+                if (result)
                 {
-                    if (null != ip.PortsMonitored)
-                    {
-                        ip.IsMonitoredTCP = true;
-                    }
-
-                    context.IPs.Add(ip);
-                    await context.SaveChangesAsync();
-
-                    return TypedResults.Created(ip.ID.ToString(), ip);
+                    return Ok(SerializeObject(ip));
                 }
-                catch (Exception ex)
+                else
                 {
-                    return TypedResults.BadRequest(ex.Message);
+                    return Problem("No changes were made to the database.");
                 }
             }
-            else
+            catch (Exception ex)
             {
-                return TypedResults.BadRequest("Object invalid.");
+                return Problem(ex.Message);
             }
         }
 
         [HttpGet]
         [Route("[controller]/v2/ip/get/all")]
-        public string GetAllIP()
+        public async Task<IActionResult> GetAllIP()
         {
-            using var context = _DbFactory.CreateDbContext();
-            return JsonSerializer.Serialize(context.IPs.ToList(), JsonOptions);
+            try
+            {
+                var list = await _dbRepo.GetAllIpsAsync();
+                return Ok(SerializeObject(list));
+            }
+            catch (Exception ex) 
+            {
+                return Problem(ex.Message);
+            }
         }
 
         [HttpPut]
         [Route("[controller]/v2/ip/put/update")]
-        public async Task<Results<BadRequest<string>, Ok<IP>>> UpdateIP(IP ip)
+        public async Task<IActionResult> UpdateIP(IP ip)
         {
-            using var context = _DbFactory.CreateDbContext();
-
-            var updateItem = context.IPs.Find(ip.ID);
-
-            if (updateItem != null)
+            try
             {
-                updateItem.Hostname = ip.Hostname;
-                updateItem.IsMonitoredICMP = ip.IsMonitoredICMP;
+                var result = await _dbRepo.UpdateIpAsync(ip);
 
-                if (null != ip.PortsMonitored)
+                if (result)
                 {
-                    updateItem.IsMonitoredTCP = true;
-                    updateItem.PortsMonitored = ip.PortsMonitored;
-                }
-
-                context.IPs.Update(updateItem);
-
-                await context.SaveChangesAsync();
-                return TypedResults.Ok(updateItem);
-            }
-            else
-            {
-                return TypedResults.BadRequest($"Unable to find item with {ip.ID}");
-            }
-        }
-
-        [HttpPost]
-        [Route("[controller]/v2/subnet/post/discoveryupdate")]
-        public async Task<Results<Ok<List<int>>, Ok<Subnet>>> UpdateSubnet(Subnet subnet)
-        {
-            using var context = _DbFactory.CreateDbContext();
-            List<int> badId = [];
-
-            foreach (var ip in subnet.List)
-            {
-                var item = context.IPs.Find(ip.ID);
-                if (null != item)
-                {
-                    item.Hostname = ip.Hostname;
-                    item.IsMonitoredICMP = ip.IsMonitoredICMP;
-                    context.IPs.Update(item);
+                    return Ok(SerializeObject(ip));
                 }
                 else
                 {
-                    badId.Add(ip.ID);
+                    return Problem("No changes were made to the database.");
                 }
             }
-
-            await context.SaveChangesAsync();
-
-            if (badId.Count > 0)
+            catch (Exception ex)
             {
-                return TypedResults.Ok<List<int>>(badId);
-            }
-            else
-            {
-                return TypedResults.Ok<Subnet>(subnet);
+                return Problem(ex.Message);
             }
         }
 
         [HttpGet]
         [Route("[controller]/v2/get/byid")]
-        public string GetById(int ID)
+        public async Task<IActionResult> GetById(int ID)
         {
-            using var context = _DbFactory.CreateDbContext();
-            var item = context.Subnets.Find(ID);
-            return JsonSerializer.Serialize(item, JsonOptions);
+            try
+            {
+                var ip = await _dbRepo.GetIpByIdAsync(ID);
+                return Ok(SerializeObject(ip));
+            }
+            catch (Exception ex)
+            {
+                return Problem(ex.Message); 
+            }
         }
 
         [HttpDelete]
         [Route("[controller]/v2/ip/delete/byobject")]
-        public async Task<Results<BadRequest<string>, Ok<int>>> DeleteIPByObject(IP ip)
+        public async Task<IActionResult> DeleteIPByObject(IP ip)
         {
-            using var context = _DbFactory.CreateDbContext();
-            IP? deleteItem = context.IPs.Where(x => x.ID == ip.ID).FirstOrDefault();
-
-            if (null != deleteItem)
+            try
             {
-                try
+                var result = await _dbRepo.DeleteIpAsync(ip);
+
+                if (result)
                 {
-                    var subnet = context.Subnets.Find(deleteItem.SubnetID);
-
-                    if (null != subnet)
-                    {
-                        subnet.List.Remove(ip);
-                    }
-
-                    context.IPs.Remove(deleteItem);
-                    await context.SaveChangesAsync();
-                    return TypedResults.Ok(deleteItem.ID);
+                    return Ok(SerializeObject(ip));
                 }
-                catch (Exception ex)
+                else
                 {
-                    return TypedResults.BadRequest(ex.Message);
+                    return Problem("No changes were made to the database.");
                 }
             }
-            else
+            catch (Exception ex)
             {
-                return TypedResults.BadRequest("unable to find ID in db");
+                return Problem(ex.Message);
             }
         }
-
     }
 }

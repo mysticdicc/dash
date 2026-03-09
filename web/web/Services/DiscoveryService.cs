@@ -10,7 +10,7 @@ namespace web.Services
     {
         private readonly ILogger<DiscoveryService> _logger = logger;
 
-        public async Task<Subnet> StartDiscovery(Subnet subnet)
+        public async Task<Subnet> ExecuteDiscoveryTasksAsync(Subnet subnet)
         {
             List<Task<IP>> tasks = new();
 
