@@ -34,6 +34,20 @@ namespace DashLib.Models
             CleanupService
         }
         public LogSource Source { get; set; }
+        
+        public LogEntry(bool isDefault)
+        {
+            Timestamp = DateTime.Now;
+            Message = string.Empty;
+        } 
+
+        public LogEntry(LogLevel level, LogSource source, string message)
+        {
+            Timestamp = DateTime.Now;
+            Message = message;
+            Level = level;
+            Source = source;
+        }
 
         [JsonConstructor] public LogEntry(int Id, DateTime Timestamp, string Message, LogLevel Level, LogSource Source)
         {
@@ -42,14 +56,6 @@ namespace DashLib.Models
             this.Message = Message;
             this.Level = Level;
             this.Source = Source;
-        }
-
-        public LogEntry(LogLevel level, LogSource source, string message)
-        {
-            Timestamp = DateTime.Now;
-            Message = message;
-            Level = level;
-            Source = source;
         }
     }
 }

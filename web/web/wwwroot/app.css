@@ -1019,77 +1019,78 @@ input:checked + .slider:before {
     max-height: 50%;
 }
 
-    .monitoring_layout > div > header {
-        display: flex;
-        flex-direction: row;
-        background-color: var(--light-grey);
-        padding: 10px;
-        min-height: 3rem;
+.monitoring_layout > div > header {
+    display: flex;
+    flex-direction: row;
+    background-color: var(--light-grey);
+    padding: 10px;
+    min-height: 3rem;
 
-        > button#expand {
-            margin-right: 0;
-            margin-left: auto;
-        }
+    > button#expand {
+        margin-right: 0;
+        margin-left: auto;
     }
+}
 
-    .monitoring_layout > div > article {
-        flex: 1;
-        display: flex;
-    }
+.monitoring_layout > div > article {
+    flex: 1;
+    display: flex;
+}
 
-    article#monitor_states {
-        display: flex;
-        flex-direction: column;
-        min-height: 0;
-        padding: 20px;
+article#monitor_states {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    padding: 20px;
 
     > div {
         flex: 1;
         overflow-y: auto;
-        padding: 20px;
         border-radius: 10px;
         background-color: var(--secondary);
     }
 }
 
-        article#monitor_states > div > table {
-            width: 100%;
-            text-align: center;
+article#monitor_states > div > table {
+    width: 100%;
+    text-align: center;
 
-                > tr {
-                    background-color: var(--secondary) !important;
-                }
+    > tr:has(td) {
+        background-color: var(--secondary) !important;
+    }
 
-                > tr:has(td):hover {
-                    background-color: var(--primary-light) !important;
-                }
+    > tr:has(td):hover {
+        background-color: var(--primary-light) !important;
+    }
 
-                > tr:has(th) {
-                    position: sticky;
-                    top: 0;
-                    opacity: 100%;
-                }
+    > tr:has(th) {
+        position: sticky;
+        top: 0;
+        z-index: 100;
+        background-color: var(--black);
+        color: var(--white);
+    }
 
-            td {
-                > button {
-                    margin-left: auto;
-                    margin-right: auto;
-                }
-            }
+    td {
+        > button {
+            margin-left: auto;
+            margin-right: auto;
         }
+    }
+}
 
-        .apexcharts-canvas {
-            margin: auto;
-            max-height: 90%;
-        }
+.apexcharts-canvas {
+    margin: auto;
+    max-height: 90%;
+}
 
-        #apex_chart {
-            flex: 1;
-            margin: 20px;
-            background-color: var(--secondary);
-            border-radius: 10px;
-            padding: 20px;
-        }
+#apex_chart {
+    flex: 1;
+    margin: 20px;
+    background-color: var(--secondary);
+    border-radius: 10px;
+    padding: 20px;
+}
 
 div#uptime_chart {
     display: flex;
@@ -1286,25 +1287,25 @@ div#statusdashcard {
         line: 133;
     }
 
-    tr.warning:hover {
-        background-color: var(--warning-dark);
-    }
+        tr.warning:hover {
+            background-color: var(--warning-dark);
+        }
 
     tr.info {
         background-color: var(--info);
     }
 
-    tr.info:hover {
-        background-color: var(--info-dark);
-    }
+        tr.info:hover {
+            background-color: var(--info-dark);
+        }
 
     tr.error {
         background-color: var(--error);
     }
 
-    tr.error:hover {
-        background-color: var(--error-dark);
-    }
+        tr.error:hover {
+            background-color: var(--error-dark);
+        }
 
     td {
         padding-top: 5px;
@@ -1313,18 +1314,18 @@ div#statusdashcard {
         padding-right: 10px;
     }
 
-    td:nth-child(1) {
-        min-width: 200px;
-        text-align: center;
-    }
+        td:nth-child(1) {
+            min-width: 200px;
+            text-align: center;
+        }
 
-    td:nth-child(2),
-    td:nth-child(3) {
-        min-width: 100px;
-        text-align: center;
-    }
+        td:nth-child(2),
+        td:nth-child(3) {
+            min-width: 100px;
+            text-align: center;
+        }
 
-    td:nth-child(4) {
-        width: auto;
-    }
+        td:nth-child(4) {
+            width: auto;
+        }
 }

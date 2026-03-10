@@ -1,5 +1,6 @@
 ﻿@inject LoggingHubService LoggingHub
 @inject ILoggingAPI LoggingApiService
+@implements IDisposable
 
 <div class="log_table_wrapper">
     <div>
@@ -13,60 +14,9 @@
     <table class="log_table">
         @if (LoggingHub.Logs.Count > 0)
         {
-            @foreach (var log in LoggingHub.Logs)
-            {
-                @if (log.Level == LogEntry.LogLevel.Error)
-                {
-                    <tr class="error">
-                        <td>
-                            @log.Timestamp.ToString("yyyy-MM-dd HH:mm:ss")
-                        </td>
-                        <td>
-                            @log.Level.ToString()
-                        </td>
-                        <td>
-                            @log.Source.ToString()
-                        </td>
-                        <td>
-                            @log.Message
-                        </td>
-                    </tr>
-                }
-                else if (log.Level == LogEntry.LogLevel.Warning)
-                {
-                    <tr class="warning">
-                        <td>
-                            @log.Timestamp.ToString("yyyy-MM-dd HH:mm:ss")
-                        </td>
-                        <td>
-                            @log.Level.ToString()
-                        </td>
-                        <td>
-                            @log.Source.ToString()
-                        </td>
-                        <td>
-                            @log.Message
-                        </td>
-                    </tr>
-                }
-                else if (log.Level == LogEntry.LogLevel.Info)
-                {
-                    <tr class="info">
-                        <td>
-                            @log.Timestamp.ToString("yyyy-MM-dd HH:mm:ss")
-                        </td>
-                        <td>
-                            @log.Level.ToString()
-                        </td>
-                        <td>
-                            @log.Source.ToString()
-                        </td>
-                        <td>
-                            @log.Message
-                        </td>
-                    </tr>
-                }
-            }
+            <Virtualize Items="@LoggingHub.Logs" Context="log" @key="@LoggingHub.Logs" OverscanCount="50">
+                <LogRow Log="log" />
+            </Virtualize>
         }
     </table>
 </div>
@@ -95,5 +45,10 @@
         await LoggingApiService.DeleteAllLogEntriesAsync();
         LoggingHub.ClearLogs();
         await InvokeAsync(StateHasChanged);
+    }
+
+    public void Dispose()
+    {
+        LoggingHub.OnLogsUpdated -= OnLogsChanged;
     }
 }

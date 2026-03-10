@@ -14,6 +14,7 @@ namespace web.Services
         private readonly SettingsService _settings;
         private readonly LogEntry.LogSource _logSource = LogEntry.LogSource.DiscoveryService;
         private LookupClient _dnsLookupClient;
+        private SemaphoreSlim _semaphore;
 
         public DiscoveryService(LoggingService logger, SettingsService settings)
         {
@@ -24,10 +25,12 @@ namespace web.Services
             var secondary = new IPEndPoint(_settings.Subnet.GetSecondaryDnsServer(), _settings.Subnet.SecondaryDnsPort);
 
             _dnsLookupClient = new LookupClient(primary, secondary);
+            _semaphore = new(1, 1);
         }
 
         public async Task<Subnet> ExecuteDiscoveryTasksAsync(Subnet subnet)
         {
+            await _semaphore.WaitAsync();
             _logger.LogInfo("Discovery task initiated.", _logSource);
             List<Task<IP>> tasks = new();
 
@@ -45,6 +48,7 @@ namespace web.Services
             subnet.List = tasks.Select(x => x.Result).ToList();
 
             _logger.LogInfo("Discovery tasks completed returning results.", _logSource);
+            _semaphore?.Dispose();
             return subnet;
         }
 
@@ -63,10 +67,7 @@ namespace web.Services
                     ip.Hostname = _dnsLookupClient.GetHostName(ipAddress) ?? string.Empty;
                     _logger.LogInfo($"{IP.ConvertToString(ip.Address)} resolved to {ip.Hostname}", _logSource);
                 }
-                catch (SocketException)
-                {
-                    ip.Hostname = ip.Hostname;
-                }
+                catch { }
             }
 
             return ip;

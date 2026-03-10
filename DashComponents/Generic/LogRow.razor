@@ -1,0 +1,29 @@
+﻿<tr class="@_log.Level.ToString().ToLower()" @key="@_log.Id">
+    <td>
+        @_log.Timestamp.ToString("yyyy-MM-dd HH:mm:ss")
+    </td>
+    <td>
+        @_log.Level.ToString()
+    </td>
+    <td>
+        @_log.Source.ToString()
+    </td>
+    <td>
+        @_log.Message
+    </td>
+</tr>
+
+@code {
+    [Parameter] required public LogEntry Log { get; set; }
+    private LogEntry _log = new LogEntry(true);
+
+    protected override void OnParametersSet()
+    {
+        if (null != Log && Log.Id != _log.Id)
+        {
+            _log = Log;
+        }
+
+        base.OnParametersSet();
+    }
+}
