@@ -64,20 +64,13 @@ namespace DashLib.Models.Settings
 
         static public void CreateNewSettingsFile(string path)
         {
-            try
+            if (File.Exists(path))
             {
-                if (File.Exists(path))
-                {
-                    File.Delete(path);
-                }
-                var settings = new AllSettings(true);
-                var json = JsonSerializer.Serialize(settings, JsonOptions);
-                File.WriteAllText(path, json);
+                File.Delete(path);
             }
-            catch
-            {
-                throw;
-            }
+            var settings = new AllSettings(true);
+            var json = JsonSerializer.Serialize(settings, JsonOptions);
+            File.WriteAllText(path, json);
         }
 
         static public void UpdateExistingSettingsFile(string path, AllSettings newSettings)

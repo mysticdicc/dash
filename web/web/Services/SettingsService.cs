@@ -70,8 +70,16 @@ namespace web.Services
             if (settings == null)
             {
                 _logger.LogWarning($"Failed to fetch or create settings file after {retryCount} attempts. Loading default settings to memory.", _logSource);
-                All = new AllSettings();
-                AllSettings.CreateNewSettingsFile(AllSettings.SettingsPath);
+                All = new AllSettings(true);
+
+                try
+                {
+                    AllSettings.CreateNewSettingsFile(AllSettings.SettingsPath);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError("Failed to write settings from memory to new file: " + ex.Message, _logSource);
+                }
             }
             else
             {

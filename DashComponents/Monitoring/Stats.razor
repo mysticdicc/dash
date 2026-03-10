@@ -133,8 +133,8 @@
             _monitored = IPAddresses.Count(); // api needs to return where icmpmonitored is no longer true
 
             _lastMonitored = IPAddresses.Count();
-            _lastOffline = _lastPolls.Where(x => x.PingState != null && x.PingState.Response == true).Count();
-            _lastOnline = _lastPolls.Where(x => x.PingState != null && x.PingState.Response == false).Count();
+            _lastOffline = _lastPolls.Where(x => x.PingState != null && x.PingState.Response == false).Count();
+            _lastOnline = _lastPolls.Where(x => x.PingState != null && x.PingState.Response == true).Count();
 
             if (_lastPolls.Count > 0)
             {

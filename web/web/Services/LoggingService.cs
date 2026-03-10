@@ -70,6 +70,7 @@ namespace web.Services
         public bool CheckLogEntryAgainstSettings(LogEntry entry)
         {
             if (null == _settings) return true;
+            if (null == _settings.Logs) return true;
 
             if (entry.Source == LogEntry.LogSource.AlertService && !_settings.Logs.LogAlertEventsEnabled) return false;
             if (entry.Source == LogEntry.LogSource.MonitoringService && !_settings.Logs.LogMonitoringEventsEnabled) return false;

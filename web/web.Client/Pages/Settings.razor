@@ -30,6 +30,7 @@
         <DiscordSettingsDisplay CurrentSettings="@_currentSettings.MonitoringSettings.DiscordSettings" @bind-IsVisible="@_currentSettings.MonitoringSettings.DiscordSettings.AlertsEnabled"/>
         <TelegramSettingsDisplay CurrentSettings="@_currentSettings.MonitoringSettings.TelegramSettings" @bind-IsVisible="@_currentSettings.MonitoringSettings.TelegramSettings.AlertsEnabled"/>
         <LoggingSettingsDisplay CurrentSettings="@_currentSettings.LoggingSettings"/>
+        <SubnetSettingsDisplay CurrentSettings="@_currentSettings.SubnetSettings"/>
         <OtherSettingsDisplay ResetClicked="@OnClickResetToDefault"/>
     </content>
     <footer>

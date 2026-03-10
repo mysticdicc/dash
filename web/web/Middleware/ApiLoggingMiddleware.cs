@@ -24,6 +24,9 @@ namespace web.Middleware
             try
             {
                 if (null == context) return;
+                if (null == _next) return;
+                if (null == _loggingService) return;
+
                 await _next(context);
                 stopwatch.Stop();
 

@@ -14,18 +14,20 @@ namespace web.Controllers
         private readonly SettingsService _settingsService;
         private readonly TelegramService _telegramService;
         private readonly DiscordService _discordService;
-
+        private readonly DiscoveryService _discoveryService;
         public SettingsController(
             MonitorService monitorService, 
             SettingsService settingsService,
             TelegramService telegramService,
-            DiscordService discordService
+            DiscordService discordService,
+            DiscoveryService discoveryService
             )
         {
             _monitorService = monitorService;
             _settingsService = settingsService;
             _telegramService = telegramService;
             _discordService = discordService;
+            _discoveryService = discoveryService;
         }
 
         [HttpGet]
@@ -54,7 +56,8 @@ namespace web.Controllers
                     settings.MonitoringSettings == null ||
                     settings.SubnetSettings == null ||
                     settings.MonitoringSettings.SmtpSettings == null ||
-                    settings.MonitoringSettings.DiscordSettings == null)
+                    settings.MonitoringSettings.DiscordSettings == null ||
+                    settings.MonitoringSettings.TelegramSettings == null)
                 {
                     return TypedResults.BadRequest("One or more child objects is missing from settings.");
                 }
@@ -70,6 +73,7 @@ namespace web.Controllers
                 await _settingsService.RefreshSettingsAsync(CancellationToken.None);
                 await _telegramService.Restart();
                 await _discordService.Restart();
+                await _discoveryService.Restart();
                 return TypedResults.Ok(settings);
             }
             catch (Exception ex)

@@ -1,0 +1,63 @@
+﻿@if (IsVisible)
+{
+    <div class="settings_card">
+        <header>
+            <h3>Subnet Settings</h3>
+        </header>
+        <content>
+            <table>
+                <tr>
+                    <td>
+                        Primary DNS Server:
+                    </td>
+                    <td>
+                        <input type="text" @bind="@_currentSettings.PrimaryDnsServerAsString"/>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        Primary DNS Port:
+                    </td>
+                    <td>
+                        <input type="number" @bind="@_currentSettings.PrimaryDnsPort"/>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        Secondary DNS Server:
+                    </td>
+                    <td>
+                        <input type="text" @bind="@_currentSettings.SecondaryDnsServerAsString"/>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        Secondary DNS Port:
+                    </td>
+                    <td>
+                        <input type="number" @bind="@_currentSettings.SecondaryDnsPort"/>
+                    </td>
+                </tr>
+            </table>
+        </content>
+    </div>
+}
+
+
+
+
+@code {
+    [Parameter] required public SubnetSettings CurrentSettings { get; set; }
+    [Parameter] public bool IsVisible { get; set; } = true;
+    [Parameter] public EventCallback<bool> IsVisibleChanged { get; set; }
+    private SubnetSettings _currentSettings = new SubnetSettings();
+
+    protected override void OnParametersSet()
+    {
+        if (null != CurrentSettings && CurrentSettings != _currentSettings)
+        {
+            _currentSettings = CurrentSettings;
+        }
+        base.OnParametersSet();
+    }
+}

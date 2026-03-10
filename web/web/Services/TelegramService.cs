@@ -16,13 +16,16 @@ namespace web.Services
             _settings = settingsService;
             _logger = logger;
 
-            try
+            if (_settings.Telegram.BotToken != null && _settings.Telegram.BotToken != string.Empty)
             {
-                _botClient = new TelegramBotClient(_settings.Telegram.BotToken);
-            }
-            catch 
-            {
-                _botClient = null;
+                try
+                {
+                    _botClient = new TelegramBotClient(_settings.Telegram.BotToken);
+                }
+                catch
+                {
+                    _botClient = null;
+                }
             }
 
             _logger.LogInfo("Service has been started.", _logSource);
@@ -44,9 +47,10 @@ namespace web.Services
 
         public async Task Restart()
         {
-            _logger.LogInfo("Service restart intiiated.", _logSource);
+            _logger.LogInfo("Service restart intiated.", _logSource);
             _botClient?.Close();
-            _botClient = new TelegramBotClient(_settings.Telegram.BotToken);
+            if (_settings.Telegram.BotToken != null && _settings.Telegram.BotToken != string.Empty)
+                _botClient = new TelegramBotClient(_settings.Telegram.BotToken);
         }
     }
 }

@@ -104,7 +104,8 @@ namespace web.Data.Repos
             {
                 if (idDict.TryGetValue(submitted.ID, out var existing))
                 {
-                    existing.Hostname = submitted.Hostname;
+                    if (submitted.Hostname != string.Empty) existing.Hostname = submitted.Hostname;
+                    existing.IsMonitoredICMP = submitted.IsMonitoredICMP;
                 }
             }
 
