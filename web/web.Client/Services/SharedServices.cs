@@ -5,6 +5,7 @@ using DashLib.API;
 using DashLib.Interfaces.Dashboard;
 using DashLib.Interfaces.Monitoring;
 using DashLib.Interfaces.Network;
+using DashLib.Interfaces.Logging;
 
 namespace web.Client.Services
 {
@@ -17,6 +18,10 @@ namespace web.Client.Services
 
             services.AddApexCharts();
             services.AddSingleton<NotificationService>();
+
+            services.AddSingleton<LoggingAPI>();
+            services.AddSingleton<ILoggingAPI, LoggingApiService>();
+            services.AddSingleton<LoggingHubService>();
 
             services.AddSingleton<DashAPI>();
             services.AddSingleton<IDashAPI, DashboardApiService>();

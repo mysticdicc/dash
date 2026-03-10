@@ -30,7 +30,7 @@ public partial class DashDbContext : DbContext
     public virtual DbSet<Subnet> Subnets { get; set; }
     public virtual DbSet<MonitorState> MonitorStates { get; set; }
     public virtual DbSet<PingState> PingStates { get; set; } 
-
+    public virtual DbSet<LogEntry> LogEntries { get; set; }
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Asset>(entity =>
@@ -224,6 +224,17 @@ public partial class DashDbContext : DbContext
             entity.Property(e => e.ID);
             entity.Property(e => e.MonitorID);
             entity.Property(e => e.Response);
+        });
+
+        modelBuilder.Entity<LogEntry>(entity =>
+        {
+            entity.ToTable("logs");
+            entity.HasIndex(e => e.Id);
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Timestamp).HasColumnType("DateTime");
+            entity.Property(e => e.Level).IsRequired();
+            entity.Property(e => e.Message).IsRequired();
+            entity.Property(e => e.Source).IsRequired();
         });
     }
 }

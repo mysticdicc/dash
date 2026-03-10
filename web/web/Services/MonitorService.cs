@@ -1,4 +1,5 @@
 using DashLib.DankAPI;
+using DashLib.Models;
 using DashLib.Models.Monitoring;
 using DashLib.Models.Network;
 using DashLib.Models.Settings;
@@ -17,54 +18,21 @@ namespace web.Services
     {
         private Timer? _timer;
         private readonly HttpClient _httpClient;
-        public int _delay;
-        private ILogger<MonitorService> _logger;
+        private readonly LoggingService _logger;
         CancellationTokenSource _cancellationToken;
         MonitoringAPI _monitoringApi;
-        AllSettings _currentSettings;
-
-        public MonitorService(ILogger<MonitorService> logger, HttpClient httpClient, MonitoringAPI monitoringApi)
+        SettingsService _currentSettings;
+        private static LogEntry.LogSource _logSource = LogEntry.LogSource.MonitoringService;
+        public MonitorService(LoggingService logger, HttpClient httpClient, MonitoringAPI monitoringApi, SettingsService settingsService)
         {
             _httpClient = httpClient;
             _timer = null;
             _logger = logger;
             _cancellationToken = new();
+            _currentSettings = settingsService;
             _monitoringApi = monitoringApi;
 
-            try
-            {
-                _logger.LogInformation("Fetching current settings");
-                _currentSettings = AllSettings.GetCurrentSettingsFile(Path.Combine(AppContext.BaseDirectory, "settings.json"));
-            }
-            catch(Exception ex)
-            {
-                _logger.LogError("Failed to fetch current settings: ");
-                _logger.LogError(ex.Message);
-                _logger.LogInformation("Creating new settings file");
-
-                try
-                {
-                    AllSettings.CreateNewSettingsFile(Path.Combine(AppContext.BaseDirectory, "settings.json"));
-                    _currentSettings = AllSettings.GetCurrentSettingsFile(Path.Combine(AppContext.BaseDirectory, "settings.json"));
-                }
-                catch(Exception ex2)
-                {
-                    _logger.LogError("Failed to create new settings:");
-                    _logger.LogError(ex2.Message);
-
-                    _logger.LogInformation("Using default settings");
-                    _currentSettings = new AllSettings(true);
-                }
-            }
-
-            if (null != _currentSettings.MonitoringSettings)
-            {
-                _delay = _currentSettings.MonitoringSettings.PollingIntervalInSeconds;
-            }
-            else
-            {
-                _delay = 600;
-            }
+            _logger.LogInfo("Service started", _logSource);
         }
 
         private async Task RunServiceAsync(CancellationToken token)
@@ -73,19 +41,19 @@ namespace web.Services
             {
                 while (!token.IsCancellationRequested)
                 {
-                    _logger.LogInformation($"Entered execution action, task delay is {_delay}s");
+                    _logger.LogInfo($"Entered execution action, task delay is {_currentSettings.Monitoring.PollingIntervalInSeconds}s", _logSource);
                     await Task.Delay(1500);
 
                     DateTime submit = DateTime.UtcNow;
 
                     List<IP>? ips = [];
 
-                    _logger.LogInformation("Fetching monitored devices from API endpoint");
+                    _logger.LogInfo("Fetching monitored devices from API endpoint", _logSource);
                     ips = await _monitoringApi.GetMonitoredIpsAsync();
 
                     if (null != ips)
                     {
-                        _logger.LogInformation($"Fetched {ips.Count()} from API");
+                        _logger.LogInfo($"Fetched {ips.Count()} from API", _logSource);
 
                         foreach (IP ip in ips)
                         {
@@ -115,53 +83,33 @@ namespace web.Services
 
                         }
 
-                        _logger.LogInformation(JsonConvert.SerializeObject(ips, Formatting.Indented));
-
                         try
                         {
                             await _monitoringApi.PostNewDevicePollAsync(ips);
-                            _logger.LogInformation("Ips submitted to api endpoint");
+                            _logger.LogInfo("Ips submitted to api endpoint", _logSource);
                         }
                         catch (Exception ex)
                         {
-                            _logger.LogError(ex.Message);
-                            _logger.LogError(ex.InnerException?.Message);
-                            _logger.LogError(ex.StackTrace);
+                            _logger.LogError(ex.Message, _logSource);
+                            _logger.LogError(ex.InnerException?.Message ?? "No inner exception", _logSource);
+                            _logger.LogError(ex.StackTrace ?? "No stack trace", _logSource);
                         }
                     }
                     else
                     {
-                        _logger.LogError("Could not fetch IP list from api endpoint");
+                        _logger.LogError("Could not fetch IP list from api endpoint", _logSource);
                     }
 
-                    await Task.Delay((_delay * 1000), token);
+                    await Task.Delay((_currentSettings.Monitoring.PollingIntervalInSeconds * 1000), token);
                 }
             }
             catch (OperationCanceledException)
             {
-                _logger.LogInformation("User intiated service end");
-            }
-            catch (HttpRequestException ex)
-            {
-                _logger.LogError("=== HTTP REQUEST EXCEPTION ===");
-                _logger.LogError(ex.HttpRequestError.ToString());
-                _logger.LogError(ex.Message);
-                _logger.LogError(ex.InnerException?.Message);
-                _logger.LogError(ex.StackTrace);
-                _logger.LogError(ex.Data.ToString());
-                _logger.LogError(ex.HResult.ToString());
-                _logger.LogError(ex.Source);
-                
+                _logger.LogInfo("User intiated service end", _logSource);
             }
             catch (Exception ex)
             {
-                _logger.LogError("=== EXCEPTION ===");
-                _logger.LogError(ex.Message);
-                _logger.LogError(ex.InnerException?.Message);
-                _logger.LogError(ex.StackTrace);
-                _logger.LogError(ex.Data.ToString());
-                _logger.LogError(ex.HResult.ToString());
-                _logger.LogError(ex.Source);
+                _logger.LogError(ex.Message, _logSource);
 
                 await Task.Delay(15000, token);
             }
@@ -169,7 +117,7 @@ namespace web.Services
 
         List<PortState> TcpTest(IP ip)
         {
-            _logger.LogInformation($"TCP testing {IP.ConvertToString(ip.Address)}");
+            _logger.LogInfo($"TCP testing {IP.ConvertToString(ip.Address)}", _logSource);
 
             List<PortState> portStates = [];
             
@@ -177,7 +125,7 @@ namespace web.Services
             {
                 foreach (int port in ip.PortsMonitored)
                 {
-                    _logger.LogInformation($"Testing {port.ToString()} on {IP.ConvertToString(ip.Address)}");
+                    _logger.LogInfo($"Testing {port.ToString()} on {IP.ConvertToString(ip.Address)}", _logSource);
 
                     using var client = new TcpClient();
                     bool status = false;
@@ -208,7 +156,7 @@ namespace web.Services
 
         PingState IcmpTest(IP ip)
         {
-            _logger.LogInformation($"Ping testing {IP.ConvertToString(ip.Address)}");
+            _logger.LogInfo($"Ping testing {IP.ConvertToString(ip.Address)}", _logSource);
 
             using Ping ping = new();
 
@@ -222,27 +170,13 @@ namespace web.Services
 
         async public void Restart()
         {
-            _logger.LogInformation("Monitoring service restart initiated");
-            _currentSettings = AllSettings.GetCurrentSettingsFile(Path.Combine(AppContext.BaseDirectory, "settings.json"));
-
-            if (null == _currentSettings.MonitoringSettings)
-            {
-                do
-                {
-                    _currentSettings = AllSettings.GetCurrentSettingsFile(Path.Combine(AppContext.BaseDirectory, "settings.json"));
-                    _logger.LogError("Failed to fetch monitoring settings on servivce restart, retrying in 20 seconds.");
-                    await Task.Delay(20000);
-                } 
-                while (null == _currentSettings.MonitoringSettings);
-            }
-
-            _delay = _currentSettings.MonitoringSettings.PollingIntervalInSeconds;
+            _logger.LogInfo("Monitoring service restart initiated", _logSource);
             _cancellationToken.Cancel();
             _cancellationToken = new();
         }
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            _logger.LogInformation("Service action has intiated");
+            _logger.LogInfo("Service action has intiated", _logSource   );
 
             while (!stoppingToken.IsCancellationRequested)
             {

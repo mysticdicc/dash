@@ -1,0 +1,36 @@
+﻿@inject LoggingHubService LoggingHub
+
+<table class="log_table">
+    @foreach (var log in LoggingHub.Logs)
+    {
+        <tr>
+            <td>
+                @log.Timestamp.ToString("yyyy-MM-dd HH:mm:ss")
+            </td>
+            <td>
+                @log.Level.ToString()
+            </td>
+            <td>
+                @log.Source.ToString()
+            </td>
+            <td>
+                @log.Message
+            </td>
+        </tr>
+    }
+</table>
+
+
+@code {
+    protected override async Task OnInitializedAsync()
+    {
+        await LoggingHub.StartAsync("http://localhost:5231/loghub");
+        await LoggingHub.LoadInitialLogsAsync();
+        LoggingHub.OnLogsUpdated += OnLogsChanged;
+    }
+
+    private async void OnLogsChanged()
+    {
+        await InvokeAsync(StateHasChanged);
+    }
+}

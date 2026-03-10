@@ -1229,3 +1229,38 @@ div#statusdashcard {
     text-align: center;
     padding: 20px;
 }
+
+.log_table {
+    width: 100%;
+    table-layout: auto;
+
+    tr {
+        background-color: var(--primary);
+    }
+
+        tr:hover {
+            background-color: var(--primary-light);
+        }
+
+    td {
+        padding-top: 5px;
+        padding-bottom: 5px;
+        padding-left: 10px;
+        padding-right: 10px;
+    }
+
+    td:nth-child(1) {
+        min-width: 200px;
+        text-align: center;
+    }
+
+    td:nth-child(2),
+    td:nth-child(3) {
+        min-width: 100px;
+        text-align: center;
+    }
+
+    td:nth-child(4) {
+        width: auto;
+    }
+}

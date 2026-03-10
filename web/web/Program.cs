@@ -1,5 +1,6 @@
 using dankweb.API;
 using DashLib.Interfaces.Dashboard;
+using DashLib.Interfaces.Logging;
 using DashLib.Interfaces.Monitoring;
 using DashLib.Interfaces.Network;
 using DashLib.Models.Monitoring;
@@ -10,6 +11,7 @@ using System.Text.Json;
 using web.Client.Services;
 using web.Components;
 using web.Data.Repos;
+using web.Hubs;
 using web.Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -25,6 +27,9 @@ SharedServices.Register(builder.Services, baseAddress);
 builder.Services.AddDbContextFactory<DashDbContext>(options =>
     options.UseSqlite(builder.Configuration.GetConnectionString("SQLite")));
 
+builder.Services.AddSignalR();
+builder.Services.AddSingleton<LoggingService>();
+builder.Services.AddSingleton<ILoggingRepository, LoggingRepository>();
 builder.Services.AddSingleton<ISubnetRepository, SubnetRepository>();
 builder.Services.AddSingleton<IMonitoringRepository, MonitoringRepository>();
 builder.Services.AddSingleton<IDashboardRepository, DashboardRepository>();
@@ -82,5 +87,7 @@ app.MapRazorComponents<App>()
     .AddAdditionalAssemblies(typeof(web.Client._Imports).Assembly);
 
 app.MapControllers();
+app.MapHub<LogHub>("/loghub");
 
 app.Run();
+

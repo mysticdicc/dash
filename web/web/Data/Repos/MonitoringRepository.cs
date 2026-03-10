@@ -51,6 +51,13 @@ namespace web.Data.Repos
             using var ctx = await _dbFactory.CreateDbContextAsync();
 
             var states = ips.SelectMany(ips => ips.MonitorStateList ?? []).ToList();
+
+            foreach (var state in states)
+            {
+                var iP = ips.First(x => x.MonitorStateList != null && x.MonitorStateList.Contains(state));
+                state.IP = state.IP;
+            }
+
             await ctx.MonitorStates.AddRangeAsync(states);
             var rows = await ctx.SaveChangesAsync();
 

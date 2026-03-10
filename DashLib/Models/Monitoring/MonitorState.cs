@@ -368,7 +368,7 @@ namespace DashLib.Models.Monitoring
 
             foreach (var state in lastMonitorStates)
             {
-                sb.AppendLine($"IP: {IP.ConvertToString(state.IP!.Address)}");
+                sb.AppendLine($"IP: {IP.ConvertToString(state.IP.Address)}");
                 sb.AppendLine($"Last Poll Time: {state.SubmitTime}");
                 sb.AppendLine($"Last Status: {(state.PingState!.Response == true ? "Online" : "Offline")}");
                 sb.AppendLine();
