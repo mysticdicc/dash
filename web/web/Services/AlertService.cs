@@ -13,43 +13,30 @@ namespace web.Services
     public class AlertService : BackgroundService, IDisposable
     {
         private Timer? _timer;
-        public int _delay;
         private ILogger<MonitorService> _logger;
         CancellationTokenSource _cancellationToken;
         MonitoringAPI _monitoringApi;
         MailAPI _mailApi;
-        DiscordService _discordApi;
-        AllSettings _currentSettings;
-        private float _alertPercent;
-        private bool _alertsEnabled;
+        DiscordService _discordService;
+        TelegramService _telegramService;
+        SettingsService _settings;
         private int _alertEvalTimeInMinutes;
 
-        public AlertService(ILogger<MonitorService> logger, MonitoringAPI monitoringApi, MailAPI mailApi, DiscordService discordAPI)
+        public AlertService(
+            ILogger<MonitorService> logger, 
+            MonitoringAPI monitoringApi, 
+            MailAPI mailApi, 
+            DiscordService discordAPI,
+            SettingsService settingsService,
+            TelegramService telegramService)
         {
             _logger = logger;
             _monitoringApi = monitoringApi;
             _mailApi = mailApi;
-            _discordApi = discordAPI;
+            _discordService = discordAPI;
+            _telegramService = telegramService;
             _cancellationToken = new CancellationTokenSource(); 
-
-            try
-            {
-                _logger.LogInformation("Fetching or creating default settings");
-                _currentSettings = AllSettings.GetOrCreateDefaultSettingsFile();
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError("Failed to fetch or create ");
-                _logger.LogError(ex.Message);
-                _logger.LogInformation("Will use default settings.");
-
-                _currentSettings = new AllSettings(true);
-            }
-
-            _delay = _currentSettings.MonitoringSettings.AlertIntervalInSeconds;
-            _alertPercent = _currentSettings.MonitoringSettings.AlertIfDownForPercent;
-            _alertsEnabled = _currentSettings.MonitoringSettings.AlertsEnabled;
-            _alertEvalTimeInMinutes = _currentSettings.MonitoringSettings.AlertTimePeriodInMinutes;
+            _settings = settingsService;
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -68,21 +55,7 @@ namespace web.Services
             {
                 do
                 {
-                    _currentSettings = AllSettings.GetCurrentSettingsFile(AllSettings.SettingsPath);
-
-                    if (null != _currentSettings.MonitoringSettings)
-                    {
-                        _delay = _currentSettings.MonitoringSettings.AlertIntervalInSeconds;
-                        _alertPercent = _currentSettings.MonitoringSettings.AlertIfDownForPercent;
-                        _alertsEnabled = _currentSettings.MonitoringSettings.AlertsEnabled;
-                        _alertEvalTimeInMinutes = _currentSettings.MonitoringSettings.AlertTimePeriodInMinutes;
-                    }
-                    else
-                    {
-                        _logger.LogWarning("Monitoring settings not found in settings file, using previous values");
-                    }
-
-                    if (_alertsEnabled)
+                    if (_settings.Monitoring.AlertsEnabled)
                     {
                         await RunServiceAction(token);
                     }
@@ -91,8 +64,8 @@ namespace web.Services
                         _logger.LogInformation("Alerts are disabled in settings, going back to sleep.");
                     }
 
-                    _logger.LogInformation($"Alert service sleeping for {_delay} seconds");
-                    await Task.Delay((_delay * 1000), token);
+                    _logger.LogInformation($"Alert service sleeping for {_settings.Monitoring.AlertIntervalInSeconds} seconds");
+                    await Task.Delay((_settings.Monitoring.AlertIntervalInSeconds * 1000), token);
                 } 
                 while (!token.IsCancellationRequested);
             }
@@ -131,11 +104,6 @@ namespace web.Services
                 int totalCount = pingStates.Count();
                 int upCount = pingStates.Where(x => x.PingState!.Response == true).ToList().Count();
 
-                if (upCount <= 0)
-                {
-                    upCount = 1;
-                }
-
                 if (totalCount <= 0)
                 {
                     totalCount = 1;
@@ -143,9 +111,9 @@ namespace web.Services
 
                 float uptimePercent = (upCount / totalCount) * 100;
 
-                if (uptimePercent < _alertPercent)
+                if (uptimePercent < _settings.Monitoring.AlertIfDownForPercent)
                 {
-                    _logger.LogWarning($"Alert: IP {IP.ConvertToString(ip.Address)} has uptime percent {uptimePercent}% which is below the threshold of {_alertPercent}%");
+                    _logger.LogWarning($"Alert: IP {IP.ConvertToString(ip.Address)} has uptime percent {uptimePercent}% which is below the threshold of {_settings.Monitoring.AlertIfDownForPercent}%");
                     alertIps.Add(ip);
                 }
             }
@@ -154,7 +122,7 @@ namespace web.Services
             {
                 _logger.LogInformation($"Alert service submitting {alertIps.Count} IP addresses for alert consideration.");
 
-                if (_currentSettings.MonitoringSettings.SmtpSettings.AlertsEnabled)
+                if (_settings.Smtp.AlertsEnabled)
                 {
                     try
                     {
@@ -163,43 +131,24 @@ namespace web.Services
                     catch { }
                 }
 
-                if (_currentSettings.MonitoringSettings.DiscordSettings.AlertsEnabled)
+                if (_settings.Discord.AlertsEnabled)
                 {
                     try
                     {
-                        var sb = new StringBuilder();
-                        sb.AppendLine("Device Uptime Alert");
-                        sb.AppendLine($"Offline Devices: {alertIps.Count}");
-                        sb.AppendLine();
-
-                        foreach (var ip in alertIps)
-                        {
-                            sb.AppendLine($"IP: {IP.ConvertToString(ip.Address)}");
-
-                            if (null != ip.MonitorStateList)
-                            {
-                                var last = ip.MonitorStateList
-                                    .Where(x => x.PingState != null)
-                                    .OrderByDescending(x => x.SubmitTime)
-                                    .FirstOrDefault();
-
-                                if (null == last)
-                                {
-                                    sb.AppendLine("No monitoring data found for this device.");
-                                }
-                                else
-                                {
-                                    sb.AppendLine($"Last Poll Time: {last.SubmitTime}");
-                                    sb.AppendLine($"Last Status: {(last.PingState!.Response == true ? "Online" : "Offline")}");
-                                }
-                            }
-
-                            sb.AppendLine();
-                        }    
-                        
-                        await _discordApi.SendMessageAsync(sb.ToString());
+                        var report = MonitorState.GetDowntimeAlertFromIps(alertIps);
+                        await _discordService.SendMessageAsync(report);
                     }
                     catch(Exception ex) { _logger.LogError(ex, ex.Message); }
+                }
+
+                if (_settings.Telegram.AlertsEnabled)
+                {
+                    try
+                    {
+                        var report = MonitorState.GetDowntimeAlertFromIps(alertIps);
+                        await _telegramService.SendMessageAsync(report);
+                    }
+                    catch (Exception ex) { _logger.LogError(ex, ex.Message); }
                 }
             }
         }
@@ -207,19 +156,6 @@ namespace web.Services
         public async void Restart()
         {
             _logger.LogInformation("Alert service restart initiated");
-            _currentSettings = AllSettings.GetCurrentSettingsFile(Path.Combine(AppContext.BaseDirectory, "settings.json"));
-
-            if (null == _currentSettings.MonitoringSettings)
-            {
-                do
-                {
-                    _currentSettings = AllSettings.GetCurrentSettingsFile(Path.Combine(AppContext.BaseDirectory, "settings.json"));
-                    _logger.LogError("Failed to fetch monitoring settings on alert servivce restart, retrying in 20 seconds.");
-                    await Task.Delay(20000);
-                }
-                while (null == _currentSettings.MonitoringSettings);
-            }
-
             _cancellationToken.Cancel();
             _cancellationToken = new();
         }

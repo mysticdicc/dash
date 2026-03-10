@@ -18,17 +18,13 @@ namespace web.Services {
     {
         private DiscordSocketClient _client;
         private TaskCompletionSource _readyTcs = new(TaskCreationOptions.RunContinuationsAsynchronously);
-        private AllSettings _currentSettings;
-        private DiscordSettings _currentDiscordSettings;
-        private readonly SettingsAPI _settingsAPI;
+        private readonly SettingsService _settings;
         private readonly MonitoringAPI _monitoringAPI;
 
-        public DiscordService(SettingsAPI settingsAPI, MonitoringAPI monitoringAPI)
+        public DiscordService(SettingsService settingsService, MonitoringAPI monitoringAPI)
         {
-            _settingsAPI = settingsAPI;
+            _settings = settingsService;
             _monitoringAPI = monitoringAPI;
-            _currentSettings = new(true);
-            _currentDiscordSettings = _currentSettings.MonitoringSettings.DiscordSettings;
 
             _client = new DiscordSocketClient(new DiscordSocketConfig
             {
@@ -57,9 +53,7 @@ namespace web.Services {
 
         private async Task StartAsync()
         {
-            _currentSettings = await _settingsAPI.GetCurrentSettingsAsync();
-            _currentDiscordSettings = _currentSettings.MonitoringSettings.DiscordSettings;
-            await _client.LoginAsync(TokenType.Bot, _currentDiscordSettings.Token);
+            await _client.LoginAsync(TokenType.Bot, _settings.Discord.Token);
             await _client.StartAsync();
         }
 
@@ -127,9 +121,9 @@ namespace web.Services {
         {
             await _readyTcs.Task;
 
-            var channel = _client.GetChannel(_currentDiscordSettings.ChannelID) as IMessageChannel;
+            var channel = _client.GetChannel(_settings.Discord.ChannelID) as IMessageChannel;
             if (channel is null)
-                throw new InvalidOperationException($"Discord channel not found or not message-capable: {_currentDiscordSettings.ChannelID}");
+                throw new InvalidOperationException($"Discord channel not found or not message-capable: {_settings.Discord.ChannelID}");
 
             await channel.SendMessageAsync(message);
             return true;
@@ -218,97 +212,9 @@ namespace web.Services {
             await DeferIfNeededAsync(command, ephemeral: true);
 
             var ips = await _monitoringAPI.GetAllPollsAsync();
-            int totalOnline = 0;
-            int totalOffline = 0;
-            float totalUptime = 0;
+            var report = MonitorState.GetMonitorStateSummaryFromIps(ips, _settings.All);
 
-            var sb = new StringBuilder();
-            sb.AppendLine("Current Monitoring Settings:");
-            sb.AppendLine($"Evaluation Period: {_currentSettings.MonitoringSettings.AlertTimePeriodInMinutes} minutes");
-            sb.AppendLine($"Alert Threshold: {_currentSettings.MonitoringSettings.AlertIfDownForPercent}%");
-            sb.AppendLine($"Alerts Enabled: {_currentSettings.MonitoringSettings.AlertsEnabled}");
-            sb.AppendLine($"SMTP Alerts: {_currentSettings.MonitoringSettings.SmtpSettings.AlertsEnabled}");
-            sb.AppendLine($"Discord Alerts: {_currentSettings.MonitoringSettings.DiscordSettings.AlertsEnabled}");
-            sb.AppendLine();
-
-            var timespan = TimeSpan.FromMinutes(_currentSettings.MonitoringSettings.AlertTimePeriodInMinutes);
-            var oldDate = DateTime.UtcNow - timespan;
-
-            foreach (var ip in ips)
-            {
-                sb.AppendLine($"IP: {IP.ConvertToString(ip.Address)}");
-                
-                try
-                {
-                    var list = new List<IP>() { ip };
-                    var states = MonitorState.GetAllDevicePollsFromIps(list).Where(x => null != x.PingState).OrderByDescending(x => x.SubmitTime);
-                    var lastState = states.FirstOrDefault();
-
-                    if (null == lastState)
-                    {
-                        sb.AppendLine("Status: Offline | No Monitor State");
-                        totalOffline++;
-                    }
-                    else
-                    {
-                        if (null == lastState.PingState)
-                        {
-                            sb.AppendLine("Status: Offline | No Ping State");
-                            totalOffline++;
-                        }
-                        else
-                        {
-                            if (lastState.PingState.Response)
-                            {
-                                sb.AppendLine("Status: Online");
-                                totalOnline++;
-                            }
-                            else
-                            {
-                                sb.AppendLine("Status: Offline");
-                                totalOffline++;
-                            }
-                        }
-                    }
-
-                    var pingStates = states
-                        .Where(x => x.PingState != null)
-                        .Where(x => x.SubmitTime > oldDate)
-                        .OrderBy(x => x.SubmitTime)
-                        .ToList();
-
-                    int totalCount = pingStates.Count();
-                    int upCount = pingStates.Where(x => x.PingState!.Response == true).ToList().Count();
-
-                    if (upCount <= 0)
-                    {
-                        upCount = 1;
-                    }
-
-                    if (totalCount <= 0)
-                    {
-                        totalCount = 1;
-                    }
-
-                    float uptimePercent = (upCount / totalCount) * 100;
-                    totalUptime += uptimePercent;
-
-                    sb.AppendLine($"Uptime Percentage: {(float)uptimePercent}%");
-                }
-                catch(Exception ex)
-                {
-                    sb.AppendLine("Status: Offline | No Monitor State");
-                    sb.AppendLine($"Error fetching uptime percentage: {ex.Message}");
-                }
-
-                sb.AppendLine();
-            }
-
-            sb.AppendLine($"Total Online: {totalOnline}");
-            sb.AppendLine($"Total Offline: {totalOffline}");
-            sb.AppendLine($"Average Uptime: {(totalUptime / (ips.Count))}%");
-
-            await command.FollowupAsync(sb.ToString(), ephemeral: true);
+            await command.FollowupAsync(report, ephemeral: true);
         }
 
         private async Task HandleOnlineAsync(SocketSlashCommand command)
@@ -369,6 +275,19 @@ namespace web.Services {
             {
                 _client.Dispose();
             }
+        }
+
+        public async Task Restart()
+        {
+            await _client.StopAsync();
+            _client.Dispose();
+            _client = new DiscordSocketClient(new DiscordSocketConfig
+            {
+                GatewayIntents = GatewayIntents.Guilds
+            });
+            _client.Ready += OnReadyAsync;
+            _client.SlashCommandExecuted += OnSlashCommandExecutedAsync;
+            await StartAsync();
         }
     }
 }

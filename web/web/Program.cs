@@ -28,12 +28,15 @@ builder.Services.AddDbContextFactory<DashDbContext>(options =>
 builder.Services.AddSingleton<ISubnetRepository, SubnetRepository>();
 builder.Services.AddSingleton<IMonitoringRepository, MonitoringRepository>();
 builder.Services.AddSingleton<IDashboardRepository, DashboardRepository>();
-builder.Services.AddControllers();
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+builder.Services.AddSingleton<SettingsService>();
+builder.Services.AddHostedService(provider => provider.GetRequiredService<SettingsService>());
+
 builder.Services.AddSingleton<DiscordService>();
+builder.Services.AddSingleton<TelegramService>();
 
 builder.Services.AddSingleton<MonitorService>();
 builder.Services.AddHostedService(x => x.GetRequiredService<MonitorService>());
@@ -42,6 +45,7 @@ builder.Services.AddSingleton<AlertService>();
 builder.Services.AddHostedService(x => x.GetRequiredService<AlertService>());
 
 builder.Services.AddSingleton<DiscoveryService>();
+builder.Services.AddControllers();
 
 var app = builder.Build();
 

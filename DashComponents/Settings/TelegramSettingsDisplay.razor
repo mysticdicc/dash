@@ -1,0 +1,35 @@
+﻿@if (IsVisible)
+{
+    <tr>
+        <td>
+            Telegram Token:
+        </td>
+        <td>
+            <input type="text" @bind="@_currentSettings.BotToken"/>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            Telegram Chat ID (Username):
+        </td>
+        <td>
+            <input type="text" @bind="@_currentSettings.ChatId"/>
+        </td>
+    </tr>
+}
+
+@code {
+    [Parameter] required public TelegramSettings CurrentSettings { get; set; }
+    [Parameter] public bool IsVisible { get; set; }
+    [Parameter] public EventCallback<bool> IsVisibleChanged { get; set; }
+    private TelegramSettings _currentSettings = new TelegramSettings();
+
+    protected override void OnParametersSet()
+    {
+        if (null != CurrentSettings && CurrentSettings != _currentSettings)
+        {
+            _currentSettings = CurrentSettings;
+        }
+        base.OnParametersSet();
+    }
+}

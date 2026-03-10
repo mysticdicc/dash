@@ -10,24 +10,22 @@ namespace web.Controllers
     [ApiController]
     public class SettingsController : Controller
     {
-        private static string _settingsLocation = string.Empty;
         private readonly MonitorService _monitorService;
-        private readonly AlertService _alertService;
+        private readonly SettingsService _settingsService;
+        private readonly TelegramService _telegramService;
+        private readonly DiscordService _discordService;
 
-        public SettingsController(MonitorService monitorService, AlertService alertService)
+        public SettingsController(
+            MonitorService monitorService, 
+            SettingsService settingsService,
+            TelegramService telegramService,
+            DiscordService discordService
+            )
         {
             _monitorService = monitorService;
-            _settingsLocation = AllSettings.SettingsPath;
-            _alertService = alertService;
-
-            if (!System.IO.File.Exists(_settingsLocation))
-            {
-                try
-                {
-                    AllSettings.CreateNewSettingsFile(_settingsLocation);
-                }
-                catch { }
-            }
+            _settingsService = settingsService;
+            _telegramService = telegramService;
+            _discordService = discordService;
         }
 
         [HttpGet]
@@ -67,9 +65,11 @@ namespace web.Controllers
                     settings.MonitoringSettings.SmtpSettings = encrypted;
                 }
 
-                AllSettings.UpdateExistingSettingsFile(_settingsLocation, settings);
+                AllSettings.UpdateExistingSettingsFile(AllSettings.SettingsPath, settings);
                 _monitorService.Restart();
-                _alertService.Restart();
+                await _settingsService.RefreshSettingsAsync(CancellationToken.None);
+                await _telegramService.Restart();
+                await _discordService.Restart();
                 return TypedResults.Ok(settings);
             }
             catch (Exception ex)

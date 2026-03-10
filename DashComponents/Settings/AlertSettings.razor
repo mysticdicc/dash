@@ -58,6 +58,15 @@
         </td>
     </tr>
     <DiscordSettingsDisplay CurrentSettings="@_currentSettings.DiscordSettings" @bind-IsVisible="@_currentSettings.DiscordSettings.AlertsEnabled"/>
+    <tr>
+        <td>
+            Telegram Alerts Enabled:
+        </td>
+        <td>
+            <Switch @bind-ToggleIsOn="@_currentSettings.TelegramSettings.AlertsEnabled"/>
+        </td>
+    </tr>
+    <TelegramSettingsDisplay CurrentSettings="@_currentSettings.TelegramSettings" @bind-IsVisible="@_currentSettings.TelegramSettings.AlertsEnabled"/>
 }
 
 @code {

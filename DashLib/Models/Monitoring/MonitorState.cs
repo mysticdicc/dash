@@ -1,4 +1,5 @@
 ﻿using DashLib.Models.Network;
+using DashLib.Models.Settings;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -264,6 +265,116 @@ namespace DashLib.Models.Monitoring
             }
 
             return ipList;
+        }
+
+        static public string GetMonitorStateSummaryFromIps(List<IP> ips, AllSettings currentSettings)
+        {
+            int totalOnline = 0;
+            int totalOffline = 0;
+            float totalUptime = 0;
+
+            var sb = new StringBuilder();
+            sb.AppendLine("Current Monitoring Settings:");
+            sb.AppendLine($"Evaluation Period: {currentSettings.MonitoringSettings.AlertTimePeriodInMinutes} minutes");
+            sb.AppendLine($"Alert Threshold: {currentSettings.MonitoringSettings.AlertIfDownForPercent}%");
+            sb.AppendLine($"Alerts Enabled: {currentSettings.MonitoringSettings.AlertsEnabled}");
+            sb.AppendLine($"SMTP Alerts: {currentSettings.MonitoringSettings.SmtpSettings.AlertsEnabled}");
+            sb.AppendLine($"Discord Alerts: {currentSettings.MonitoringSettings.DiscordSettings.AlertsEnabled}");
+            sb.AppendLine();
+
+            var timespan = TimeSpan.FromMinutes(currentSettings.MonitoringSettings.AlertTimePeriodInMinutes);
+            var oldDate = DateTime.UtcNow - timespan;
+
+            foreach (var ip in ips)
+            {
+                sb.AppendLine($"IP: {IP.ConvertToString(ip.Address)}");
+
+                try
+                {
+                    var list = new List<IP>() { ip };
+                    var states = GetAllDevicePollsFromIps(list).Where(x => null != x.PingState).OrderByDescending(x => x.SubmitTime);
+                    var lastState = states.FirstOrDefault();
+
+                    if (null == lastState)
+                    {
+                        sb.AppendLine("Status: Offline | No Monitor State");
+                        totalOffline++;
+                    }
+                    else
+                    {
+                        if (null == lastState.PingState)
+                        {
+                            sb.AppendLine("Status: Offline | No Ping State");
+                            totalOffline++;
+                        }
+                        else
+                        {
+                            if (lastState.PingState.Response)
+                            {
+                                sb.AppendLine("Status: Online");
+                                totalOnline++;
+                            }
+                            else
+                            {
+                                sb.AppendLine("Status: Offline");
+                                totalOffline++;
+                            }
+                        }
+                    }
+
+                    var pingStates = states
+                        .Where(x => x.PingState != null)
+                        .Where(x => x.SubmitTime > oldDate)
+                        .OrderBy(x => x.SubmitTime)
+                        .ToList();
+
+                    int totalCount = pingStates.Count();
+                    int upCount = pingStates.Where(x => x.PingState!.Response == true).ToList().Count();
+
+                    if (totalCount <= 0)
+                    {
+                        totalCount = 1;
+                    }
+
+                    float uptimePercent = (upCount / totalCount) * 100;
+                    totalUptime += uptimePercent;
+
+                    sb.AppendLine($"Uptime Percentage: {(float)uptimePercent}%");
+                }
+                catch (Exception ex)
+                {
+                    sb.AppendLine("Status: Offline | No Monitor State");
+                    sb.AppendLine($"Error fetching uptime percentage: {ex.Message}");
+                }
+
+                sb.AppendLine();
+            }
+
+            sb.AppendLine($"Total Online: {totalOnline}");
+            sb.AppendLine($"Total Offline: {totalOffline}");
+            sb.AppendLine($"Average Uptime: {(totalUptime / (ips.Count))}%");
+
+            return sb.ToString();
+        }
+
+        static public string GetDowntimeAlertFromIps(List<IP> ips)
+        {
+            var sb = new StringBuilder();
+            sb.AppendLine("Device Downtime Alert");
+            sb.AppendLine($"Offline Devices: {ips.Count}");
+            sb.AppendLine();
+
+            var lastMonitorStates = GetLastDevicePollsFromIps(ips);
+
+            foreach (var state in lastMonitorStates)
+            {
+                sb.AppendLine($"IP: {IP.ConvertToString(state.IP!.Address)}");
+                sb.AppendLine($"Last Poll Time: {state.SubmitTime}");
+                sb.AppendLine($"Last Status: {(state.PingState!.Response == true ? "Online" : "Offline")}");
+                sb.AppendLine();
+            }
+
+            return sb.ToString();
         }
     }
 }

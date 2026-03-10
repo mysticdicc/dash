@@ -18,6 +18,7 @@ namespace DashLib.Models.Settings
         public int AlertAgainAfterInMinutes { get; set; }
         public SmtpSettings SmtpSettings { get; set; }
         public DiscordSettings DiscordSettings { get; set; }
+        public TelegramSettings TelegramSettings { get; set; }
         
         public MonitoringSettings()
         {
@@ -33,6 +34,7 @@ namespace DashLib.Models.Settings
             AlertAgainAfterInMinutes = 30;
             SmtpSettings = new SmtpSettings();
             DiscordSettings = new DiscordSettings();
+            TelegramSettings = new TelegramSettings();
         }
     }
 }

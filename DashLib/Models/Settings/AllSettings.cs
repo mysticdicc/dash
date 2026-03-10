@@ -128,6 +128,7 @@ namespace DashLib.Models.Settings
 
             MonitoringSettings.SmtpSettings ??= new SmtpSettings();
             MonitoringSettings.DiscordSettings ??= new DiscordSettings();
+            MonitoringSettings.TelegramSettings ??= new TelegramSettings();
 
             try
             {
