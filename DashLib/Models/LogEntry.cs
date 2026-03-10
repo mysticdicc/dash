@@ -29,7 +29,9 @@ namespace DashLib.Models
             TelegramService,
             SettingsService,
             DiscoveryService,
-            ApiController
+            ApiController,
+            LoggingService,
+            CleanupService
         }
         public LogSource Source { get; set; }
 

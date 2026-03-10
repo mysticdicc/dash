@@ -1,11 +1,13 @@
 ﻿using DashComponents.Monitoring;
-using DashLib.DankAPI;
 using DashLib.API;
+using DashLib.DankAPI;
+using DashLib.Interfaces;
+using DashLib.Interfaces.Monitoring;
+using DashLib.Models;
 using DashLib.Models.Monitoring;
 using DashLib.Models.Network;
 using DashLib.Models.Settings;
-using DashLib.Interfaces;
-using DashLib.Interfaces.Monitoring;
+using Newtonsoft.Json.Linq;
 using System.Text;
 
 namespace web.Services
@@ -13,7 +15,7 @@ namespace web.Services
     public class AlertService : BackgroundService, IDisposable
     {
         private Timer? _timer;
-        private ILogger<MonitorService> _logger;
+        private LoggingService _logger;
         CancellationTokenSource _cancellationToken;
         MonitoringAPI _monitoringApi;
         MailAPI _mailApi;
@@ -21,9 +23,10 @@ namespace web.Services
         TelegramService _telegramService;
         SettingsService _settings;
         private int _alertEvalTimeInMinutes;
+        private static LogEntry.LogSource _logSource = LogEntry.LogSource.AlertService;
 
         public AlertService(
-            ILogger<MonitorService> logger, 
+            LoggingService logger, 
             MonitoringAPI monitoringApi, 
             MailAPI mailApi, 
             DiscordService discordAPI,
@@ -39,50 +42,44 @@ namespace web.Services
             _settings = settingsService;
         }
 
-        protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+        protected override async Task ExecuteAsync(CancellationToken token)
         {
-            _logger.LogInformation("Service action has intiated");
+            _logger.LogInfo("Service action has intiated", _logSource);
 
-            while (!stoppingToken.IsCancellationRequested)
+            while (!token.IsCancellationRequested)
             {
-                await RunServiceAsync(_cancellationToken.Token);
-            }
-        }
-
-        private async Task RunServiceAsync(CancellationToken token)
-        {
-            try
-            {
-                do
+                try
                 {
-                    if (_settings.Monitoring.AlertsEnabled)
+                    do
                     {
-                        await RunServiceAction(token);
-                    }
-                    else
-                    {
-                        _logger.LogInformation("Alerts are disabled in settings, going back to sleep.");
-                    }
+                        if (_settings.Monitoring.AlertsEnabled)
+                        {
+                            await RunServiceAction(token);
+                        }
+                        else
+                        {
+                            _logger.LogInfo("Alerts are disabled in settings, going back to sleep.", _logSource);
+                        }
 
-                    _logger.LogInformation($"Alert service sleeping for {_settings.Monitoring.AlertIntervalInSeconds} seconds");
-                    await Task.Delay((_settings.Monitoring.AlertIntervalInSeconds * 1000), token);
-                } 
-                while (!token.IsCancellationRequested);
-            }
-            catch (OperationCanceledException)
-            {
-                _logger.LogInformation("User intiated service end");
-            }
-            catch(Exception ex)
-            {
-                _logger.LogError("Unhandled alert service error:");
-                _logger.LogError(ex.Message);
+                        _logger.LogInfo($"Alert service sleeping for {_settings.Monitoring.AlertIntervalInSeconds} seconds", _logSource);
+                        await Task.Delay((_settings.Monitoring.AlertIntervalInSeconds * 1000), token);
+                    }
+                    while (!token.IsCancellationRequested);
+                }
+                catch (OperationCanceledException)
+                {
+                    _logger.LogInfo("User intiated service end", _logSource);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex.Message, _logSource);
+                }
             }
         }
 
         private async Task RunServiceAction(CancellationToken token)
         {
-            _logger.LogInformation("Alert service action running.");
+            _logger.LogInfo("Alert service action running.", _logSource);
 
             var monitoredIps = await _monitoringApi.GetAllPollsAsync();
             var alertIps = new List<IP>();
@@ -113,14 +110,14 @@ namespace web.Services
 
                 if (uptimePercent < _settings.Monitoring.AlertIfDownForPercent)
                 {
-                    _logger.LogWarning($"Alert: IP {IP.ConvertToString(ip.Address)} has uptime percent {uptimePercent}% which is below the threshold of {_settings.Monitoring.AlertIfDownForPercent}%");
+                    _logger.LogWarning($"Alert: IP {IP.ConvertToString(ip.Address)} has uptime percent {uptimePercent}% which is below the threshold of {_settings.Monitoring.AlertIfDownForPercent}%", _logSource);
                     alertIps.Add(ip);
                 }
             }
 
             if (alertIps.Count > 0)
             {
-                _logger.LogInformation($"Alert service submitting {alertIps.Count} IP addresses for alert consideration.");
+                _logger.LogInfo($"Alert service submitting {alertIps.Count} IP addresses for alert consideration.", _logSource);
 
                 if (_settings.Smtp.AlertsEnabled)
                 {
@@ -138,7 +135,7 @@ namespace web.Services
                         var report = MonitorState.GetDowntimeAlertFromIps(alertIps);
                         await _discordService.SendMessageAsync(report);
                     }
-                    catch(Exception ex) { _logger.LogError(ex, ex.Message); }
+                    catch(Exception ex) { _logger.LogError(ex.Message, _logSource); }
                 }
 
                 if (_settings.Telegram.AlertsEnabled)
@@ -148,14 +145,14 @@ namespace web.Services
                         var report = MonitorState.GetDowntimeAlertFromIps(alertIps);
                         await _telegramService.SendMessageAsync(report);
                     }
-                    catch (Exception ex) { _logger.LogError(ex, ex.Message); }
+                    catch (Exception ex) { _logger.LogError(ex.Message, _logSource); }
                 }
             }
         }
 
         public async void Restart()
         {
-            _logger.LogInformation("Alert service restart initiated");
+            _logger.LogInfo("Alert service restart initiated", _logSource);
             _cancellationToken.Cancel();
             _cancellationToken = new();
         }

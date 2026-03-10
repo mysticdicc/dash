@@ -1,4 +1,5 @@
 ﻿using DashLib.DankAPI;
+using DashLib.Models;
 using DashLib.Models.Settings;
 using Telegram.Bot;
 
@@ -8,10 +9,12 @@ namespace web.Services
     {
         private TelegramBotClient? _botClient;
         private readonly SettingsService _settings;
-
-        public TelegramService(SettingsService settingsService)
+        private readonly LoggingService _logger;
+        private readonly LogEntry.LogSource _logSource = LogEntry.LogSource.TelegramService;
+        public TelegramService(SettingsService settingsService, LoggingService logger)
         {
             _settings = settingsService;
+            _logger = logger;
 
             try
             {
@@ -21,16 +24,27 @@ namespace web.Services
             {
                 _botClient = null;
             }
+
+            _logger.LogInfo("Service has been started.", _logSource);
         }
 
         public async Task SendMessageAsync(string message)
         {
             if (null == _botClient) return;
-            await _botClient.SendMessage(_settings.Telegram.ChatId, message);
+            try
+            {
+                _logger.LogInfo("Sending telegram message.", _logSource);
+                await _botClient.SendMessage(_settings.Telegram.ChatId, message);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError("Error sending telegram message: " + ex.Message, _logSource);
+            }
         }
 
         public async Task Restart()
         {
+            _logger.LogInfo("Service restart intiiated.", _logSource);
             _botClient?.Close();
             _botClient = new TelegramBotClient(_settings.Telegram.BotToken);
         }

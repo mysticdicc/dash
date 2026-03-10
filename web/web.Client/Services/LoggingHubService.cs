@@ -6,12 +6,20 @@ using System.Net.Http.Json;
 
 namespace web.Client.Services
 {
-    public class LoggingHubService(ILoggingAPI loggingApi) : IAsyncDisposable
+    public class LoggingHubService : IAsyncDisposable
     {
         private HubConnection? _hubConnection;
-        private readonly ILoggingAPI _loggingApi = loggingApi;
+        private readonly ILoggingAPI _loggingApi;
+        private string _baseAddr;
         public List<LogEntry> Logs { get; private set; } = [];
         public event Action? OnLogsUpdated;
+
+        public LoggingHubService(ILoggingAPI loggingApi, string baseAddr)
+        {
+            _loggingApi = loggingApi;
+            _baseAddr = baseAddr + "loghub";
+            _ = StartAsync(_baseAddr);
+        }
 
         public async Task StartAsync(string hubUrl)
         {

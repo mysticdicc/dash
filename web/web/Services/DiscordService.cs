@@ -12,6 +12,7 @@ using System.Net;
 using System.Runtime.CompilerServices;
 using System.Text;
 using DashLib.Models.Monitoring;
+using DashLib.Models;
 
 namespace web.Services {
     public class DiscordService
@@ -20,11 +21,14 @@ namespace web.Services {
         private TaskCompletionSource _readyTcs = new(TaskCreationOptions.RunContinuationsAsynchronously);
         private readonly SettingsService _settings;
         private readonly MonitoringAPI _monitoringAPI;
+        private readonly LoggingService _logger;
+        private static LogEntry.LogSource _logSource = LogEntry.LogSource.DiscordService;
 
-        public DiscordService(SettingsService settingsService, MonitoringAPI monitoringAPI)
+        public DiscordService(SettingsService settingsService, MonitoringAPI monitoringAPI, LoggingService logger)
         {
             _settings = settingsService;
             _monitoringAPI = monitoringAPI;
+            _logger = logger;
 
             _client = new DiscordSocketClient(new DiscordSocketConfig
             {
@@ -34,11 +38,14 @@ namespace web.Services {
             _client.Ready += OnReadyAsync;
             _client.SlashCommandExecuted += OnSlashCommandExecutedAsync;
 
+            _logger.LogInfo("Sync startup completed, starting async tasks.", _logSource);
             _ = StartAsync();
         }
 
         private async Task OnReadyAsync()
         {
+            _logger.LogInfo("Initiating post startup tasks.", _logSource);
+
             try
             {
                 await RegisterSlashCommandsAsync();
@@ -55,10 +62,14 @@ namespace web.Services {
         {
             await _client.LoginAsync(TokenType.Bot, _settings.Discord.Token);
             await _client.StartAsync();
+
+            _logger.LogInfo("Async start completed.", _logSource);
         }
 
         private async Task RegisterSlashCommandsAsync()
         {
+            _logger.LogInfo("Registering discord bot commands.", _logSource);
+
             var summaryCommand = new SlashCommandBuilder()
                 .WithName("summary")
                 .WithDescription("Show current monitoring summary.");
@@ -85,6 +96,8 @@ namespace web.Services {
 
         private async Task OnSlashCommandExecutedAsync(SocketSlashCommand command)
         {
+            _logger.LogInfo($"Executing slash command: {command.CommandName}", _logSource);
+
             try
             {
                 switch (command.CommandName)
@@ -112,6 +125,7 @@ namespace web.Services {
             }
             catch (Exception ex)
             {
+                _logger.LogError("Command execution failed: " + ex.Message, _logSource);
                 await command.FollowupAsync($"Command failed: {ex.Message}", ephemeral: true);
                 throw;
             }
@@ -119,82 +133,111 @@ namespace web.Services {
 
         public async Task<bool> SendMessageAsync(string message)
         {
-            await _readyTcs.Task;
+            try
+            {
+                _logger.LogInfo("Sending discord message.", _logSource);
+                await _readyTcs.Task;
 
-            var channel = _client.GetChannel(_settings.Discord.ChannelID) as IMessageChannel;
-            if (channel is null)
-                throw new InvalidOperationException($"Discord channel not found or not message-capable: {_settings.Discord.ChannelID}");
+                var channel = _client.GetChannel(_settings.Discord.ChannelID) as IMessageChannel;
+                if (channel is null)
+                    throw new InvalidOperationException($"Discord channel not found or not message-capable: {_settings.Discord.ChannelID}");
 
-            await channel.SendMessageAsync(message);
-            return true;
+                await channel.SendMessageAsync(message);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError("Send discord message failed: " + ex.Message, _logSource);
+                return false;
+            }
+
         }
 
         private async Task HandleListAsync(SocketSlashCommand command)
         {
-            await DeferIfNeededAsync(command, ephemeral: true);
-            var list = await _monitoringAPI.GetMonitoredIpsAsync();
+            _logger.LogInfo("Entered handle list method.", _logSource);
 
-            if (list.Count == 0)
+            try
             {
-                await command.FollowupAsync("No monitored devices");
-            }
-            else
-            {
-                var sb = new StringBuilder();
-                foreach (var ip in list)
+                _logger.LogInfo("Fetching monitored devices from API.", _logSource);
+                await DeferIfNeededAsync(command, ephemeral: true);
+                var list = await _monitoringAPI.GetMonitoredIpsAsync();
+
+                if (list.Count == 0)
                 {
-                    sb.AppendLine($"Address: {IP.ConvertToString(ip.Address)}");
-
-                    if (null != ip.MonitorStateList)
+                    _logger.LogInfo("API returned 0 monitored devices", _logSource);
+                    await command.FollowupAsync("No monitored devices");
+                }
+                else
+                {
+                    _logger.LogInfo($"API returned {list.Count} monitored devices.", _logSource);
+                    var sb = new StringBuilder();
+                    foreach (var ip in list)
                     {
-                        var last = ip.MonitorStateList
-                            .Where(x => x.PingState != null)
-                            .OrderByDescending(x => x.SubmitTime)
-                            .FirstOrDefault(); 
+                        sb.AppendLine($"Address: {IP.ConvertToString(ip.Address)}");
 
-                        if (null != last)
+                        if (null != ip.MonitorStateList)
                         {
-                            string status = last.PingState?.Response == true ? "online" : "offline";
-                            sb.AppendLine($"Last Online State: {status}");
-                            sb.AppendLine($"Last Poll Time: {last.SubmitTime}");
+                            var last = ip.MonitorStateList
+                                .Where(x => x.PingState != null)
+                                .OrderByDescending(x => x.SubmitTime)
+                                .FirstOrDefault();
+
+                            if (null != last)
+                            {
+                                string status = last.PingState?.Response == true ? "online" : "offline";
+                                sb.AppendLine($"Last Online State: {status}");
+                                sb.AppendLine($"Last Poll Time: {last.SubmitTime}");
+                            }
+                            else
+                            {
+                                sb.AppendLine("Couldnt get last monitor state for device.");
+                            }
                         }
                         else
                         {
-                            sb.AppendLine("Couldnt get last monitor state for device.");
+                            sb.AppendLine("No monitor states for device.");
                         }
                     }
-                    else
-                    {
-                        sb.AppendLine("No monitor states for device.");
-                    }
-                }
 
-                await command.FollowupAsync(sb.ToString());
+                    _logger.LogInfo("Finished creating list sending to discord.", _logSource);
+                    await command.FollowupAsync(sb.ToString());
+                }
+            }
+            catch(Exception ex)
+            {
+                _logger.LogError("Handle list execution failed: " + ex.Message, _logSource);
             }
         }
 
         private async Task HandlePingAsync(SocketSlashCommand command)
         {
+            _logger.LogInfo("Entered handle ping method.", _logSource);
+
             await DeferIfNeededAsync(command, ephemeral: true);
             var ipText = command.Data.Options.First(o => o.Name == "ip").Value?.ToString();
 
             if (ipText == null)
             {
+                _logger.LogWarning("IP text from discord was null.", _logSource);
                 await command.FollowupAsync("IP address is required.", ephemeral: true);
                 return;
             }
 
             try
             {
+                _logger.LogInfo("Polling dash API for ping response.", _logSource);
                 var response = await _monitoringAPI.PingDeviceByStringIpAsync(ipText);
 
                 if (null == response)
                 {
+                    _logger.LogWarning("HTTP response from ping request null.", _logSource);
                     await command.FollowupAsync($"No ping response for IP: {ipText}", ephemeral: true);
                     return;
                 }
                 else
                 {
+                    _logger.LogInfo("Ping response received sending to discord.", _logSource);
                     await command.FollowupAsync($"Ping response for IP {ipText}: {(response.IcmpResponse ? "Online" : "Offline")}" 
                         + (string.IsNullOrEmpty(response.Exception) ? "" : $" (Exception: {response.Exception})"), 
                         ephemeral: true);
@@ -204,21 +247,33 @@ namespace web.Services {
             catch (Exception ex)
             {
                 await command.FollowupAsync($"Failed to retrieve monitor state for IP: {ipText}; {ex.Message}", ephemeral: true);
+                _logger.LogError("API Request for ping response failed: " + ex.Message, _logSource);
             }
         }
 
         private async Task HandleSummaryAsync(SocketSlashCommand command)
         {
-            await DeferIfNeededAsync(command, ephemeral: true);
+            _logger.LogInfo("Entered handle summary method.", _logSource);
 
-            var ips = await _monitoringAPI.GetAllPollsAsync();
-            var report = MonitorState.GetMonitorStateSummaryFromIps(ips, _settings.All);
+            try
+            {
+                await DeferIfNeededAsync(command, ephemeral: true);
 
-            await command.FollowupAsync(report, ephemeral: true);
+                var ips = await _monitoringAPI.GetAllPollsAsync();
+                var report = MonitorState.GetMonitorStateSummaryFromIps(ips, _settings.All);
+
+                await command.FollowupAsync(report, ephemeral: true);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError("Summary handle failed: " + ex.Message, _logSource);
+            }
         }
 
         private async Task HandleOnlineAsync(SocketSlashCommand command)
         {
+            _logger.LogInfo("Entered handle online method.", _logSource);
+
             await DeferIfNeededAsync(command, ephemeral: true);
             var ipText = command.Data.Options.First(o => o.Name == "ip").Value?.ToString();
 
@@ -247,11 +302,13 @@ namespace web.Services {
                 }
 
                 string status = lastState.PingState?.Response == true ? "online" : "offline";
+                _logger.LogInfo("Online status parsed, sending to discord.", _logSource);
                 await command.FollowupAsync($"The device with IP {ipText} was last seen as {status} at {lastState.SubmitTime}.", ephemeral: true);
                 return;
             }
             catch(Exception ex)
             {
+                _logger.LogError($"{ipText} : Failed to retrieve monitor states: " + ex.Message, _logSource);
                 var sb = new StringBuilder();
                 sb.AppendLine($"Failed to retrieve monitor state for IP: {ipText}");
                 sb.Append(ex.Message);
@@ -279,6 +336,8 @@ namespace web.Services {
 
         public async Task Restart()
         {
+            _logger.LogInfo("Service restart initiated.", _logSource);
+
             await _client.StopAsync();
             _client.Dispose();
             _client = new DiscordSocketClient(new DiscordSocketConfig
@@ -288,6 +347,8 @@ namespace web.Services {
             _client.Ready += OnReadyAsync;
             _client.SlashCommandExecuted += OnSlashCommandExecutedAsync;
             await StartAsync();
+
+            _logger.LogInfo("Service restart complete.", _logSource);
         }
     }
 }

@@ -12,34 +12,38 @@ namespace web.Services
         private readonly IHubContext<LogHub> _logHub;
         private SettingsService? _settings;
         private readonly IServiceProvider _sp;
+        private readonly SemaphoreSlim _semaphore = new(0, 1);
+        private static readonly LogEntry.LogSource _logSource = LogEntry.LogSource.LoggingService;
 
         public LoggingService(
             IDbContextFactory<DashDbContext> dbContextFactory, 
             IHubContext<LogHub> logHub, 
             IServiceProvider sp)
         {
-            _settings = sp.GetService<SettingsService>();
+            _settings = null;
             _dbFactory = dbContextFactory;
             _logHub = logHub;
             _sp = sp;
         }
 
-        public void LogWarning(string message, LogEntry.LogSource source)
+        public void SignalSettingsReady(SettingsService settings)
         {
-            var entry = new LogEntry(LogEntry.LogLevel.Warning, source, message);
-            AddEntry(entry);
+            _settings = settings;
+            if (_semaphore.CurrentCount == 0)
+            {
+                _semaphore.Release();
+            }
+            LogInfoAsync("Settings service has initiated ready.", _logSource);
         }
+
+        public void LogWarning(string message, LogEntry.LogSource source) => LogWarningAsync(message, source);
+        public void LogError(string message, LogEntry.LogSource source) => LogErrorAsync(message, source);
+        public void LogInfo(string message, LogEntry.LogSource source) => LogInfoAsync(message, source);
 
         public async void LogWarningAsync(string message, LogEntry.LogSource source)
         {
             var entry = new LogEntry(LogEntry.LogLevel.Warning, source, message);
             await AddEntryAsync(entry);
-        }
-
-        public void LogError(string message, LogEntry.LogSource source)
-        {
-            var entry = new LogEntry(LogEntry.LogLevel.Error, source, message);
-            AddEntry(entry);
         }
 
         public async void LogErrorAsync(string message, LogEntry.LogSource source)
@@ -48,33 +52,24 @@ namespace web.Services
             await AddEntryAsync(entry);
         }
 
-        public void LogInfo(string message, LogEntry.LogSource source)
-        {
-            var entry = new LogEntry(LogEntry.LogLevel.Info, source, message);
-            AddEntry(entry);
-        }
-
         public async void LogInfoAsync(string message, LogEntry.LogSource source)
         {
             var entry = new LogEntry(LogEntry.LogLevel.Info, source, message);
             await AddEntryAsync(entry);
         }
 
+        private async Task HandleSemaphore(LogEntry.LogSource source)
+        {
+            if (source != LogEntry.LogSource.SettingsService && source != LogEntry.LogSource.LoggingService)
+            {
+                await _semaphore.WaitAsync();
+                _semaphore.Release();
+            }
+        }
+
         public bool CheckLogEntryAgainstSettings(LogEntry entry)
         {
-            if (null == _settings)
-            {
-                try
-                {
-                    _settings = _sp.GetRequiredService<SettingsService>();
-
-                    if (null == _settings) return false;
-                }
-                catch
-                {
-                    return false;
-                }
-            }
+            if (null == _settings) return true;
 
             if (entry.Source == LogEntry.LogSource.AlertService && !_settings.Logs.LogAlertEventsEnabled) return false;
             if (entry.Source == LogEntry.LogSource.MonitoringService && !_settings.Logs.LogMonitoringEventsEnabled) return false;
@@ -93,25 +88,32 @@ namespace web.Services
 
         private async Task AddEntryAsync(LogEntry entry)
         {
-            var submit = CheckLogEntryAgainstSettings(entry);
-            if (!submit) return;
+            await HandleSemaphore(entry.Source);
+            try
+            {
+                var submit = CheckLogEntryAgainstSettings(entry);
+                if (!submit) return;
 
-            using var ctx = await _dbFactory.CreateDbContextAsync();
-            await ctx.LogEntries.AddAsync(entry);
-            await ctx.SaveChangesAsync();
-            await _logHub.Clients.All.SendAsync("ReceiveLog", entry);
+                using var ctx = await _dbFactory.CreateDbContextAsync();
+                await ctx.LogEntries.AddAsync(entry);
+                await ctx.SaveChangesAsync();
+                await _logHub.Clients.All.SendAsync("ReceiveLog", entry);
+            }
+            catch(Exception outerEx)
+            {
+                Console.WriteLine("===== LOGGING SERVICE ERROR =====");
+                Console.WriteLine(outerEx.Message);
+
+                try
+                {
+                    using var ctx = await _dbFactory.CreateDbContextAsync();
+                    var error = new LogEntry(LogEntry.LogLevel.Error, _logSource, "Error adding log entry: " + outerEx.Message);
+                    await ctx.LogEntries.AddAsync(error);
+                    await ctx.SaveChangesAsync();
+                    await _logHub.Clients.All.SendAsync("ReceiveLog", error);
+                }
+                catch { }
+            }
         }
-
-        private void AddEntry(LogEntry entry)
-        {
-            var submit = CheckLogEntryAgainstSettings(entry);
-            if (!submit) return;
-
-            using var ctx = _dbFactory.CreateDbContext();
-            ctx.LogEntries.Add(entry);
-            ctx.SaveChanges();
-            _logHub.Clients.All.SendAsync("ReceiveLog", entry);
-        }
-
     }
 }

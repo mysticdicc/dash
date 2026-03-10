@@ -6,6 +6,12 @@
     --primary-light: rgb(160, 171, 201);
     --secondary: rgb(148, 162, 196);
     --white: rgb(215,215,215);
+    --info: rgb(143, 174, 242);
+    --info-dark: rgb(98, 131, 201);
+    --warning: rgb(209, 139, 139);
+    --warning-dark: rgb(191, 121, 121);
+    --error: rgb(196, 69, 69);
+    --error-dark: rgb(186, 44, 44);
     font-family: "Roboto";
     color: var(--white);
     font-size: 18px;
@@ -944,6 +950,12 @@ input:checked + .slider:before {
             table {
                 width: 100%;
 
+                h3 {
+                    font-size: 22px;
+                    margin-top: 5px;
+                    margin-bottom: 2px;
+                }
+
                 td {
 
                 }
@@ -1244,13 +1256,29 @@ div#statusdashcard {
     width: 100%;
     table-layout: auto;
 
-    tr {
-        background-color: var(--primary);
+    tr.warning {
+        background-color: var(--warning);
     }
 
-        tr:hover {
-            background-color: var(--primary-light);
-        }
+    tr.warning:hover {
+        background-color: var(--warning-dark);
+    }
+
+    tr.info {
+        background-color: var(--info);
+    }
+
+    tr.info:hover {
+        background-color: var(--info-dark);
+    }
+
+    tr.error {
+        background-color: var(--error);
+    }
+
+    tr.error:hover {
+        background-color: var(--error-dark);
+    }
 
     td {
         padding-top: 5px;

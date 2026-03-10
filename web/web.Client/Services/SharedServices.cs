@@ -21,7 +21,9 @@ namespace web.Client.Services
 
             services.AddSingleton<LoggingAPI>();
             services.AddSingleton<ILoggingAPI, LoggingApiService>();
-            services.AddSingleton<LoggingHubService>();
+
+            services.AddSingleton<LoggingHubService>(sp =>
+                new LoggingHubService(sp.GetRequiredService<ILoggingAPI>(), baseAddress.ToString()));
 
             services.AddSingleton<DashAPI>();
             services.AddSingleton<IDashAPI, DashboardApiService>();

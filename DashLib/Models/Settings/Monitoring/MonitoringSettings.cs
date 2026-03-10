@@ -11,6 +11,7 @@ namespace DashLib.Models.Settings
     public class MonitoringSettings
     {
         public int PollingIntervalInSeconds { get; set; }
+        public int MonitorStateRetentionPeriodInHours { get; set; }
         public int AlertIntervalInSeconds { get; set; }
         public float AlertIfDownForPercent { get; set; }
         public bool AlertsEnabled { get; set; }
@@ -27,6 +28,7 @@ namespace DashLib.Models.Settings
         public MonitoringSettings(bool isDefault)
         {
             PollingIntervalInSeconds = 600;
+            MonitorStateRetentionPeriodInHours = 144;
             AlertIntervalInSeconds = 600;
             AlertIfDownForPercent = 50.0F;
             AlertsEnabled = false;

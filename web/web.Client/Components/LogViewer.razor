@@ -3,30 +3,67 @@
 <table class="log_table">
     @foreach (var log in LoggingHub.Logs)
     {
-        <tr>
-            <td>
-                @log.Timestamp.ToString("yyyy-MM-dd HH:mm:ss")
-            </td>
-            <td>
-                @log.Level.ToString()
-            </td>
-            <td>
-                @log.Source.ToString()
-            </td>
-            <td>
-                @log.Message
-            </td>
-        </tr>
+        @if (log.Level == LogEntry.LogLevel.Error)
+        {
+            <tr class="error">
+                <td>
+                    @log.Timestamp.ToString("yyyy-MM-dd HH:mm:ss")
+                </td>
+                <td>
+                    @log.Level.ToString()
+                </td>
+                <td>
+                    @log.Source.ToString()
+                </td>
+                <td>
+                    @log.Message
+                </td>
+            </tr>
+        }
+        else if (log.Level == LogEntry.LogLevel.Warning)
+        {
+            <tr class="warning">
+                <td>
+                    @log.Timestamp.ToString("yyyy-MM-dd HH:mm:ss")
+                </td>
+                <td>
+                    @log.Level.ToString()
+                </td>
+                <td>
+                    @log.Source.ToString()
+                </td>
+                <td>
+                    @log.Message
+                </td>
+            </tr>
+        }
+        else if (log.Level == LogEntry.LogLevel.Info)
+        {
+            <tr class="info">
+                <td>
+                    @log.Timestamp.ToString("yyyy-MM-dd HH:mm:ss")
+                </td>
+                <td>
+                    @log.Level.ToString()
+                </td>
+                <td>
+                    @log.Source.ToString()
+                </td>
+                <td>
+                    @log.Message
+                </td>
+            </tr>
+        }
     }
 </table>
 
 
 @code {
-    protected override async Task OnInitializedAsync()
+    protected override async Task OnParametersSetAsync()
     {
-        await LoggingHub.StartAsync("http://localhost:5231/loghub");
         await LoggingHub.LoadInitialLogsAsync();
         LoggingHub.OnLogsUpdated += OnLogsChanged;
+        await base.OnParametersSetAsync();
     }
 
     private async void OnLogsChanged()

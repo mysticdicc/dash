@@ -23,6 +23,7 @@ namespace web.Middleware
 
             try
             {
+                if (null == context) return;
                 await _next(context);
                 stopwatch.Stop();
 

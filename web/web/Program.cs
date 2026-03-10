@@ -23,13 +23,13 @@ builder.Services.AddRazorComponents()
 
 var baseAddress = new Uri(builder.Configuration.GetValue<string>("WorkerApiAddress")!);
 
-SharedServices.Register(builder.Services, baseAddress);
-
+builder.Services.AddSignalR();
 builder.Services.AddDbContextFactory<DashDbContext>(options =>
     options.UseSqlite(builder.Configuration.GetConnectionString("SQLite")));
 
-builder.Services.AddSignalR();
 builder.Services.AddSingleton<LoggingService>();
+
+SharedServices.Register(builder.Services, baseAddress);
 builder.Services.AddSingleton<ILoggingRepository, LoggingRepository>();
 builder.Services.AddSingleton<ISubnetRepository, SubnetRepository>();
 builder.Services.AddSingleton<IMonitoringRepository, MonitoringRepository>();
@@ -49,6 +49,9 @@ builder.Services.AddHostedService(x => x.GetRequiredService<MonitorService>());
 
 builder.Services.AddSingleton<AlertService>();
 builder.Services.AddHostedService(x => x.GetRequiredService<AlertService>());
+
+builder.Services.AddSingleton<CleanupService>();
+builder.Services.AddHostedService(x => x.GetRequiredService<CleanupService>());
 
 builder.Services.AddSingleton<DiscoveryService>();
 builder.Services.AddControllers();

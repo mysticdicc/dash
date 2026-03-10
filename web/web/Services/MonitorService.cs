@@ -6,6 +6,7 @@ using DashLib.Models.Settings;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Json;
@@ -39,66 +40,61 @@ namespace web.Services
         {
             try
             {
-                while (!token.IsCancellationRequested)
+                _logger.LogInfo($"Entered execution action", _logSource);
+                await Task.Delay(1500);
+
+                DateTime submit = DateTime.UtcNow;
+
+                List<IP>? ips = [];
+
+                _logger.LogInfo("Fetching monitored devices from API endpoint", _logSource);
+                ips = await _monitoringApi.GetMonitoredIpsAsync();
+
+                if (null != ips)
                 {
-                    _logger.LogInfo($"Entered execution action", _logSource);
-                    await Task.Delay(1500);
+                    _logger.LogInfo($"Fetched {ips.Count()} from API", _logSource);
 
-                    DateTime submit = DateTime.UtcNow;
-
-                    List<IP>? ips = [];
-
-                    _logger.LogInfo("Fetching monitored devices from API endpoint", _logSource);
-                    ips = await _monitoringApi.GetMonitoredIpsAsync();
-
-                    if (null != ips)
+                    foreach (IP ip in ips)
                     {
-                        _logger.LogInfo($"Fetched {ips.Count()} from API", _logSource);
-
-                        foreach (IP ip in ips)
+                        MonitorState currentMonitorState = new()
                         {
-                            MonitorState currentMonitorState = new()
-                            {
-                                SubmitTime = submit,
-                                IP_ID = ip.ID
-                            };
+                            SubmitTime = submit,
+                            IP_ID = ip.ID
+                        };
 
-                            ip.MonitorStateList = [];
+                        ip.MonitorStateList = [];
 
-                            switch ((ip.IsMonitoredICMP, ip.IsMonitoredTCP))
-                            {
-                                case (true, true):
-                                    currentMonitorState.PortState = TcpTest(ip);
-                                    currentMonitorState.PingState = IcmpTest(ip);
-                                    break;
-                                case (true, false):
-                                    currentMonitorState.PingState = IcmpTest(ip);
-                                    break;
-                                case (false, true):
-                                    currentMonitorState.PortState = TcpTest(ip);
-                                    break;
-                            }
-
-                            ip.MonitorStateList.Add(currentMonitorState);
-
+                        switch ((ip.IsMonitoredICMP, ip.IsMonitoredTCP))
+                        {
+                            case (true, true):
+                                currentMonitorState.PortState = TcpTest(ip);
+                                currentMonitorState.PingState = IcmpTest(ip);
+                                break;
+                            case (true, false):
+                                currentMonitorState.PingState = IcmpTest(ip);
+                                break;
+                            case (false, true):
+                                currentMonitorState.PortState = TcpTest(ip);
+                                break;
                         }
 
-                        try
-                        {
-                            await _monitoringApi.PostNewDevicePollAsync(ips);
-                            _logger.LogInfo("Ips submitted to api endpoint", _logSource);
-                        }
-                        catch (Exception ex)
-                        {
-                            _logger.LogError(ex.Message, _logSource);
-                        }
-                    }
-                    else
-                    {
-                        _logger.LogError("Could not fetch IP list from api endpoint", _logSource);
+                        ip.MonitorStateList.Add(currentMonitorState);
+
                     }
 
-                    await Task.Delay((_currentSettings.Monitoring.PollingIntervalInSeconds * 1000), token);
+                    try
+                    {
+                        await _monitoringApi.PostNewDevicePollAsync(ips);
+                        _logger.LogInfo("Ips submitted to api endpoint", _logSource);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex.Message, _logSource);
+                    }
+                }
+                else
+                {
+                    _logger.LogError("Could not fetch IP list from api endpoint", _logSource);
                 }
             }
             catch (OperationCanceledException)
@@ -179,6 +175,7 @@ namespace web.Services
             while (!stoppingToken.IsCancellationRequested)
             {
                 await RunServiceAsync(_cancellationToken.Token);
+                await Task.Delay((_currentSettings.Monitoring.PollingIntervalInSeconds * 1000), stoppingToken);
             }
         }
 
