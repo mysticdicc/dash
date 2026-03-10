@@ -8,5 +8,6 @@ namespace DashLib.Interfaces.Logging
     public interface ILoggingAPI
     {
         public Task<List<LogEntry>> GetAllLogEntriesAsync();
+        public Task<bool> DeleteAllLogEntriesAsync();
     }
 }

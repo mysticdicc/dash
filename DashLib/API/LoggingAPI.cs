@@ -18,6 +18,13 @@ namespace DashLib.API
             _base = $"{_httpClient.BaseAddress}logs";
         }
 
+        public async Task<bool> DeleteAllLogEntriesAsync()
+        {
+            var endpoint = $"{_base}/delete/all";
+            var result = await RequestHandler.DeleteAsync(_httpClient, endpoint);
+            return result.IsSuccessStatusCode;
+        }
+
         public async Task<List<LogEntry>> GetAllLogEntriesAsync()
         {
             var endpoint = $"{_base}/get/all";

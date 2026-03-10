@@ -1,62 +1,75 @@
 ﻿@inject LoggingHubService LoggingHub
+@inject ILoggingAPI LoggingApiService
 
-<table class="log_table">
-    @foreach (var log in LoggingHub.Logs)
-    {
-        @if (log.Level == LogEntry.LogLevel.Error)
+<div class="log_table_wrapper">
+    <div>
+        <button @onclick="@OnClickClearLogs">
+            <span class="material-symbols-outlined" title="Clear Logs">clear_all</span>
+        </button>
+        <button onclick="@OnClickDeleteLogs">
+            <span class="material-symbols-outlined" title="Delete Logs">delete</span>
+        </button>
+    </div>
+    <table class="log_table">
+        @if (LoggingHub.Logs.Count > 0)
         {
-            <tr class="error">
-                <td>
-                    @log.Timestamp.ToString("yyyy-MM-dd HH:mm:ss")
-                </td>
-                <td>
-                    @log.Level.ToString()
-                </td>
-                <td>
-                    @log.Source.ToString()
-                </td>
-                <td>
-                    @log.Message
-                </td>
-            </tr>
+            @foreach (var log in LoggingHub.Logs)
+            {
+                @if (log.Level == LogEntry.LogLevel.Error)
+                {
+                    <tr class="error">
+                        <td>
+                            @log.Timestamp.ToString("yyyy-MM-dd HH:mm:ss")
+                        </td>
+                        <td>
+                            @log.Level.ToString()
+                        </td>
+                        <td>
+                            @log.Source.ToString()
+                        </td>
+                        <td>
+                            @log.Message
+                        </td>
+                    </tr>
+                }
+                else if (log.Level == LogEntry.LogLevel.Warning)
+                {
+                    <tr class="warning">
+                        <td>
+                            @log.Timestamp.ToString("yyyy-MM-dd HH:mm:ss")
+                        </td>
+                        <td>
+                            @log.Level.ToString()
+                        </td>
+                        <td>
+                            @log.Source.ToString()
+                        </td>
+                        <td>
+                            @log.Message
+                        </td>
+                    </tr>
+                }
+                else if (log.Level == LogEntry.LogLevel.Info)
+                {
+                    <tr class="info">
+                        <td>
+                            @log.Timestamp.ToString("yyyy-MM-dd HH:mm:ss")
+                        </td>
+                        <td>
+                            @log.Level.ToString()
+                        </td>
+                        <td>
+                            @log.Source.ToString()
+                        </td>
+                        <td>
+                            @log.Message
+                        </td>
+                    </tr>
+                }
+            }
         }
-        else if (log.Level == LogEntry.LogLevel.Warning)
-        {
-            <tr class="warning">
-                <td>
-                    @log.Timestamp.ToString("yyyy-MM-dd HH:mm:ss")
-                </td>
-                <td>
-                    @log.Level.ToString()
-                </td>
-                <td>
-                    @log.Source.ToString()
-                </td>
-                <td>
-                    @log.Message
-                </td>
-            </tr>
-        }
-        else if (log.Level == LogEntry.LogLevel.Info)
-        {
-            <tr class="info">
-                <td>
-                    @log.Timestamp.ToString("yyyy-MM-dd HH:mm:ss")
-                </td>
-                <td>
-                    @log.Level.ToString()
-                </td>
-                <td>
-                    @log.Source.ToString()
-                </td>
-                <td>
-                    @log.Message
-                </td>
-            </tr>
-        }
-    }
-</table>
-
+    </table>
+</div>
 
 @code {
     protected override async Task OnParametersSetAsync()
@@ -68,6 +81,19 @@
 
     private async void OnLogsChanged()
     {
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async void OnClickClearLogs()
+    {
+        LoggingHub.ClearLogs();
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async void OnClickDeleteLogs()
+    {
+        await LoggingApiService.DeleteAllLogEntriesAsync();
+        LoggingHub.ClearLogs();
         await InvokeAsync(StateHasChanged);
     }
 }

@@ -16,12 +16,33 @@ namespace web.Controllers
         [Route("[controller]/get/all")]
         public async Task<IActionResult> GetAllLogs()
         {
-
-
             try
             {
                 var logs = await _loggingRepository.GetAllLogsAsync();
                 return Ok(logs);
+            }
+            catch (Exception ex)
+            {
+                return Problem(ex.Message);
+            }
+        }
+
+        [HttpDelete]
+        [Route("[controller]/delete/all")]
+        public async Task<IActionResult> DeleteAllLogs()
+        {
+            try
+            {
+                var result = await _loggingRepository.DeleteAllLogsAsync();
+
+                if (result)
+                {
+                    return Ok(result);
+                }
+                else
+                {
+                    return Problem("No changes were made to database.");
+                }
             }
             catch (Exception ex)
             {

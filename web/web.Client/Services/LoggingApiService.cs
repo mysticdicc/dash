@@ -16,6 +16,21 @@ namespace web.Client.Services
             _notificationService = notificationService;
         }
 
+        public async Task<bool> DeleteAllLogEntriesAsync()
+        {
+            try
+            {
+                var result = await _logsAPI.DeleteAllLogEntriesAsync();
+                _notificationService.ShowAsync("Logs Deleted", "All logs have been cleared from the database.");
+                return result;
+            }
+            catch(Exception ex)
+            {
+                _notificationService.ShowAsync("Error Deleting Log Entries", ex.Message);
+                return false;
+            }
+        }
+
         public async Task<List<LogEntry>> GetAllLogEntriesAsync()
         {
             try

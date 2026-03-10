@@ -8,5 +8,6 @@ namespace DashLib.Interfaces.Logging
     public interface ILoggingRepository
     {
         public Task<IReadOnlyList<LogEntry>> GetAllLogsAsync();
+        public Task<bool> DeleteAllLogsAsync();
     }
 }
