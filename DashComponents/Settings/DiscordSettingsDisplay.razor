@@ -1,21 +1,30 @@
 ﻿@if (IsVisible)
 {
-    <tr>
-        <td>
-            Discord Token:
-        </td>
-        <td>
-            <input type="text" @bind="@_currentSettings.Token" />
-        </td>
-    </tr>
-    <tr>
-        <td>
-            Discord Channel ID:
-        </td>
-        <td>
-            <input type="number" @bind="@_currentSettings.ChannelID" />
-        </td>
-    </tr>
+    <div class="settings_card">
+        <header>
+            <h3>Discord Settings</h3>
+        </header>
+        <content>
+            <table>
+                <tr>
+                    <td>
+                        Discord Token:
+                    </td>
+                    <td>
+                        <input type="text" @bind="@_currentSettings.Token" />
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        Discord Channel ID:
+                    </td>
+                    <td>
+                        <input type="number" @bind="@_currentSettings.ChannelID" />
+                    </td>
+                </tr>
+            </table>
+        </content>
+    </div>
 }
 
 @code {

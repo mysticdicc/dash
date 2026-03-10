@@ -2,67 +2,76 @@
 
 @if (IsVisible)
 {
-    <tr>
-        <td>
-            SMTP Server Address:
-        </td>
-        <td>
-            <input type="text" @bind="@_currentSettings.ServerAddress"/>
-        </td>
-    </tr>
-    <tr>
-        <td>
-            SMTP Port:
-        </td>
-        <td>
-            <input type="number" @bind="@_currentSettings.Port" />
-        </td>
-    </tr>
-    <tr>
-        <td>
-            SMTP Send To:
-        </td>
-        <td>
-            <input type="text" @bind="@_currentSettings.TargetEmail" />
-        </td>
-    </tr>
-    <tr>
-        <td>
-            SMTP Use Auth:
-        </td>
-        <td>
-            <Switch @bind-ToggleIsOn="@_currentSettings.AuthenticationIsRequired" />
-        </td>
-    </tr>
-    @if (_currentSettings.AuthenticationIsRequired)
-    {
-        <tr>
-            <td>
-                SMTP Username:
-            </td>
-            <td>
-                <input type="text" @bind="@_currentSettings.Username" />
-            </td>
-        </tr>
-        <tr>
-            <td>
-                SMTP Password:
-            </td>
-            <td>
-                <input type="text" @bind="@_currentSettings.Password" />
-            </td>
-        </tr>
-    }
-    <tr>
-        <td>
-            Send Test Email:
-        </td>
-        <td>
-            <button @onclick="@OnClickSendTestEmail">
-                <span class="material-symbols-outlined">send</span>
-            </button>
-        </td>
-    </tr>
+    <div class="settings_card">
+        <header>
+            <h3>SMTP Settings</h3>
+        </header>
+        <content>
+            <table>
+                <tr>
+                    <td>
+                        SMTP Server Address:
+                    </td>
+                    <td>
+                        <input type="text" @bind="@_currentSettings.ServerAddress" />
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        SMTP Port:
+                    </td>
+                    <td>
+                        <input type="number" @bind="@_currentSettings.Port" />
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        SMTP Send To:
+                    </td>
+                    <td>
+                        <input type="text" @bind="@_currentSettings.TargetEmail" />
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        SMTP Use Auth:
+                    </td>
+                    <td>
+                        <Switch @bind-ToggleIsOn="@_currentSettings.AuthenticationIsRequired" />
+                    </td>
+                </tr>
+                @if (_currentSettings.AuthenticationIsRequired)
+                {
+                    <tr>
+                        <td>
+                            SMTP Username:
+                        </td>
+                        <td>
+                            <input type="text" @bind="@_currentSettings.Username" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            SMTP Password:
+                        </td>
+                        <td>
+                            <input type="text" @bind="@_currentSettings.Password" />
+                        </td>
+                    </tr>
+                }
+                <tr>
+                    <td>
+                        Send Test Email:
+                    </td>
+                    <td>
+                        <button @onclick="@OnClickSendTestEmail">
+                            <span class="material-symbols-outlined">send</span>
+                        </button>
+                    </td>
+                </tr>
+            </table>
+        </content>
+    </div>
 }
 
 @code {

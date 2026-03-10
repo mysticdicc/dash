@@ -1,4 +1,6 @@
-﻿<label class="switch">
+﻿@implements IAsyncDisposable
+
+<label class="switch" title="@Label">
     <input type="checkbox" @bind="InternalValue" />
     <span class="slider"></span>
 </label>
@@ -6,6 +8,8 @@
 @code {
     [Parameter] required public bool ToggleIsOn { get; set; }
     [Parameter] required public EventCallback<bool> ToggleIsOnChanged { get; set; }
+    [Parameter] public EventCallback ToggleChanged  {get; set; }
+    [Parameter] public string Label { get; set; } = string.Empty;
 
     private bool InternalValue
     {
@@ -15,6 +19,12 @@
             if (ToggleIsOn == value) return;
             ToggleIsOn = value;
             _ = ToggleIsOnChanged.InvokeAsync(value);
+            _ = ToggleChanged.InvokeAsync();
         }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        Label = string.Empty;
     }
 }

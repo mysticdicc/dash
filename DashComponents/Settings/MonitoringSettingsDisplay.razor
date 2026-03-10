@@ -1,0 +1,115 @@
+﻿@if (IsVisible)
+{
+    <div class="settings_card">
+        <header>
+            <h3>Monitoring Settings</h3>
+        </header>
+        <content>
+            <table>
+                <tr>
+                    <td>
+                        Polling Interval (Seconds):
+                    </td>
+                    <td>
+                        <input type="number" @bind="@_currentSettings.PollingIntervalInSeconds" />
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        Alerts Enabled:
+                    </td>
+                    <td>
+                        <Switch @bind-ToggleIsOn="@_currentSettings.AlertsEnabled" />
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        Alert Service Polling Interval (Seconds):
+                    </td>
+                    <td>
+                        <input type="number" @bind="@_currentSettings.AlertIntervalInSeconds" />
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        Enable Downtime Alerts:
+                    </td>
+                    <td>
+                        <Switch @bind-ToggleIsOn="@_currentSettings.AlertsEnabled" />
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        Alert Repeat Time (Minutes):
+                    </td>
+                    <td>
+                        <input type="number" @bind="@_currentSettings.AlertAgainAfterInMinutes" />
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        Alert Percentage Threshold:
+                    </td>
+                    <td>
+                        <input type="number" @bind="@_currentSettings.AlertIfDownForPercent" />
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        Alert Evaluation Period (Minutes):
+                    </td>
+                    <td>
+                        <input type="number" @bind="@_currentSettings.AlertTimePeriodInMinutes" />
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        SMTP Alerts Enabled:
+                    </td>
+                    <td>
+                        <Switch @bind-ToggleIsOn="@_currentSettings.SmtpSettings.AlertsEnabled" ToggleChanged="@OnTogglesPressed" />
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        Discord Alerts Enabled:
+                    </td>
+                    <td>
+                        <Switch @bind-ToggleIsOn="@_currentSettings.DiscordSettings.AlertsEnabled" ToggleChanged="@OnTogglesPressed" />
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        Telegram Alerts Enabled:
+                    </td>
+                    <td>
+                        <Switch @bind-ToggleIsOn="@_currentSettings.TelegramSettings.AlertsEnabled" ToggleChanged="@OnTogglesPressed" />
+                    </td>
+                </tr>
+            </table>
+        </content>
+    </div>
+}
+
+@code {
+    [Parameter] required public MonitoringSettings CurrentSettings { get; set; }
+    [Parameter] public bool IsVisible { get; set; } = true;
+    [Parameter] public EventCallback<bool> IsVisibleChanged { get; set; }
+    [Parameter] public EventCallback OnSettingsChanged { get; set; }
+    private MonitoringSettings _currentSettings = new MonitoringSettings(true);
+
+    protected override void OnParametersSet()
+    {
+        if (null != CurrentSettings && _currentSettings != CurrentSettings)
+        {
+            _currentSettings = CurrentSettings;
+        }
+
+        base.OnParametersSet();
+    }
+
+    private async Task OnTogglesPressed()
+    {
+        await OnSettingsChanged.InvokeAsync();
+    }
+}

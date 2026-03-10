@@ -12,6 +12,7 @@ using web.Client.Services;
 using web.Components;
 using web.Data.Repos;
 using web.Hubs;
+using web.Middleware;
 using web.Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -67,6 +68,7 @@ else
 }
 
 app.UseHttpsRedirection();
+app.UseMiddleware<ApiLoggingMiddleware>();
 
 app.UseCors(x => x
     .AllowAnyMethod()

@@ -15,6 +15,7 @@ namespace DashLib.Models.Settings
         public DashboardSettings DashboardSettings { get; set; }
         public MonitoringSettings MonitoringSettings { get; set; }
         public SubnetSettings SubnetSettings { get; set; }
+        public LoggingSettings LoggingSettings { get; set; }
 
         [JsonIgnore] public static readonly string SettingsPath = Path.Combine(AppContext.BaseDirectory, "settings.json");
 
@@ -34,6 +35,7 @@ namespace DashLib.Models.Settings
             DashboardSettings = new DashboardSettings();
             MonitoringSettings = new MonitoringSettings(true);
             SubnetSettings = new SubnetSettings();
+            LoggingSettings = new LoggingSettings();
         }
 
         static public AllSettings GetOrCreateDefaultSettingsFile()
@@ -125,6 +127,7 @@ namespace DashLib.Models.Settings
             DashboardSettings ??= new DashboardSettings();
             MonitoringSettings ??= new MonitoringSettings(true);
             SubnetSettings ??= new SubnetSettings();
+            LoggingSettings ??= new LoggingSettings();
 
             MonitoringSettings.SmtpSettings ??= new SmtpSettings();
             MonitoringSettings.DiscordSettings ??= new DiscordSettings();

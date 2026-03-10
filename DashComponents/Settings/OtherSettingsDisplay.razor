@@ -1,0 +1,46 @@
+﻿@if (IsVisible)
+{
+    <div class="settings_card">
+        <header>
+            <h3>Other Settings</h3>
+        </header>
+        <content>
+            <table>
+                <tr>
+                    <td>
+                        Open Swagger UI (API Explorer):
+                    </td>
+                    <td>
+                        <a href="/swagger">
+                            <button>
+                                <span class="material-symbols-outlined">open_in_browser</span>
+                            </button>
+                        </a>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        Reset Settings to Default:
+                    </td>
+                    <td>
+                        <button @onclick="@OnClickResetToDefault">
+                            <span class="material-icons">replay</span>
+                        </button>
+                    </td>
+                </tr>
+            </table>
+        </content>
+    </div>
+
+}
+
+@code {
+    [Parameter] public bool IsVisible { get; set; } = true;
+    [Parameter] public EventCallback<bool> IsVisibleChanged { get; set; }
+    [Parameter] public EventCallback ResetClicked { get; set; }
+
+    private async Task OnClickResetToDefault()
+    {
+        await ResetClicked.InvokeAsync();
+    }
+}

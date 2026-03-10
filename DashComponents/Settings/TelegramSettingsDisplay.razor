@@ -1,21 +1,30 @@
 ﻿@if (IsVisible)
 {
-    <tr>
-        <td>
-            Telegram Token:
-        </td>
-        <td>
-            <input type="text" @bind="@_currentSettings.BotToken"/>
-        </td>
-    </tr>
-    <tr>
-        <td>
-            Telegram Chat ID (Username):
-        </td>
-        <td>
-            <input type="text" @bind="@_currentSettings.ChatId"/>
-        </td>
-    </tr>
+    <div class="settings_card">
+        <header>
+            <h3>Telegram Settings</h3>
+        </header>
+        <content>
+            <table>
+                <tr>
+                    <td>
+                        Telegram Token:
+                    </td>
+                    <td>
+                        <input type="text" @bind="@_currentSettings.BotToken" />
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        Telegram Chat ID (Username):
+                    </td>
+                    <td>
+                        <input type="text" @bind="@_currentSettings.ChatId" />
+                    </td>
+                </tr>
+            </table>
+        </content>
+    </div>
 }
 
 @code {

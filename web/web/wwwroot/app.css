@@ -921,49 +921,59 @@ input:checked + .slider:before {
 }
 
 .settings_layout {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-    margin: 10px;
+    display: block;
+    column-width: 500px;
+    column-gap: 2rem;
+    margin: 2rem;
 }
 
     .settings_layout > div {
-    border-radius: 10px;
-    filter: drop-shadow(5px 5px 5px rgba(0,0,0,0.15));
-    background-color: var(--primary);
-    display: flex;
-    flex-direction: column;
-    flex: 1;
-    margin: 20px;
-
-    input {
-        background-color: var(--secondary);
-    }
-
-    input:focus {
-        outline-color: var(--light-grey);
-        background-color: var(--grey);
-        color: var(--white);
-    }
-
-    > header {
-        background-color: var(--black);
-        color: var(--white);
-        padding: 5px;
-        border-radius: 7px 7px 0px 0px;
-    }
-
-    > content {
+        border-radius: 10px;
+        filter: drop-shadow(5px 5px 5px rgba(0,0,0,0.15));
+        background-color: var(--primary);
         display: flex;
-        padding: 10px;
+        break-inside: avoid;
+        flex-direction: column;
+        margin: 0 0 2rem 0;
+        height: fit-content;
 
-        > table {
-            tr td {
-                padding: 3px;
+        > content {
+            padding: 10px;
+            box-sizing: border-box;
+
+            table {
+                width: 100%;
+
+                td {
+
+                }
+
+                input {
+                    background-color: var(--secondary);
+                    width: 100%;
+                }
+
+                input:focus {
+                    outline-color: var(--light-grey);
+                    background-color: var(--grey);
+                    color: var(--white);
+                }
+            }
+        }
+
+        > header {
+            background-color: var(--black);
+            color: var(--white);
+            padding: 10px;
+            border-radius: 7px 7px 0px 0px;
+            text-align: center;
+
+            h3 {
+                font-size: 24px;
+                margin: 0;
             }
         }
     }
-}
 
 .monitoring_layout {
     display: flex;

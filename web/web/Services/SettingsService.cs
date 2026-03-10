@@ -13,6 +13,7 @@ namespace web.Services
         public DashboardSettings Dashboard => All.DashboardSettings;
         public SubnetSettings Subnet => All.SubnetSettings;
         public SmtpSettings Smtp => All.MonitoringSettings.SmtpSettings;
+        public LoggingSettings Logs => All.LoggingSettings;
 
         private int retryCount = 3;
         private int retryDelay = 2000;

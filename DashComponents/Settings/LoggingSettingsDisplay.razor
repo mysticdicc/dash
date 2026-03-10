@@ -1,0 +1,121 @@
+﻿@if (IsVisible)
+{
+    <div class="settings_card">
+        <header>
+            <h3>Logging Settings</h3>
+        </header>
+        <content>
+            <table>
+                <tr>
+                    <td>
+                        Log Retention (Hours):
+                    </td>
+                    <td>
+                        <input type="number" @bind="@_currentSettings.RetentionPeriodHours" />
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <h3>Log Levels</h3>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        Information Logs:
+                    </td>
+                    <td>
+                        <Switch @bind-ToggleIsOn="@_currentSettings.LogInformationEnabled"/>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        Warning Logs:
+                    </td>
+                    <td>
+                        <Switch @bind-ToggleIsOn="@_currentSettings.LogWarningEnabled"/>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        Error Logs:
+                    </td>
+                    <td>
+                        <Switch @bind-ToggleIsOn="@_currentSettings.LogErrorEnabled"/>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <h3>Logging Events</h3>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        API Events:
+                    </td>
+                    <td>
+                        <Switch @bind-ToggleIsOn="@_currentSettings.LogApiEventsEnabled"/>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        Alert Service Events:
+                    </td>
+                    <td>
+                        <Switch @bind-ToggleIsOn="@_currentSettings.LogAlertEventsEnabled"/>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        Monitoring Service Events:
+                    </td>
+                    <td>
+                        <Switch @bind-ToggleIsOn="@_currentSettings.LogMonitoringEventsEnabled"/>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        Discord Service Events:
+                    </td>
+                    <td>
+                        <Switch @bind-ToggleIsOn="@_currentSettings.LogDiscordEventsEnabled"/>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        Telegram Service Events:
+                    </td>
+                    <td>
+                        <Switch @bind-ToggleIsOn="@_currentSettings.LogTelegramEventsEnabled"/>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        Discovery Service Events:
+                    </td>
+                    <td>
+                        <Switch @bind-ToggleIsOn="@_currentSettings.LogDiscordEventsEnabled"/>
+                    </td>
+                </tr>
+            </table>
+        </content>
+    </div>
+}
+
+
+
+@code {
+    [Parameter] required public LoggingSettings CurrentSettings { get; set; }
+    [Parameter] public bool IsVisible { get; set; }
+    [Parameter] public EventCallback<bool> IsVisibleChanged { get; set; }
+    private LoggingSettings _currentSettings = new LoggingSettings();
+
+    protected override void OnParametersSet()
+    {
+        if (null != CurrentSettings && CurrentSettings != _currentSettings)
+        {
+            _currentSettings = CurrentSettings;
+        }
+
+        base.OnParametersSet();
+    }
+}

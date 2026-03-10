@@ -41,7 +41,7 @@ namespace web.Services
             {
                 while (!token.IsCancellationRequested)
                 {
-                    _logger.LogInfo($"Entered execution action, task delay is {_currentSettings.Monitoring.PollingIntervalInSeconds}s", _logSource);
+                    _logger.LogInfo($"Entered execution action", _logSource);
                     await Task.Delay(1500);
 
                     DateTime submit = DateTime.UtcNow;
@@ -91,8 +91,6 @@ namespace web.Services
                         catch (Exception ex)
                         {
                             _logger.LogError(ex.Message, _logSource);
-                            _logger.LogError(ex.InnerException?.Message ?? "No inner exception", _logSource);
-                            _logger.LogError(ex.StackTrace ?? "No stack trace", _logSource);
                         }
                     }
                     else
@@ -170,7 +168,7 @@ namespace web.Services
 
         async public void Restart()
         {
-            _logger.LogInfo("Monitoring service restart initiated", _logSource);
+            _logger.LogInfo("Service restart initiated", _logSource);
             _cancellationToken.Cancel();
             _cancellationToken = new();
         }
