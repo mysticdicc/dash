@@ -1,6 +1,7 @@
 :root {
     --black: rgb(36, 37, 46);
     --grey: rgb(51, 52, 70);
+    --grey-transparent: rgba(51, 52, 70, 0.5);
     --light-grey: rgb(70, 71, 94);
     --primary: rgb(127, 140, 170);
     --primary-light: rgb(160, 171, 201);
@@ -46,9 +47,13 @@
     .body > header {
         display: flex;
         justify-content: center;
-        background-color: var(--light-grey);
+        background-color: var(--black);
         filter: drop-shadow(5px 5px 5px rgba(0,0,0,0.15));
         height: 2.8rem;
+
+        button {
+            background-color: var(--black);
+        }
 
         > img {
             height: 100%;
@@ -68,32 +73,41 @@
 
     .body > content {
         background-color: var(--black);
-        flex-grow: 1;
+        background: radial-gradient(circle,rgba(57, 62, 102, 1) 0%, rgba(51, 51, 77, 1) 75%);
+        flex: 1;
         display: flex;
         flex-direction: column;
-        max-height: 95vh;
+        height: calc(100vh - 2.8rem);
+        width: 100vw;
+        padding: 1rem;
 
         > article {
-            margin: 1rem;
+            height: calc(100vh - 4.8rem);
+            width: calc(100vw - 2rem);
             border-radius: 10px;
-            background-color: var(--grey);
+            background-color: var(--grey-transparent);
             overflow: hidden;
-            filter: drop-shadow(5px 5px 5px rgba(0,0,0,0.15));
+            filter: drop-shadow(0px 0px 5px rgba(0,0,0,0.5));
             display: flex;
             flex-direction: column;
             flex-grow: 1;
-            overflow-y: auto;
+            overflow: hidden;
 
             > header {
-                background-color: var(--light-grey);
-                padding: 0.5rem;
+                background-color: var(--black);
+                padding: 0.1rem;
                 display: flex;
                 flex-direction: row;
-                min-height: 3.6rem;
+                min-height: 2.5rem;
                 position: sticky;
                 top: 0;
                 z-index: 100;
                 box-sizing: border-box;
+                align-items: center;
+
+                button {
+                    background-color: var(--black);
+                }
 
                 > select {
                     max-width: 10rem;
@@ -107,17 +121,9 @@
             }
 
             > content {
-                flex: 1;
-                max-height: 150vh;
+                overflow-x: hidden;
+                overflow-y: auto;
                 padding: 1rem;
-            }
-
-            > content:has(.log_table_wrapper) {
-                max-height: 75vh;
-            }
-
-            > content:has(.settings_layout) {
-                max-height: 250vh;
             }
 
             > footer {
@@ -131,7 +137,7 @@ img {
 
 button {
     padding: 0.5rem;
-    background-color: var(--light-grey);
+    background-color: var(--black);
     height: 2.5rem;
     border-color: rgba(0,0,0,0);
     color: var(--white);
@@ -140,9 +146,10 @@ button {
     align-items: center;
 }
 
-    button:hover {
+button:hover {
     transform: scale(1.02);
     color: white;
+    background-color: var(--grey);
 }
 
 button.green {
@@ -168,7 +175,7 @@ button.red {
 }
 
 input {
-    background-color: var(--primary);
+    background-color: var(--light-grey);
     color: var(--black);
     border-style: none;
     border-radius: 3px;
@@ -193,12 +200,12 @@ input::placeholder {
 }
 
 select {
-    background-color: var(--primary);
+    background-color: var(--light-grey);
     color: var(--white);
     border-style: none;
     border-radius: 3px;
     width: 100%;
-    height: 2.5rem;
+    height: 2rem;
 }
 
 select:focus {
@@ -207,7 +214,7 @@ select:focus {
 }
 
 textarea {
-    background-color: var(--primary);
+    background-color: var(--light-grey);
     color: var(--white);
     border-style: none;
     border-radius: 3px;
@@ -305,16 +312,13 @@ input:checked + .slider:before {
 }
 
 .dashboard_card {
-    background-color: var(--secondary);
+    background-color: var(--grey);
     border-radius: 10px;
-    border-color: var(--grey);
-    border-style: solid;
-    border-width: 2px;
     display: flex;
     max-height: 20rem;
     max-width: 20vw;
     min-width: fit-content;
-    filter: drop-shadow(5px 5px 5px rgba(0,0,0,0.15));
+    filter: drop-shadow(5px 5px 5px rgba(0,0,0,0.2));
     position: relative;
 }
 
@@ -348,7 +352,7 @@ input:checked + .slider:before {
         align-items: center;
         justify-content: center;
         padding: 3px;
-        background-color: var(--light-grey);
+        background-color: var(--black);
         color: var(--white);
 
         > button {
@@ -365,6 +369,8 @@ input:checked + .slider:before {
     }
 
     > content {
+        color: var(--white);
+
         > table {
             margin: 5px;
         }
@@ -384,7 +390,8 @@ input:checked + .slider:before {
 }
 
 .dashboard_card_editor {
-    background-color: var(--secondary);
+    background-color: var(--grey);
+    color: var(--white);
     border-radius: 10px;
     border-color: var(--grey);
     border-style: solid;
@@ -403,7 +410,7 @@ input:checked + .slider:before {
     max-height: 80vh;
 }
 
-    .dashboard_card_editor > div {
+.dashboard_card_editor > div {
     max-width: 30%;
     position: relative;
 
@@ -412,13 +419,13 @@ input:checked + .slider:before {
     }
 }
 
-    .dashboard_card_editor > div > button {
+.dashboard_card_editor > div > button {
     top: 1rem;
     right: 1rem;
     position: absolute;
 }
 
-    .dashboard_card_editor > img {
+.dashboard_card_editor > img {
     height: 10rem;
     width: auto;
     flex-grow: 0;
@@ -441,8 +448,8 @@ input:checked + .slider:before {
             flex-direction: row;
             align-items: center;
             justify-content: center;
-            padding: 3px;
-            background-color: var(--light-grey);
+            padding: 5px;
+            background-color: var(--black);
             flex-shrink: 0;
             color: var(--white);
         }
@@ -511,7 +518,7 @@ input:checked + .slider:before {
             display: flex;
             flex-direction: row;
             justify-content: center;
-            background-color: var(--light-grey);
+            background-color: var(--black);
             flex-shrink: 0;
         }
     }
@@ -672,6 +679,14 @@ input:checked + .slider:before {
 .subnet_card {
     background-color: var(--light-grey);
     filter: drop-shadow(5px 5px 5px rgba(0,0,0,0.2));
+
+    input {
+        background-color: var(--primary);
+    }
+
+    button {
+        background-color: var(--light-grey);
+    }
 
     > td {
         padding: 5px;
@@ -997,11 +1012,12 @@ input:checked + .slider:before {
     }
 
 .monitoring_layout {
+    font-size: 16px;
     display: flex;
     flex-wrap: wrap;
     height: 100%;
     flex-direction: row;
-    gap: 2rem;
+    gap: 1rem;
     max-height: 100%;
 }
 
@@ -1013,23 +1029,30 @@ input:checked + .slider:before {
     filter: drop-shadow(5px 5px 5px rgba(0,0,0,0.3));
     display: flex;
     flex-direction: column;
+
+    > header {
+        display: flex;
+        flex-direction: row;
+        background-color: var(--black);
+        padding: 10px;
+        height: 1.6rem;
+
+        button {
+            background-color: var(--black);
+            padding: 1px;
+            font-size: 9px;
+            height: auto;
+        }
+
+        > button#expand {
+            margin-right: 0;
+            margin-left: auto;
+        }
+    }
 }
 
 .monitoring_layout:has(> div:nth-child(4):last-child) > div {
     max-height: 50%;
-}
-
-.monitoring_layout > div > header {
-    display: flex;
-    flex-direction: row;
-    background-color: var(--light-grey);
-    padding: 10px;
-    min-height: 3rem;
-
-    > button#expand {
-        margin-right: 0;
-        margin-left: auto;
-    }
 }
 
 .monitoring_layout > div > article {
@@ -1148,7 +1171,8 @@ div#uptime_chart {
 
     > article {
         display: flex;
-        margin: 15px;
+        padding: 5px;
+        box-sizing: border-box;
 
         > div {
             background-color: var(--secondary);
@@ -1156,8 +1180,8 @@ div#uptime_chart {
             display: flex;
             flex-direction: column;
             border-radius: 10px;
-            padding: 10px;
-            margin: 10px;
+            padding: 5px;
+            margin: 5px;
             justify-content: center;
         }
     }
@@ -1266,15 +1290,20 @@ div#statusdashcard {
     overflow-y: auto;
     overflow-x: hidden;
     max-height: 100%;
+    filter: drop-shadow(0px 0px 5px rgba(0,0,0,0.3));
 
     > div {
         display: flex;
         flex-direction: row;
-        background-color: var(--light-grey);
+        background-color: var(--black);
         width: 100%;
         position: sticky;
         z-index: 100;
         top: 0;
+
+        button {
+            background-color: var(--black);
+        }
     }
 }
 
