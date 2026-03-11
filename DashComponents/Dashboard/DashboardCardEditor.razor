@@ -251,15 +251,15 @@
 
     private void OnChangeItemType(DashboardItemBase.DashboardItemType type)
     {
-        string? icon = null;
+        string icon = string.Empty;
 
         if (_dashboardItem is ShortcutItem shortcut)
         {
-            icon = shortcut.Icon ?? null;
+            icon = shortcut.Icon ?? icon;
         }
         else if (_dashboardItem is DirectoryItem directory)
         {
-            icon = directory.Icon ?? null;
+            icon = directory.Icon ?? icon;
         }
 
         if (type == DashboardItemBase.DashboardItemType.Shortcut)

@@ -60,7 +60,7 @@ namespace web.Data.Repos
         public async Task<bool> DeleteDirectoryAsync(DirectoryItem directory)
         {
             using var ctx = _dbFactory.CreateDbContext();
-            var entity = await ctx.DirectoryItems.FirstOrDefaultAsync(x => x.Id == directory.Id);
+            var entity = await ctx.DirectoryItems.Include(x => x.Children).FirstOrDefaultAsync(x => x.Id == directory.Id);
 
             if (entity == null) throw new InvalidDataException($"No entity with ID: {directory.Id}");
 

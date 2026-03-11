@@ -3,7 +3,7 @@
 <div id="dashcard" class="dashboard_card" onclick="@OnClickCard">
     @if (_dashboardItem is DirectoryItem dirItem)
     {
-        if (null != dirItem.Icon)
+        if (!string.IsNullOrEmpty(dirItem.Icon))
         {
             <div id="img">
                 <img src="@dirItem.Icon" />
@@ -12,7 +12,7 @@
     }
     else if (_dashboardItem is ShortcutItem shortItem)
     {
-        if (null != shortItem.Icon)
+        if (!string.IsNullOrEmpty(shortItem.Icon))
         {
             <div id="img">
                 <img src="@shortItem.Icon" />

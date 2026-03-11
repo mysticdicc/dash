@@ -9,7 +9,7 @@ namespace DashLib.Models.Dashboard
     public class DirectoryItem : DashboardItemBase
     {
         public override DashboardItemType Type => DashboardItemType.Directory;
-        required public List<ShortcutItem> Children { get; set; }
-        public string? Icon { get; set; }
+        public List<ShortcutItem> Children { get; set; } = [];
+        public string Icon { get; set; } = string.Empty;
     }
 }

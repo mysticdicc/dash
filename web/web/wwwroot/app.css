@@ -3,6 +3,7 @@
     --grey: rgb(51, 52, 70);
     --grey-transparent: rgba(51, 52, 70, 0.5);
     --light-grey: rgb(70, 71, 94);
+    --light-grey-transparent: rgba(70, 71, 94, 0.5);
     --primary: rgb(127, 140, 170);
     --primary-light: rgb(160, 171, 201);
     --secondary: rgb(148, 162, 196);
@@ -86,12 +87,10 @@
             width: calc(100vw - 2rem);
             border-radius: 10px;
             background-color: var(--grey-transparent);
-            overflow: hidden;
             filter: drop-shadow(0px 0px 5px rgba(0,0,0,0.5));
             display: flex;
             flex-direction: column;
-            flex-grow: 1;
-            overflow: hidden;
+            overflow: visible;
 
             > header {
                 background-color: var(--black);
@@ -121,8 +120,10 @@
             }
 
             > content {
-                overflow-x: hidden;
+                min-height: calc(100% - 2.7rem);
                 overflow-y: auto;
+                width: calc(100vw - 2rem);
+                overflow-x: clip;
                 padding: 1rem;
             }
 
@@ -149,7 +150,6 @@ button {
 button:hover {
     transform: scale(1.02);
     color: white;
-    background-color: var(--grey);
 }
 
 button.green {
@@ -303,23 +303,26 @@ input:checked + .slider:before {
 
 
 .dashboard_layout {
-    margin: 2rem;
     display: grid;
     grid-auto-rows: 1fr;
     grid-template-columns: repeat(auto-fit, minmax(10vw, 20vw));
     gap: 2rem;
     justify-content: center;
+    width: 100%;
+    height: 100%;
+    box-sizing: border-box;
 }
 
 .dashboard_card {
     background-color: var(--grey);
     border-radius: 10px;
     display: flex;
-    max-height: 20rem;
+    max-height: 7rem;
     max-width: 20vw;
     min-width: fit-content;
-    filter: drop-shadow(5px 5px 5px rgba(0,0,0,0.2));
+    box-shadow: 5px 5px 5px rgba(0,0,0,0.15);
     position: relative;
+    z-index: 101;
 }
 
     .dashboard_card > div#img {
@@ -385,17 +388,15 @@ input:checked + .slider:before {
     }
 }
 
-    .dashboard_card:hover {
-    transform: scale(1.02);
+.dashboard_card:hover {
+    zoom: 1.02;
 }
 
 .dashboard_card_editor {
     background-color: var(--grey);
     color: var(--white);
     border-radius: 10px;
-    border-color: var(--grey);
-    border-style: solid;
-    border-width: 2px;
+    overflow: hidden;
     display: flex;
     flex-direction: row;
     max-width: 50vw;
@@ -452,6 +453,11 @@ input:checked + .slider:before {
             background-color: var(--black);
             flex-shrink: 0;
             color: var(--white);
+
+            p {
+                font-size: 14px;
+                margin: auto 1rem auto 1rem;
+            }
         }
 
         > content {
@@ -604,13 +610,14 @@ input:checked + .slider:before {
 }
 
 .dashboard_folder_view {
-    position: absolute;
-    top: -25%;
-    left: 25%;
-    max-width: calc(100vw - 2rem);
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    max-width: 30vw;
     border-radius: 10px;
     background-color: var(--black);
-    z-index: 60;
+    z-index: 110;
     filter: drop-shadow(5px 5px 5px rgba(0,0,0,0.15));
     max-height: 15rem;
     min-width: fit-content;
@@ -618,7 +625,7 @@ input:checked + .slider:before {
 
 
     > header {
-        background-color: var(--light-grey);
+        background-color: var(--black);
         color: var(--white);
         padding: 0.5rem;
         display: flex;
@@ -638,7 +645,7 @@ input:checked + .slider:before {
             display: flex;
             flex-direction: row;
             justify-content: end;
-            
+
             > button {
                 margin-right: 5px;
             }
@@ -652,9 +659,10 @@ input:checked + .slider:before {
         grid-template-columns: repeat(auto-fill, minmax(10vw, 20vw));
         gap: 2rem;
         width: 100%;
-        overflow-y: scroll;
+        overflow-y: auto;
         max-height: 12rem;
         min-width: fit-content;
+        background-color: var(--light-grey);
     }
 }
 
@@ -713,11 +721,8 @@ input:checked + .slider:before {
 }
 
 .subnet_editor {
-    background-color: var(--secondary);
+    background-color: var(--grey);
     border-radius: 10px;
-    border-color: var(--grey);
-    border-style: solid;
-    border-width: 2px;
     display: flex;
     flex-direction: column;
     max-width: 50vw;
@@ -734,10 +739,11 @@ input:checked + .slider:before {
 
     input {
         width: 100%;
+        color: var(--white);
     }
 }
 
-    .subnet_editor > article {
+.subnet_editor > article {
     overflow: auto;
     resize: vertical;
 
@@ -758,6 +764,7 @@ input:checked + .slider:before {
                 padding: 5px;
                 flex: 1;
                 gap: 5px;
+                color: var(--white);
             }
         }
     }
@@ -794,7 +801,7 @@ input:checked + .slider:before {
     display: flex;
     flex-direction: row;
     width: 100%;
-    background-color: var(--light-grey);
+    background-color: var(--black);
     color: var(--white);
 
     > span {
@@ -813,7 +820,7 @@ input:checked + .slider:before {
     display: flex;
     flex-direction: row;
     justify-content: center;
-    background-color: var(--light-grey);
+    background-color: var(--black);
 }
 
 .ip_layout {
@@ -1015,49 +1022,47 @@ input:checked + .slider:before {
     font-size: 16px;
     display: flex;
     flex-wrap: wrap;
-    height: 100%;
     flex-direction: row;
     gap: 1rem;
-    max-height: 100%;
-}
 
-.monitoring_layout > div {
-    flex: 1 1 45%;
-    background-color: var(--primary);
-    border-radius: 10px;
-    overflow: hidden;
-    filter: drop-shadow(5px 5px 5px rgba(0,0,0,0.3));
-    display: flex;
-    flex-direction: column;
-
-    > header {
+    > div {
+        flex: 1 1 45%;
+        background-color: var(--primary);
+        border-radius: 10px;
+        overflow: hidden;
+        filter: drop-shadow(5px 5px 5px rgba(0,0,0,0.3));
         display: flex;
-        flex-direction: row;
-        background-color: var(--black);
-        padding: 10px;
-        height: 1.6rem;
+        flex-direction: column;
 
-        button {
+        > header {
+            display: flex;
+            flex-direction: row;
             background-color: var(--black);
-            padding: 1px;
-            font-size: 9px;
-            height: auto;
+            padding: 10px;
+            height: 1.6rem;
+
+            button {
+                background-color: var(--black);
+                padding: 1px;
+                font-size: 9px;
+                height: auto;
+            }
+
+            > button#expand {
+                margin-right: 0;
+                margin-left: auto;
+            }
         }
 
-        > button#expand {
-            margin-right: 0;
-            margin-left: auto;
+        article {
+            flex: 1;
+            display: flex;
         }
     }
 }
 
 .monitoring_layout:has(> div:nth-child(4):last-child) > div {
     max-height: 50%;
-}
-
-.monitoring_layout > div > article {
-    flex: 1;
-    display: flex;
 }
 
 article#monitor_states {
@@ -1117,9 +1122,11 @@ article#monitor_states > div > table {
 
 div#uptime_chart {
     display: flex;
-    flex: 1;
     justify-content: center;
     align-content: center;
+    padding: 20px;
+    gap: 10px;
+    width: 100%;
 
     .apexcharts-canvas {
         margin: auto;
@@ -1130,39 +1137,17 @@ div#uptime_chart {
     }
 
     #apex_chart {
-        flex: 1;
+        width: 100%;
         background-color: var(--secondary);
         border-radius: 10px;
-        padding: 20px;
     }
-
-    > div {
-        border-radius: 10px;
-        flex: 1;
-    }
-
-        > div#left {
-            float: left;
-        }
-
-        > div:not(#left) {
-            float: right;
-        }
 
     > div {
         background: var(--secondary);
         border-radius: 10px;
-        flex: 1;
-        margin: 20px;
+        width: 50%;
+        box-sizing: border-box;
     }
-
-        > div#left {
-            float: left;
-        }
-
-        > div:not(#left) {
-            float: right;
-        }
 }
 
 .monitoring_layout > div#stats_card {
