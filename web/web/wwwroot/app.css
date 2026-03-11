@@ -49,7 +49,7 @@
         display: flex;
         justify-content: center;
         background-color: var(--black);
-        filter: drop-shadow(5px 5px 5px rgba(0,0,0,0.15));
+        box-shadow: 0px 0px 5px rgba(0,0,0,0.3);
         height: 2.8rem;
 
         button {
@@ -88,10 +88,10 @@
             width: calc(100vw - 2rem);
             border-radius: 10px;
             background-color: var(--grey-transparent);
-            filter: drop-shadow(0px 0px 5px rgba(0,0,0,0.5));
+            box-shadow: 0px 0px 5px rgba(0,0,0,0.5);
             display: flex;
             flex-direction: column;
-            overflow: visible;
+            overflow: hidden;
 
             > header {
                 background-color: var(--black);
@@ -101,7 +101,7 @@
                 min-height: 2.5rem;
                 position: sticky;
                 top: 0;
-                z-index: 100;
+                z-index: 25;
                 box-sizing: border-box;
                 align-items: center;
 
@@ -323,10 +323,10 @@ input:checked + .slider:before {
     min-width: fit-content;
     box-shadow: 5px 5px 5px rgba(0,0,0,0.15);
     position: relative;
-    z-index: 101;
+    z-index: 25;
 }
 
-    .dashboard_card > div#img {
+.dashboard_card > div#img {
     flex-grow: 0;
     max-width: 25%;
     display: flex;
@@ -410,6 +410,7 @@ input:checked + .slider:before {
     transform: translate(-50%, -50%);
     height: auto;
     max-height: 80vh;
+    z-index: 200;
 }
 
 .dashboard_card_editor > div {
@@ -630,7 +631,7 @@ input:checked + .slider:before {
     border-radius: 10px;
     background-color: var(--black);
     z-index: 110;
-    filter: drop-shadow(5px 5px 5px rgba(0,0,0,0.15));
+    box-shadow: 0px 0px 5px rgba(0,0,0,0.3);
     max-height: 15rem;
     min-width: fit-content;
     overflow: hidden;
@@ -698,7 +699,7 @@ input:checked + .slider:before {
 
 .subnet_card {
     background-color: var(--light-grey);
-    filter: drop-shadow(5px 5px 5px rgba(0,0,0,0.2));
+    box-shadow: 0px 0px 5px rgba(0,0,0,0.2);
 
     input {
         background-color: var(--primary);
@@ -889,11 +890,8 @@ input:checked + .slider:before {
     }
 
 .ip_editor {
-    background-color: var(--secondary);
-    border-radius: 10px;
-    border-color: var(--grey);
-    border-style: solid;
-    border-width: 2px;
+    background-color: var(--grey);
+    box-shadow: 0px 0px 5px rgba(0,0,0,0.3);
     display: flex;
     flex-direction: column;
     max-width: 50vw;
@@ -906,68 +904,66 @@ input:checked + .slider:before {
     transform: translate(-50%, -50%);
     height: auto;
     max-height: 80vh;
-}
-
-    .ip_editor > header {
-    display: flex;
-    flex-direction: row;
-    width: 100%;
-    background-color: var(--light-grey);
     color: var(--white);
 
-    > span {
-        margin-top: auto;
-        margin-bottom: auto;
-        padding-left: 5px;
-    }
-
-    > button {
-        margin-left: auto;
-        margin-right: 5px;
-    }
-}
-
-    .ip_editor > article {
-    > table {
-        padding: 10px;
+    header {
         display: flex;
-        flex-direction: column;
+        flex-direction: row;
         width: 100%;
+        background-color: var(--black);
+        color: var(--white);
 
-        > tr {
+        > span {
+            margin-top: auto;
+            margin-bottom: auto;
+            padding-left: 5px;
+        }
+
+        > button {
+            margin-left: auto;
+            margin-right: 5px;
+        }
+    }
+
+    article {
+        > table {
+            padding: 10px;
             display: flex;
-            flex-direction: row;
+            flex-direction: column;
+            width: 100%;
 
-            > td {
+            > tr {
                 display: flex;
                 flex-direction: row;
-                justify-content: center;
-                padding: 5px;
-                flex: 1;
-                gap: 5px;
 
-                > input[type="text"] {
-                    width: 100%;
-                }
+                > td {
+                    display: flex;
+                    flex-direction: row;
+                    justify-content: center;
+                    padding: 5px;
+                    flex: 1;
+                    gap: 5px;
 
-                > div {
-                    width: 50%;
-                    text-align: center;
+                    > input[type="text"] {
+                        width: 100%;
+                    }
+
+                    > div {
+                        width: 50%;
+                        text-align: center;
+                        background-color: var(--light-grey);
+                    }
                 }
             }
         }
     }
-}
 
-.ip_editor > article > table > tr > td > div {
-    background-color: var(--primary);
-}
-
-.ip_editor > footer {
-    display: flex;
-    flex-direction: row;
-    justify-content: center;
-    background-color: var(--light-grey);
+    footer {
+        display: flex;
+        flex-direction: row;
+        justify-content: center;
+        background-color: var(--black);
+    }
 }
 
 .settings_layout {
@@ -978,7 +974,7 @@ input:checked + .slider:before {
 
     .settings_layout > div {
         border-radius: 10px;
-        filter: drop-shadow(5px 5px 5px rgba(0,0,0,0.15));
+        box-shadow: 0px 0px 5px rgba(0,0,0,0.3);
         background-color: var(--primary);
         display: flex;
         break-inside: avoid;
@@ -1000,7 +996,6 @@ input:checked + .slider:before {
                 }
 
                 td {
-
                 }
 
                 input {
@@ -1008,11 +1003,11 @@ input:checked + .slider:before {
                     width: 100%;
                 }
 
-                input:focus {
-                    outline-color: var(--light-grey);
-                    background-color: var(--grey);
-                    color: var(--white);
-                }
+                    input:focus {
+                        outline-color: var(--light-grey);
+                        background-color: var(--grey);
+                        color: var(--white);
+                    }
 
                 .upload_item_box {
                     height: 4rem;
@@ -1047,7 +1042,7 @@ input:checked + .slider:before {
         background-color: var(--primary);
         border-radius: 10px;
         overflow: hidden;
-        filter: drop-shadow(5px 5px 5px rgba(0,0,0,0.3));
+        box-shadow: 0px 0px 5px rgba(0,0,0,0.3);
         display: flex;
         flex-direction: column;
 
@@ -1111,7 +1106,7 @@ article#monitor_states > div > table {
     > tr:has(th) {
         position: sticky;
         top: 0;
-        z-index: 100;
+        z-index: 50;
         background-color: var(--black);
         color: var(--white);
     }
@@ -1131,7 +1126,7 @@ article#monitor_states > div > table {
 
 #apex_chart {
     flex: 1;
-    margin: 20px;
+    margin: 10px;
     background-color: var(--secondary);
     border-radius: 10px;
     padding: 20px;
@@ -1229,6 +1224,22 @@ div#stats_card > article > div > table {
     transform: translate(-50%, -50%);
     height: auto;
     max-height: 80vh;
+
+    header {
+        display: flex;
+        flex-direction: row;
+        width: 100%;
+        background-color: var(--black);
+        color: var(--white);
+        justify-content: flex-end;
+    }
+
+    footer {
+        display: flex;
+        flex-direction: row;
+        justify-content: center;
+        background-color: var(--black);
+    }
 }
 
 .popup_back#ip_view > article {
@@ -1257,22 +1268,6 @@ div#stats_card > article > div > table {
     }
 }
 
-.popup_back > header {
-    display: flex;
-    flex-direction: row;
-    width: 100%;
-    background-color: var(--light-grey);
-    color: var(--white);
-    justify-content: flex-end;
-}
-
-.popup_back > footer {
-    display: flex;
-    flex-direction: row;
-    justify-content: center;
-    background-color: var(--light-grey);
-}
-
 div#clock {
     padding: 20px;
     text-align: center;
@@ -1292,7 +1287,7 @@ div#statusdashcard {
     overflow-y: auto;
     overflow-x: hidden;
     max-height: 100%;
-    filter: drop-shadow(0px 0px 5px rgba(0,0,0,0.3));
+    box-shadow: 0px 0px 5px rgba(0,0,0,0.3);
 
     > div {
         display: flex;

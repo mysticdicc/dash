@@ -42,7 +42,7 @@ namespace web.Services
             await Task.Delay(2500); //wait for logging service to start
             _logger.LogInfo("Service started.", _logSource);
         }
-
+          
         async public Task RefreshSettingsAsync(CancellationToken token)
         {
             _logger.LogInfo("Refresh settings task initiated.", _logSource);
