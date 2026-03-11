@@ -25,3 +25,4 @@ jobs:
           push: true
           tags: mysticdicc/homelab-dashboard:alpha
           provenance: false
+          no-cache: true
