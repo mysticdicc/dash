@@ -47,3 +47,4 @@ artifacts/
 /web/web/Data/dashboard.db-shm
 /web/web/Data/dashboard.db-wal
 /.vs/dankapi/DesignTimeBuild/.dtbcache.v2
+/web/web/Data/dashboard.db-shm
