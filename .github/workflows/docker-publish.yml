@@ -24,3 +24,4 @@ jobs:
           file: web/web/Dockerfile
           push: true
           tags: mysticdicc/homelab-dashboard:alpha
+          provenance: false
