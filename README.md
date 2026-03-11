@@ -26,6 +26,7 @@ docker run -d \
 </pre>
 
 Once running you can access the website at http://dockerip:8080 by default, if you have changed the port you will need to reflect this in the URL.
+The latest push to the latest branch will automatically be published as mysticdicc/homelab-dashboard:alpha, it may be unstable.
 
 ## Gallery:
 ### Home:
