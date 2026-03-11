@@ -74,7 +74,8 @@
 
     .body > content {
         background-color: var(--black);
-        background: radial-gradient(circle,rgba(57, 62, 102, 1) 0%, rgba(51, 51, 77, 1) 75%);
+        background-image: url(/background.jpg);
+        background-image: url(/background.jpg), radial-gradient(circle,rgba(57, 62, 102, 1) 0%, rgba(51, 51, 77, 1) 75%);
         flex: 1;
         display: flex;
         flex-direction: column;
@@ -601,12 +602,23 @@ input:checked + .slider:before {
     position: relative;
     justify-content: center;
     align-content: center;
+
+    label {
+        height: 100%;
+        width: 100%;
+        display: flex;
+
+        span {
+            margin: auto;
+        }
+    }
 }
 
-    .upload_item_box:hover {
+.upload_item_box:hover {
     background-color: var(--primary);
     border-color: var(--grey);
     transform: scale(1.02);
+    color: var(--white);
 }
 
 .dashboard_folder_view {
@@ -1001,6 +1013,11 @@ input:checked + .slider:before {
                     background-color: var(--grey);
                     color: var(--white);
                 }
+
+                .upload_item_box {
+                    height: 4rem;
+                    width: 4rem;
+                }
             }
         }
 
@@ -1342,4 +1359,29 @@ div#statusdashcard {
         td:nth-child(4) {
             width: auto;
         }
+}
+
+.background_image_settings {
+    max-height: 6rem;
+    max-width: 6rem;
+    position: relative;
+
+    img {
+        max-height: 5rem;
+        max-width: 5rem;
+    }
+
+    button {
+        position: absolute;
+        top: 0;
+        right: 0;
+        padding: 0px;
+        font-size: 12px;
+        height: 1.8rem;
+        width: 1.8rem;
+
+        span {
+            margin: auto;
+        }
+    }
 }

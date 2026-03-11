@@ -1,0 +1,77 @@
+﻿@if (IsVisible)
+{
+    <div class="settings_card">
+        <header>
+            <h3>Dashboard Settings</h3>
+        </header>
+        <content>
+            <table>
+                <tr>
+                    <td>
+                        Background Image:
+                    </td>
+                    <td>
+                        @if (_currentSettings.BackgroundImageDisplay64 != string.Empty && _currentSettings.BackgroundImageDisplay64 != null)
+                        {
+                            <div class="background_image_settings">
+                                <img src="@_currentSettings.BackgroundImageDisplay64"/>
+                                <button id="deleteiconbutton" onclick="@OnClickDeleteBackground">
+                                    <span class="material-icons">delete</span>
+                                </button>
+                            </div>
+
+                        }
+                        else
+                        {
+                            <div class="upload_item_box">
+                                <label for="upload_new_pic">
+                                    <span class="material-icons" style="margin: auto;">add</span>
+                                </label>
+
+                                <InputFile onchange="@(args => OnUploadItem(args))" id="upload_new_pic" style="width: 0%; height: 0; overflow: hidden;" accept="*.jpg" />
+                            </div>
+                        }
+                    </td>
+                </tr>
+            </table>
+        </content>
+    </div>
+}
+
+@code {
+    [Parameter] required public DashboardSettings CurrentSettings { get; set; }
+    [Parameter] public bool IsVisible { get; set; } = true;
+    [Parameter] public EventCallback<bool> IsVisibleChanged { get; set; }
+    private DashboardSettings _currentSettings = new DashboardSettings();
+
+    protected override void OnParametersSet()
+    {
+        if (null != CurrentSettings && CurrentSettings != _currentSettings)
+        {
+            _currentSettings = CurrentSettings;
+        }
+        base.OnParametersSet();
+    }
+
+    private async Task<string> PictureToBase64String(InputFileChangeEventArgs eventArgs)
+    {
+        using var memoryStream = new MemoryStream();
+        await eventArgs.File.OpenReadStream(10000000).CopyToAsync(memoryStream);
+        var bytes = memoryStream.ToArray();
+        var base64 = Convert.ToBase64String(bytes);
+
+        return base64;
+    }
+
+    private async Task OnUploadItem(InputFileChangeEventArgs e)
+    {
+        _currentSettings.BackgroundImage = await PictureToBase64String(e);
+        _currentSettings.BackgroundImageDisplay64 = $"data:{e.File.ContentType};base64,{_currentSettings.BackgroundImage}";
+    }
+
+    private void OnClickDeleteBackground()
+    {
+        _currentSettings.BackgroundImage = string.Empty;
+        _currentSettings.BackgroundImageDisplay64 = string.Empty;
+    }
+}

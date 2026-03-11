@@ -33,6 +33,7 @@ USER root
 RUN apt-get update -y
 RUN apt-get install -y iputils-ping
 RUN chmod 0777 ./appsettings.json
+RUN chmod 0777 ./wwwroot
 
 #finish publish
 USER $APP_UID

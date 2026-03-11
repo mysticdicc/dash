@@ -75,43 +75,42 @@ namespace DashLib.Models.Settings
 
         static public void UpdateExistingSettingsFile(string path, AllSettings newSettings)
         {
-            try
+            newSettings.Normalize();
+            var json = JsonSerializer.Serialize(newSettings, JsonOptions);
+            File.WriteAllText(path, json);
+
+            if (newSettings.DashboardSettings.BackgroundImage != null
+                || newSettings.DashboardSettings.BackgroundImage != string.Empty)
             {
-                if (null != newSettings.MonitoringSettings && null != newSettings.DashboardSettings && null != newSettings.SubnetSettings)
+                if (File.Exists(DashboardSettings.BackgroundImagePath))
                 {
-                    var json = JsonSerializer.Serialize(newSettings, JsonOptions);
-                    File.WriteAllText(path, json);
+                    File.Delete(DashboardSettings.BackgroundImagePath);
                 }
-                else
-                {
-                    throw new InvalidCastException("One or more child objects is missing from settings");
-                }
+
+                byte[] imageBytes = Convert.FromBase64String(newSettings.DashboardSettings.BackgroundImage!);
+                File.WriteAllBytes(DashboardSettings.BackgroundImagePath, imageBytes);
             }
-            catch
+            else
             {
-                throw;
+                if (File.Exists(DashboardSettings.BackgroundImagePath))
+                {
+                    File.Delete(DashboardSettings.BackgroundImagePath);
+                }
             }
         }
 
         static public AllSettings GetCurrentSettingsFile(string path)
         {
-            try
+            string content = File.ReadAllText(path);
+            var settings = JsonSerializer.Deserialize<AllSettings>(content, JsonOptions);
+            if (settings != null)
             {
-                string content = File.ReadAllText(path);
-                var settings = JsonSerializer.Deserialize<AllSettings>(content, JsonOptions);
-                if (settings != null)
-                {
-                    settings.Normalize();
-                    return settings;
-                }
-                else
-                {
-                    throw new FileLoadException("Json deserialization on settings file failed.");
-                }
+                settings.Normalize();
+                return settings;
             }
-            catch
+            else
             {
-                throw;
+                throw new FileLoadException("Json deserialization on settings file failed.");
             }
         }
 
@@ -125,12 +124,6 @@ namespace DashLib.Models.Settings
             MonitoringSettings.SmtpSettings ??= new SmtpSettings();
             MonitoringSettings.DiscordSettings ??= new DiscordSettings();
             MonitoringSettings.TelegramSettings ??= new TelegramSettings();
-
-            try
-            {
-                UpdateExistingSettingsFile(SettingsPath, this);
-            }
-            catch { }
         }
     }
 }

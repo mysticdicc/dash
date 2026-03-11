@@ -31,6 +31,7 @@
         <TelegramSettingsDisplay CurrentSettings="@_currentSettings.MonitoringSettings.TelegramSettings" @bind-IsVisible="@_currentSettings.MonitoringSettings.TelegramSettings.AlertsEnabled"/>
         <LoggingSettingsDisplay CurrentSettings="@_currentSettings.LoggingSettings"/>
         <SubnetSettingsDisplay CurrentSettings="@_currentSettings.SubnetSettings"/>
+        <DashboardSettingsDisplay CurrentSettings="@_currentSettings.DashboardSettings"/>
         <OtherSettingsDisplay ResetClicked="@OnClickResetToDefault"/>
     </content>
     <footer>
