@@ -17,16 +17,16 @@ namespace web.Middleware
 
         public async Task InvokeAsync(HttpContext context)
         {
+            if (null == context) return;
+            if (null == _next) return;
+            if (null == _loggingService) return;
+
             var path = context.Request.Path;
             var method = context.Request.Method;
             var stopwatch = Stopwatch.StartNew();
 
             try
             {
-                if (null == context) return;
-                if (null == _next) return;
-                if (null == _loggingService) return;
-
                 await _next(context);
                 stopwatch.Stop();
 
@@ -42,7 +42,6 @@ namespace web.Middleware
                     $"{method} {path} - Exception: {ex.Message} ({stopwatch.ElapsedMilliseconds}ms)",
                     LogEntry.LogSource.ApiController
                 );
-                throw;
             }
         }
     }
