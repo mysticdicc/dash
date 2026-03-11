@@ -2,8 +2,6 @@
 FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS base
 USER $APP_UID
 WORKDIR /app
-EXPOSE 8080
-ENV ASPNETCORE_URLS=http://+:8080
 
 FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 ARG BUILD_CONFIGURATION=Release
@@ -21,16 +19,19 @@ FROM build AS publish
 ARG BUILD_CONFIGURATION=Release
 RUN dotnet publish "./web.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
 
+USER $APP_UID
 FROM base AS final
 WORKDIR /app
+EXPOSE 8080
+ENV ASPNETCORE_URLS=http://+:8080
 
+USER $APP_UID
 COPY --from=publish /app/publish .
-
-#custom config
 RUN mkdir ./data
 
 USER root
-RUN apt-get update && apt-get install -y iputils-ping
+RUN apt-get update -y
+RUN apt-get install -y iputils-ping
 RUN chmod 0777 ./appsettings.json
 
 #finish publish
