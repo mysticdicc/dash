@@ -16,5 +16,10 @@ jobs:
 
       - name: Build and push
         run: |
-          docker build -f web/web/Dockerfile -t mysticdicc/homelab-dashboard:alpha .
+          docker buildx build \
+            --load \
+            --provenance=false \
+            --sbom=false \
+            -f web/web/Dockerfile \
+            -t mysticdicc/homelab-dashboard:alpha .
           docker push mysticdicc/homelab-dashboard:alpha
