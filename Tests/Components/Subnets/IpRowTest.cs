@@ -24,11 +24,11 @@ public class IpRowTest : BunitContext
         subnetApi.Setup(x => x.UpdateSubnetByObjectAsync(It.IsAny<Subnet>())).ReturnsAsync(true);
         subnetApi.Setup(x => x.GetAllAsync()).ReturnsAsync(() => new List<Subnet>());
         subnetApi.Setup(x => x.DeleteSubnetByObjectAsync(It.IsAny<Subnet>())).ReturnsAsync(true);
-        subnetApi.Setup(x => x.EditIpAsync(It.IsAny<IP>())).ReturnsAsync(true);
+        subnetApi.Setup(x => x.EditIpAsync(It.IsAny<IpMonitoringTarget>())).ReturnsAsync(true);
         subnetApi.Setup(x => x.DeleteSubnetAsync(It.IsAny<int>())).ReturnsAsync(true);
         subnetApi.Setup(x => x.DiscoveryUpdateAsync(It.IsAny<Subnet>())).ReturnsAsync(true);
         subnetApi.Setup(x => x.GetSubnetByIdAsync(It.IsAny<int>())).ReturnsAsync((Subnet)null!);
-        subnetApi.Setup(x => x.DeleteIpByObjectAsync(It.IsAny<IP>())).ReturnsAsync(true);
+        subnetApi.Setup(x => x.DeleteIpByObjectAsync(It.IsAny<IpMonitoringTarget>())).ReturnsAsync(true);
         subnetApi.Setup(x => x.GetAllAsync()).ReturnsAsync(new List<Subnet> { subnet });
         subnetApi.Setup(x => x.GetSubnetByIdAsync(It.IsAny<int>())).ReturnsAsync(subnet);
 
@@ -55,7 +55,7 @@ public class IpRowTest : BunitContext
         var cut = CreateStandardComponent(this.Services);
 
         Assert.Contains($"<td>{cut.Item1.Instance.IpAddress.Hostname}</td>", cut.Item1.Markup);
-        Assert.Contains($"<td>{IP.ConvertToString(cut.Item1.Instance.IpAddress.Address)}</td>", cut.Item1.Markup);
+        Assert.Contains($"<td>{IpMonitoringTarget.ConvertToString(cut.Item1.Instance.IpAddress.Address)}</td>", cut.Item1.Markup);
     }
 
     [Fact]
@@ -64,7 +64,7 @@ public class IpRowTest : BunitContext
         var cut = CreateStandardComponent(this.Services);
 
         cut.Item1.Find("button#deletebutton").Click();
-        cut.Item2.Verify(x => x.DeleteIpByObjectAsync(It.IsAny<IP>()), Times.Once);
+        cut.Item2.Verify(x => x.DeleteIpByObjectAsync(It.IsAny<IpMonitoringTarget>()), Times.Once);
 
     }
 }

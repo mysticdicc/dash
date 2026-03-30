@@ -13,6 +13,9 @@ namespace DashLib.Models.Settings.Monitoring
         public string Password { get; set; }
         public int Port { get; set; }
         public string TargetEmail { get; set; }
+        public string TargetDisplayName { get; set; }
+        public string FromEmail { get; set; }
+        public string FromDisplayName { get; set; }
 
         public SmtpSettings()
         {
@@ -21,7 +24,10 @@ namespace DashLib.Models.Settings.Monitoring
             Password = string.Empty;
             Port = 25;
             TargetEmail = string.Empty;
+            TargetDisplayName = string.Empty;
             AuthenticationIsRequired = false;
+            FromEmail = string.Empty;
+            FromDisplayName = string.Empty;
         }
 
         static public SmtpSettings EncryptPassword(SmtpSettings settings)
@@ -40,6 +46,19 @@ namespace DashLib.Models.Settings.Monitoring
                 settings.Password = Encoding.UTF8.GetString(Convert.FromBase64String(settings.Password));
             }
             return settings;
+        }
+
+        static public string DecryptPassToString(SmtpSettings settings)
+        {
+            if (null != settings.Password && settings.Password != string.Empty)
+            {
+                var pw = Encoding.UTF8.GetString(Convert.FromBase64String(settings.Password));
+                return pw;
+            }
+            else
+            {
+                return string.Empty;
+            }
         }
     }
 }

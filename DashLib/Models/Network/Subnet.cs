@@ -10,50 +10,48 @@ using System.Threading.Tasks;
 
 namespace DashLib.Models.Network
 {
-    public class Subnet
+    public class Subnet : BaseMonitoringTargetContainer
     {
-        [Key]
-        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public int ID { get; set; }
+        [Key][DatabaseGenerated(DatabaseGeneratedOption.Identity)] public int Id { get; set; }
         public byte[] Address { get; set; }
         public byte[] SubnetMask { get; set; }
         public byte[] StartAddress { get; set; }
         public byte[] EndAddress { get; set; }
-        public List<IP> List { get; set; }
+        new public List<IpMonitoringTarget> Children { get; set; }
 
         public Subnet() { }
 
-        public Subnet(string CIDR)
+        public Subnet(string CIDR) : base()
         {
             var subnet = IPAddressRange.Parse(CIDR);
 
-            StartAddress = IP.ConvertToByte(subnet.Begin);
-            EndAddress = IP.ConvertToByte(subnet.End);
+            StartAddress = IpMonitoringTarget.ConvertToByte(subnet.Begin);
+            EndAddress = IpMonitoringTarget.ConvertToByte(subnet.End);
 
             var split = CIDR.Split('/');
 
-            SubnetMask = IP.GetMaskFromCidr(Int32.Parse(split[1]));
-            Address = IP.ConvertToByte(split[0]);
+            SubnetMask = IpMonitoringTarget.GetMaskFromCidr(Int32.Parse(split[1]));
+            Address = IpMonitoringTarget.ConvertToByte(split[0]);
 
-            var temp = new List<IP>();
+            var temp = new List<IpMonitoringTarget>();
 
             foreach (IPAddress ip in subnet)
             {
                 temp.Add(
-                    new IP
+                    new IpMonitoringTarget(this)
                     {
-                        Address = IP.ConvertToByte(ip)
+                        Address = IpMonitoringTarget.ConvertToByte(ip)
                     }
                 );
             }
 
-            List = temp;
+            Children = temp;
         }
 
         public static string GetCidrString(Subnet subnet)
         {
-            var startAdr = IPAddress.Parse(IP.ConvertToString(subnet.StartAddress));
-            var subMask = IPAddress.Parse(IP.ConvertToString(subnet.SubnetMask));
+            var startAdr = IPAddress.Parse(IpMonitoringTarget.ConvertToString(subnet.StartAddress));
+            var subMask = IPAddress.Parse(IpMonitoringTarget.ConvertToString(subnet.SubnetMask));
 
             if (null != startAdr && null != subMask)
             {

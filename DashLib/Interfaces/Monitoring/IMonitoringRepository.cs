@@ -8,11 +8,17 @@ namespace DashLib.Interfaces.Monitoring
 {
     public interface IMonitoringRepository
     {
-        public Task<IReadOnlyList<IP>> GetMonitoredDevicesAndStatusAsync();
-        public Task<IReadOnlyList<IP>> GetAllMonitoredDevicesAsync();
-        public Task<IReadOnlyList<MonitorState>> GetMonitorStatesByDeviceIdAsync(int ID);
-        public Task<bool> AddMonitorStatesFromListIpAsync(List<IP> ips);
-        public Task<IReadOnlyList<MonitorState>> GetAllMonitorStatesAsync();
-        public Task<IP> GetDeviceAndMonitorStatesByStringIpAsync(string ip);
+        public Task<IReadOnlyList<IpMonitoringTarget>> GetMonitoredIpAndStatusAsync();
+        public Task<IReadOnlyList<DnsMonitoringTarget>> GetMonitoredDnsAndStatusAsync();
+        public Task<IReadOnlyList<IpMonitoringTarget>> GetAllMonitoredIpsAsync();
+        public Task<IReadOnlyList<DnsMonitoringTarget>> GetAllMonitoredDnsAsync();
+        public Task<DnsMonitoringTarget> GetDnsMonitorStatesByDeviceIdAsync(int id);
+        public Task<IpMonitoringTarget> GetIpMonitorStatesByDeviceIdAsync(int id);
+        public Task<bool> AddMonitorStatesFromListIpAsync(List<IpMonitoringTarget> ipList);
+        public Task<bool> AddMonitorStatesFromListDnsAsync(List<DnsMonitoringTarget> dnsList);
+        public Task<IReadOnlyList<PortState>> GetAllPortStatesAsync();
+        public Task<IReadOnlyList<PingState>> GetAllPingStatesAsync();
+        public Task<IpMonitoringTarget> GetIpMonitoringTargetByStringAddressAsync(string ip);
+        public Task<DnsMonitoringTarget> GetDnsMonitoringTargetByStringAddressAsync(string address);
     }
 }

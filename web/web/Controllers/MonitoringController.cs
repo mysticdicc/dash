@@ -36,7 +36,7 @@ namespace web.Controllers
 
         [HttpGet]
         [Route("[controller]/v2/service/restart")]
-        public IActionResult RestartService()
+        public IActionResult RestartServiceAsync()
         {
             try
             {
@@ -51,7 +51,7 @@ namespace web.Controllers
 
         [HttpGet]
         [Route("[controller]/v2/get/pingstatus")]
-        public async Task<IActionResult> GetPingStatus(string ip)
+        public async Task<IActionResult> PingDeviceByStringIpAsync(string ip)
         {
             var response = new PingResponseDto()
             {
@@ -60,7 +60,7 @@ namespace web.Controllers
 
             try
             {
-                var byteArr = IP.ConvertToByte(ip);
+                var byteArr = IpMonitoringTarget.ConvertToByte(ip);
 
                 if (byteArr == null) return BadRequest("Invalid IP");
 
@@ -88,11 +88,11 @@ namespace web.Controllers
 
         [HttpGet]
         [Route("[controller]/v2/get/deviceandstatus/byip")]
-        public async Task<IActionResult> GetDeviceAndMonitorStatesByIp(string ip)
+        public async Task<IActionResult> GetIpMonitoringTargetByStringAddressAsync(string ip)
         {
             try
             {
-                var dbIp = await _dbRepo.GetDeviceAndMonitorStatesByStringIpAsync(ip);
+                var dbIp = await _dbRepo.GetIpMonitoringTargetByStringAddressAsync(ip);
                 return Ok(SerializeObject(dbIp));
             }
             catch (Exception ex)
@@ -102,12 +102,27 @@ namespace web.Controllers
         }
 
         [HttpGet]
-        [Route("[controller]/v2/get/devicesandstatus")]
-        public async Task<IActionResult> GetDevicesAndMonitorStates()
+        [Route("[controller]/v2/get/deviceandstatus/byadress")]
+        public async Task<IActionResult> GetDnsMonitoringTargetByStringAddressAsync(string address)
         {
             try
             {
-                var ips = await _dbRepo.GetMonitoredDevicesAndStatusAsync();
+                var dbDns = await _dbRepo.GetDnsMonitoringTargetByStringAddressAsync(address);
+                return Ok(SerializeObject(dbDns));
+            }
+            catch (Exception ex)
+            {
+                return Problem(ex.Message);
+            }
+        }
+
+        [HttpGet]
+        [Route("[controller]/v2/get/devicesandstatus/ips")]
+        public async Task<IActionResult> GetMonitoredIpAndStatusAsync()
+        {
+            try
+            {
+                var ips = await _dbRepo.GetMonitoredIpAndStatusAsync();
                 return Ok(SerializeObject(ips));
             }
             catch (Exception ex)
@@ -117,12 +132,42 @@ namespace web.Controllers
         }
 
         [HttpGet]
-        [Route("[controller]/v2/get/all")]
-        public async Task<IActionResult> GetAllMonitoredDevices()
+        [Route("[controller]/v2/get/deviceandstatus/dns")]
+        public async Task<IActionResult> GetMonitoredDnsAndStatusAsync()
         {
             try
             {
-                var ips = await _dbRepo.GetAllMonitoredDevicesAsync();
+                var dns = await _dbRepo.GetMonitoredDnsAndStatusAsync();
+                return Ok(SerializeObject(dns));
+            }
+            catch (Exception ex)
+            {
+                return Problem(ex.Message);
+            }
+        }
+
+        [HttpGet]
+        [Route("[controller]/v2/get/dns")]
+        public async Task<IActionResult> GetAllMonitoredDns()
+        {
+            try
+            {
+                var dns = await _dbRepo.GetAllMonitoredDnsAsync();
+                return Ok(SerializeObject(dns));
+            }
+            catch (Exception ex)
+            {
+                return Problem(ex.Message);
+            }
+        }
+
+        [HttpGet]
+        [Route("[controller]/v2/get/ips")]
+        public async Task<IActionResult> GetAllMonitoredIps()
+        {
+            try
+            {
+                var ips = await _dbRepo.GetAllMonitoredIpsAsync();
                 return Ok(SerializeObject(ips));
             }
             catch (Exception ex)
@@ -132,12 +177,27 @@ namespace web.Controllers
         }
 
         [HttpGet]
-        [Route("[controller]/v2/get/byid")]
-        public async Task<IActionResult> GetByDeviceID(int ID)
+        [Route("[controller]/v2/get/dns/byid")]
+        public async Task<IActionResult> GetDnsMonitorStatesByDeviceIdAsync(int id)
         {
             try
             {
-                var states = await _dbRepo.GetMonitorStatesByDeviceIdAsync(ID);
+                var states = await _dbRepo.GetDnsMonitorStatesByDeviceIdAsync(id);
+                return Ok(SerializeObject(states));
+            }
+            catch (Exception ex)
+            {
+                return Problem(ex.Message);
+            }
+        }
+
+        [HttpGet]
+        [Route("[controller]/v2/get/ip/byid")]
+        public async Task<IActionResult> GetIpMonitorStatesByDeviceIdAsync(int id)
+        {
+            try
+            {
+                var states = await _dbRepo.GetIpMonitorStatesByDeviceIdAsync(id);
                 return Ok(SerializeObject(states));
             }
             catch (Exception ex)
@@ -147,8 +207,8 @@ namespace web.Controllers
         }
 
         [HttpPost]
-        [Route("[controller]/v2/new/polls")]
-        public async Task<IActionResult> NewDevicePoll(List<IP> ips)
+        [Route("[controller]/v2/post/ip")]
+        public async Task<IActionResult> AddMonitorStatesFromListIpAsync(List<IpMonitoringTarget> ips)
         {
             try
             {
@@ -169,13 +229,51 @@ namespace web.Controllers
             }
         }
 
-        [HttpGet]
-        [Route("[controller]/v2/get/allpolls")]
-        public async Task<IActionResult> GetAllPolls()
+        [HttpPost]
+        [Route("[controller]/v2/post/dns")]
+        public async Task<IActionResult> AddMonitorStatesFromListDnsAsync(List<DnsMonitoringTarget> dnsList)
         {
             try
             {
-                var states = await _dbRepo.GetAllMonitorStatesAsync();
+                var result = await _dbRepo.AddMonitorStatesFromListDnsAsync(dnsList);
+
+                if (result)
+                {
+                    return Ok(SerializeObject(dnsList));
+                }
+                else
+                {
+                    return Problem("No changes were made to the database.");
+                }
+            }
+            catch(Exception ex)
+            {
+                return Problem(ex.Message);
+            }
+        }
+
+        [HttpGet]
+        [Route("[controller]/v2/get/all/portstates")]
+        public async Task<IActionResult> GetAllPortStatesAsync()
+        {
+            try
+            {
+                var states = await _dbRepo.GetAllPortStatesAsync();
+                return Ok(SerializeObject(states));
+            }
+            catch (Exception ex)
+            {
+                return Problem(ex.Message);
+            }
+        }
+
+        [HttpGet]
+        [Route("[controller]/v2/get/all/pingstates")]
+        public async Task<IActionResult> GetAllPingStatesAsync()
+        {
+            try
+            {
+                var states = await _dbRepo.GetAllPingStatesAsync();
                 return Ok(SerializeObject(states));
             }
             catch (Exception ex)

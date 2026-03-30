@@ -15,7 +15,7 @@
             <select @onchange="@((e) => OnSelectFilterIpChanged(e))">
                 @foreach (var ip in Polls)
                 {
-                    <option value="@ip.ID">@IP.ConvertToString(ip.Address)</option>
+                    <option value="@ip.ID">@IpMonitoringTarget.ConvertToString(ip.Address)</option>
                 }
                 <option value="@string.Empty"></option>
             </select>
@@ -71,8 +71,8 @@
 }
 
 @code {
-    List<IP> Polls = new();
-    List<IP> _polls = new();
+    List<IpMonitoringTarget> Polls = new();
+    List<IpMonitoringTarget> _polls = new();
 
     private bool _ipViewVisible = false;
     private bool _ipEditorVisible = false;
@@ -85,9 +85,9 @@
 
     private TimeSpan _viewLength = TimeSpan.FromHours(24);
 
-    private IP? _viewIp;
-    private IP? _editIp;
-    private IP? _filterIp;
+    private IpMonitoringTarget? _viewIp;
+    private IpMonitoringTarget? _editIp;
+    private IpMonitoringTarget? _filterIp;
     private List<MonitorState> _viewHistory = [];
 
     protected override async Task OnInitializedAsync()
@@ -98,7 +98,7 @@
         StateHasChanged();
     }
 
-    private void OnIpEditClicked(IP ip)
+    private void OnIpEditClicked(IpMonitoringTarget ip)
     {
         _editIp = ip;
         _ipViewVisible = false;
@@ -106,7 +106,7 @@
         _monitorHistoryVisible = false;
     }
 
-    private void OnIpViewClicked(IP ip)
+    private void OnIpViewClicked(IpMonitoringTarget ip)
     {
         _viewIp = ip;
         _ipViewVisible = true;
@@ -114,9 +114,9 @@
         _monitorHistoryVisible = false;
     }
 
-    private void OnMonitorHistoryClicked(IP ip)
+    private void OnMonitorHistoryClicked(IpMonitoringTarget ip)
     {
-        var list = new List<IP>();
+        var list = new List<IpMonitoringTarget>();
         list.Add(ip);
         _viewHistory = MonitorState.GetAllDevicePollsFromIps(list);
 
@@ -141,7 +141,7 @@
             if (selectedIp != null)
             {
                 _filterIp = selectedIp;
-                _polls = new List<IP> { selectedIp };
+                _polls = new List<IpMonitoringTarget> { selectedIp };
                 StateHasChanged();
             }
         }

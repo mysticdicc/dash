@@ -14,7 +14,10 @@ namespace DashLib.Models.Settings
         public int MonitorStateRetentionPeriodInHours { get; set; }
         public int AlertIntervalInSeconds { get; set; }
         public float AlertIfDownForPercent { get; set; }
-        public bool AlertsEnabled { get; set; }
+        public bool IcmpDownPercentAlertsEnabled { get; set; }
+        public bool IcmpDownOnceAlertsEnabled { get; set; }
+        public bool TcpDownPercentAlertsEnabled { get; set; }
+        public bool TcpDownOnceAlertsEnabled { get; set; }
         public int AlertTimePeriodInMinutes { get; set; }
         public int AlertAgainAfterInMinutes { get; set; }
         public SmtpSettings SmtpSettings { get; set; }
@@ -31,7 +34,10 @@ namespace DashLib.Models.Settings
             MonitorStateRetentionPeriodInHours = 144;
             AlertIntervalInSeconds = 600;
             AlertIfDownForPercent = 50.0F;
-            AlertsEnabled = false;
+            IcmpDownPercentAlertsEnabled = false;
+            IcmpDownOnceAlertsEnabled = false;
+            TcpDownPercentAlertsEnabled = false;
+            TcpDownOnceAlertsEnabled = false;
             AlertTimePeriodInMinutes = 30;
             AlertAgainAfterInMinutes = 30;
             SmtpSettings = new SmtpSettings();

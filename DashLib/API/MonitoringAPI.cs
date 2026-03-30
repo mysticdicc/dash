@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using DashLib.DTO;
@@ -20,84 +21,15 @@ namespace DashLib.DankAPI
             _base = $"{httpClient.BaseAddress}monitoring";
         }
 
-        public async Task<List<IP>> GetAllPollsAsync()
-        {
-            string endpoint = $"{_base}/v2/get/devicesandstatus";
-            try
-            {
-                var result = await RequestHandler.GetFromJsonAsync<List<IP>>(_httpClient, endpoint);
-                if (result is null)
-                    throw new InvalidOperationException("No monitor states returned.");
-                return result;
-            }
-            catch
-            {
-                throw;
-            }
-        }
-
-        public async Task<List<IP>> GetMonitoredIpsAsync()
+        public async Task<List<IpMonitoringTarget>> GetMonitoredIpsAsync()
         {
             string endpoint = $"{_base}/v2/get/all";
-            try
-            {
-                var result = await RequestHandler.GetFromJsonAsync<List<IP>>(_httpClient, endpoint);
-                if (result is null)
-                    throw new InvalidOperationException("No monitored IPs returned.");
-                return result;
-            }
-            catch
-            {
-                throw;
-            }
-        }
+            var result = await RequestHandler.GetFromJsonAsync<List<IpMonitoringTarget>>(_httpClient, endpoint);
 
-        public async Task<List<MonitorState>> GetByDeviceByIdAsync(int ID)
-        {
-            string endpoint = $"{_base}/v2/get/byid?ID={ID}";
-            try
-            {
-                var result = await RequestHandler.GetFromJsonAsync<List<MonitorState>>(_httpClient, endpoint);
-                if (result is null)
-                    throw new InvalidOperationException("No monitor states returned for device.");
-                return result;
-            }
-            catch
-            {
-                throw;
-            }
-        }
+            if (result is null)
+                throw new InvalidOperationException("No monitored IPs returned.");
 
-        public async Task<bool> UpdateTimerAsync(int monitorDelay)
-        {
-            string endpoint = $"{_base}/post/newtimer";
-            try
-            {
-                var response = await RequestHandler.PostJsonAsync(_httpClient, endpoint, monitorDelay);
-                if (response is null)
-                    throw new InvalidOperationException("No response from timer update.");
-                return true;
-            }
-            catch
-            {
-                throw;
-            }
-        }
-
-        public async Task<int> GetTimerAsync()
-        {
-            string endpoint = $"{_base}/get/currenttimer";
-            try
-            {
-                var response = await RequestHandler.GetFromJsonAsync<HttpResponseMessage>(_httpClient, endpoint);
-                if (response is null)
-                    throw new InvalidOperationException("No response from timer query.");
-                return int.Parse(await response.Content.ReadAsStringAsync());
-            }
-            catch
-            {
-                throw;
-            }
+            return result;
         }
 
         public async Task<bool> RestartServiceAsync()
@@ -111,7 +43,7 @@ namespace DashLib.DankAPI
             return true;
         }
 
-        public async Task<bool> PostNewDevicePollAsync(List<IP> ips)
+        public async Task<bool> PostNewDevicePollAsync(List<IpMonitoringTarget> ips)
         {
             string endpoint = $"{_base}/v2/new/polls";
             var result = await RequestHandler.PostJsonAsync(_httpClient, endpoint, ips);
@@ -121,10 +53,10 @@ namespace DashLib.DankAPI
             return false;
         }
 
-        public async Task<IP> GetDeviceAndMonitorStatesByStringIpAsync(string ip)
+        public async Task<IpMonitoringTarget> GetDeviceAndMonitorStatesByStringIpAsync(string ip)
         {
             string endpoint = $"{_base}/v2/get/deviceandstatus/byip?ip={ip}";
-            var result = await RequestHandler.GetFromJsonAsync<IP>(_httpClient, endpoint);
+            var result = await RequestHandler.GetFromJsonAsync<IpMonitoringTarget>(_httpClient, endpoint);
 
             if (result == null) throw new InvalidOperationException("No response from device and monitor state query.");
             return result!;
@@ -136,8 +68,99 @@ namespace DashLib.DankAPI
             var result = await RequestHandler.GetFromJsonAsync<PingResponseDto>(_httpClient, endpoint);
 
             if (result == null) throw new InvalidDataException("No response from API");
-
             return result;
+        }
+
+        public async Task<List<PortState>> GetAllPortStatesAsync()
+        {
+            string endpoint = $"{_base}/v2/get/all/portstates";
+            var result = await RequestHandler.GetFromJsonAsync<List<PortState>>(_httpClient, endpoint);
+
+            if (result == null) throw new InvalidDataException("No response from API");
+            return result;
+        }
+
+        public async Task<List<PingState>> GetAllPingStatesAsync()
+        {
+            string endpoint = $"{_base}/v2/get/all/pingstates";
+            var result = await RequestHandler.GetFromJsonAsync<List<PingState>>(_httpClient, endpoint);
+
+            if (result == null) throw new InvalidDataException("No response from API");
+            return result;
+        }
+
+        public async Task<List<IpMonitoringTarget>> GetAllMonitoredIpsAsync()
+        {
+            string endpoint = $"{_base}/v2/get/ips";
+            var result = await RequestHandler.GetFromJsonAsync<List<IpMonitoringTarget>>(_httpClient, endpoint);
+
+            if (result == null) throw new InvalidDataException("No response from API");
+            return result;
+        }
+
+        public async Task<List<DnsMonitoringTarget>> GetAllMonitoredDnsAsync()
+        {
+            string endpoint = $"{_base}/v2/get/dns";
+            var result = await RequestHandler.GetFromJsonAsync<List<DnsMonitoringTarget>>(_httpClient, endpoint);
+
+            if (result == null) throw new InvalidDataException("No response from API");
+            return result;
+        }
+
+        public async Task<IpMonitoringTarget> GetIpMonitorStatesByDeviceIdAsync(int id)
+        {
+            string endpoint = $"{_base}/v2/get/ip/byid?id={id}";
+            var result = await RequestHandler.GetFromJsonAsync<IpMonitoringTarget>(_httpClient, endpoint);
+
+            if (result == null) throw new InvalidDataException("No response from API");
+            return result;
+        }
+
+        public async Task<DnsMonitoringTarget> GetDnsMonitorStatesByDeviceIdAsync(int id)
+        {
+            string endpoint = $"{_base}/v2/get/dns/byid?id={id}";
+            var result = await RequestHandler.GetFromJsonAsync<DnsMonitoringTarget>(_httpClient, endpoint);
+
+            if (result == null) throw new InvalidDataException("No response from API");
+            return result;
+        }
+
+        public async Task<IpMonitoringTarget> GetIpMonitoringTargetByStringAddressAsync(string ip)
+        {
+            string endpoint = $"{_base}/v2/get/deviceandstatus/byip?ip={ip}";
+            var result = await RequestHandler.GetFromJsonAsync<IpMonitoringTarget>(_httpClient, endpoint);
+
+            if (result == null) throw new InvalidDataException("No response from API");
+            return result;
+        }
+
+        public async Task<DnsMonitoringTarget> GetDnsMonitoringTargetByStringAddressAsync(string address)
+        {
+            string endpoint = $"{_base}/v2/get/deviceandstatus/byaddress?address={address}";
+            var result = await RequestHandler.GetFromJsonAsync<DnsMonitoringTarget>(_httpClient, endpoint);
+
+            if (result == null) throw new InvalidDataException("No response from API");
+            return result;
+        }
+
+        public async Task<bool> PostDnsPollsAsync(List<DnsMonitoringTarget> dnsList)
+        {
+            string endpoint = $"{_base}/v2/post/dns";
+            var result = await RequestHandler.PostJsonAsync(_httpClient, endpoint, dnsList);
+
+            if (result == null) return false;
+            if (result.IsSuccessStatusCode) return true;
+            return false;
+        }
+
+        public async Task<bool> PostIpPollsAsync(List<IpMonitoringTarget> ipList)
+        {
+            string endpoint = $"{_base}/v2/post/ip";
+            var result = await RequestHandler.PostJsonAsync(_httpClient, endpoint, ipList);
+
+            if (result == null) return false;
+            if (result.IsSuccessStatusCode) return true;
+            return false;
         }
     }
 }

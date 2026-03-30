@@ -14,7 +14,7 @@ namespace DashLib.Models.Dashboard
         public int IP_ID { get; set; }
 
         //ef mapping
-        public virtual IP? IP { get; set; }
+        public virtual IpMonitoringTarget? IP { get; set; }
 
         [SetsRequiredMembers]
         public DeviceStatusWidget()

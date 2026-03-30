@@ -43,6 +43,7 @@ builder.Services.AddHostedService(provider => provider.GetRequiredService<Settin
 
 builder.Services.AddSingleton<DiscordService>();
 builder.Services.AddSingleton<TelegramService>();
+builder.Services.AddSingleton<MailService>();
 
 builder.Services.AddSingleton<MonitorService>();
 builder.Services.AddHostedService(x => x.GetRequiredService<MonitorService>());

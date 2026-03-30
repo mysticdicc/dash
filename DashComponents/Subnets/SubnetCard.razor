@@ -3,13 +3,13 @@
 
 <tr id=@($"subcard-{_subnet.ID}") class="subnet_card" @onclick="@OnClickSubnetCard">
     <td>
-        @IP.ConvertToString(_subnet.Address)
+        @IpMonitoringTarget.ConvertToString(_subnet.Address)
     </td>
     <td>
-        @IP.ConvertToString(_subnet.StartAddress)
+        @IpMonitoringTarget.ConvertToString(_subnet.StartAddress)
     </td>
     <td>
-        @IP.ConvertToString(_subnet.EndAddress)
+        @IpMonitoringTarget.ConvertToString(_subnet.EndAddress)
     </td>
     <td>
         <div>
@@ -70,12 +70,12 @@
     [Parameter] public bool AdvancedViewEnabled { get; set; }
     [Parameter] public EventCallback<bool> AdvancedViewEnabledChanged { get; set; }
 
-    [Parameter] public EventCallback<IP> OnEditIp { get; set; }
+    [Parameter] public EventCallback<IpMonitoringTarget> OnEditIp { get; set; }
     [Parameter] public EventCallback<bool> OnDeleteIp { get; set; }
     [Parameter] public EventCallback<Subnet> OnEditSubnet { get; set; }
     [Parameter] public EventCallback<bool> OnDeleteClicked { get; set;  }
 
-    private IList<IP> _ipList = [];
+    private IList<IpMonitoringTarget> _ipList = [];
     private bool _ipListVisible { get; set; } = false;
     private string _searchString = string.Empty;
 
@@ -115,7 +115,7 @@
         else
         {
             _ipList = (_subnet.List ?? [])
-                .Where(x => IP.ConvertToString(x.Address).Contains(_searchString, StringComparison.OrdinalIgnoreCase) ||
+                .Where(x => IpMonitoringTarget.ConvertToString(x.Address).Contains(_searchString, StringComparison.OrdinalIgnoreCase) ||
                             (x.Hostname != null && x.Hostname.Contains(_searchString, StringComparison.OrdinalIgnoreCase)))
                 .ToList();
 

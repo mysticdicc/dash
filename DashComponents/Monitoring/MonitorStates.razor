@@ -25,7 +25,7 @@
                                 <td>
                                     @if (null != poll.IP)
                                     {
-                                        @IP.ConvertToString(poll.IP.Address)
+                                        @IpMonitoringTarget.ConvertToString(poll.IP.Address)
                                     }
                                 </td>
                                 <td>
@@ -84,11 +84,11 @@
 }
 
 @code {
-    [Parameter] public required List<IP> IPAddresses { get; set; }
-    [Parameter] public required EventCallback<List<IP>?> IPAddressesChanged { get; set; }
-    [Parameter] public required EventCallback<IP> ViewClicked { get; set; }
-    [Parameter] public required EventCallback<IP> EditClicked { get; set; }
-    [Parameter] public required EventCallback<IP> HistoryClicked { get; set; }
+    [Parameter] public required List<IpMonitoringTarget> IPAddresses { get; set; }
+    [Parameter] public required EventCallback<List<IpMonitoringTarget>?> IPAddressesChanged { get; set; }
+    [Parameter] public required EventCallback<IpMonitoringTarget> ViewClicked { get; set; }
+    [Parameter] public required EventCallback<IpMonitoringTarget> EditClicked { get; set; }
+    [Parameter] public required EventCallback<IpMonitoringTarget> HistoryClicked { get; set; }
     [Parameter] public required bool Visible { get; set; }
     [Parameter] public required EventCallback<bool> VisibleChanged { get; set; }
     [Parameter] public required EventCallback<string> ExpandChanged { get; set; }
@@ -113,17 +113,17 @@
         return base.OnParametersSetAsync();
     }
 
-    private async void OnClickView(IP ip)
+    private async void OnClickView(IpMonitoringTarget ip)
     {
         await ViewClicked.InvokeAsync(ip);
     }
 
-    private async void OnClickEditIP(IP ip)
+    private async void OnClickEditIP(IpMonitoringTarget ip)
     {
         await EditClicked.InvokeAsync(ip);
     }
 
-    private async void OnClickHistory(IP ip)
+    private async void OnClickHistory(IpMonitoringTarget ip)
     {
         await HistoryClicked.InvokeAsync(ip);
     }

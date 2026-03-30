@@ -174,7 +174,7 @@ namespace web.Services {
                     var sb = new StringBuilder();
                     foreach (var ip in list)
                     {
-                        sb.AppendLine($"Address: {IP.ConvertToString(ip.Address)}");
+                        sb.AppendLine($"Address: {IpMonitoringTarget.ConvertToString(ip.Address)}");
 
                         if (null != ip.MonitorStateList)
                         {
@@ -285,7 +285,7 @@ namespace web.Services {
 
             try
             {
-                IP ip = await _monitoringAPI.GetDeviceAndMonitorStatesByStringIpAsync(ipText);
+                IpMonitoringTarget ip = await _monitoringAPI.GetDeviceAndMonitorStatesByStringIpAsync(ipText);
 
                 if (ip.MonitorStateList == null || ip.MonitorStateList.Count == 0)
                 {

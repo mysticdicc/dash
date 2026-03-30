@@ -87,8 +87,8 @@
 }
 
 @code {
-    [Parameter] public required List<IP>? IPAddresses { get; set; }
-    [Parameter] public required EventCallback<List<IP>?> IPAddressesChanged { get; set; }
+    [Parameter] public required List<IpMonitoringTarget>? IPAddresses { get; set; }
+    [Parameter] public required EventCallback<List<IpMonitoringTarget>?> IPAddressesChanged { get; set; }
     [Parameter] public required bool Visible { get; set; }
     [Parameter] public required EventCallback<bool> VisibleChanged { get; set; }
     [Parameter] public required EventCallback<string> ExpandChanged { get; set; }
@@ -134,7 +134,7 @@
         _chartsReady = true;
     }
 
-    private void CreateChartData(List<IP> ipAddresses, TimeSpan viewLength)
+    private void CreateChartData(List<IpMonitoringTarget> ipAddresses, TimeSpan viewLength)
     {
         var allStates = ipAddresses
             .Where(ip => ip.MonitorStateList != null)

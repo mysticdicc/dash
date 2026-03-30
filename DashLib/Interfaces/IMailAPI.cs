@@ -10,6 +10,6 @@ namespace DashLib.Interfaces
     public interface IMailAPI
     {
         Task<bool> SendTestEmailAsync();
-        Task<bool> SendAlertEmailAsync(List<IP> ipList);
+        Task<bool> SendAlertEmailAsync(List<IpMonitoringTarget> ipList);
     }
 }
