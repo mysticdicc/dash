@@ -41,7 +41,7 @@ namespace DashLib.API
             }
         }
 
-        public async Task<bool> SendAlertEmailAsync(List<IP> iplList)
+        public async Task<bool> SendAlertEmailAsync(List<IpMonitoringTarget> iplList)
         {
             try
             {

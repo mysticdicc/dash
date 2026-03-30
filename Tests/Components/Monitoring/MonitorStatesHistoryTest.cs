@@ -74,7 +74,7 @@ public class MonitorStatesHistoryTest : BunitContext
         var (cut, api) = CreateStandardComponent(Services, true);
         bool invoked = false;
 
-        cut.Render(parameters => parameters.Add(p => p.ViewClicked, EventCallback.Factory.Create<IP>(this, ip =>
+        cut.Render(parameters => parameters.Add(p => p.ViewClicked, EventCallback.Factory.Create<IpMonitoringTarget>(this, ip =>
         {
             invoked = true;
         })));

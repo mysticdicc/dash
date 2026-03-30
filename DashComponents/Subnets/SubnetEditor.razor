@@ -9,11 +9,11 @@
                 <header>
                     @if (IsNewSubnet)
                     {
-                        <span><strong>@IP.ConvertToString(_subnet.Address) - NEW! </strong></span>
+                        <span><strong>@IpMonitoringTarget.ConvertToString(_subnet.Address) - NEW! </strong></span>
                     }
                     else
                     {
-                        <span><strong>@IP.ConvertToString(_subnet.Address)</strong></span>
+                        <span><strong>@IpMonitoringTarget.ConvertToString(_subnet.Address)</strong></span>
                     }
                     <button id="cancelbutton" onclick="@OnClickCancel">
                         <span class="material-icons">cancel</span>
@@ -64,7 +64,7 @@
                                 <ItemContent>
                                     <tr id="ip">
                                         <td colspan="10">
-                                            <span>@IP.ConvertToString(context.Address)</span>
+                                            <span>@IpMonitoringTarget.ConvertToString(context.Address)</span>
                                             <span>@context.Hostname</span>
                                             <button id="deleteipbutton" onclick="@(() => OnClickDeleteIp(context))">
                                                  <span class="material-icons">delete</span>
@@ -138,7 +138,7 @@
         _ipListVisible = !_ipListVisible;
     }
 
-    async Task OnClickDeleteIp(IP ip)
+    async Task OnClickDeleteIp(IpMonitoringTarget ip)
     {
         if (_subnet != null)
         {

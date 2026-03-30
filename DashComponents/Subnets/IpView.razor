@@ -19,7 +19,7 @@
                             Address:
                         </td>
                         <td>
-                            @IP.ConvertToString(IpAddress.Address)
+                            @IpMonitoringTarget.ConvertToString(IpAddress.Address)
                         </td>
                     </tr>
                     <tr>
@@ -37,7 +37,7 @@
                                 Parent Subnet:
                             </td>
                             <td>
-                                @IP.ConvertToString(_parent.Address) : @IP.ConvertToString(_parent.SubnetMask)
+                                @IpMonitoringTarget.ConvertToString(_parent.Address) : @IpMonitoringTarget.ConvertToString(_parent.SubnetMask)
                             </td>
                         </tr>
                     }
@@ -50,10 +50,10 @@
 
 
 @code {
-    [Parameter] public required IP IpAddress { get; set; }
+    [Parameter] public required IpMonitoringTarget IpAddress { get; set; }
     [Parameter] public required bool IpViewVisible { get; set; }
     [Parameter] public required EventCallback<bool> IpViewVisibleChanged { get; set; }
-    [Parameter] public required EventCallback<IP> EditClicked { get; set; }
+    [Parameter] public required EventCallback<IpMonitoringTarget> EditClicked { get; set; }
 
     private Subnet? _parent;
 

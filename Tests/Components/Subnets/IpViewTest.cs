@@ -22,11 +22,11 @@ public class IpViewTest : BunitContext
         subnetApi.Setup(x => x.UpdateSubnetByObjectAsync(It.IsAny<Subnet>())).ReturnsAsync(true);
         subnetApi.Setup(x => x.GetAllAsync()).ReturnsAsync(() => new List<Subnet>());
         subnetApi.Setup(x => x.DeleteSubnetByObjectAsync(It.IsAny<Subnet>())).ReturnsAsync(true);
-        subnetApi.Setup(x => x.EditIpAsync(It.IsAny<IP>())).ReturnsAsync(true);
+        subnetApi.Setup(x => x.EditIpAsync(It.IsAny<IpMonitoringTarget>())).ReturnsAsync(true);
         subnetApi.Setup(x => x.DeleteSubnetAsync(It.IsAny<int>())).ReturnsAsync(true);
         subnetApi.Setup(x => x.DiscoveryUpdateAsync(It.IsAny<Subnet>())).ReturnsAsync(true);
         subnetApi.Setup(x => x.GetSubnetByIdAsync(It.IsAny<int>())).ReturnsAsync((Subnet)null!);
-        subnetApi.Setup(x => x.DeleteIpByObjectAsync(It.IsAny<IP>())).ReturnsAsync(true);
+        subnetApi.Setup(x => x.DeleteIpByObjectAsync(It.IsAny<IpMonitoringTarget>())).ReturnsAsync(true);
         subnetApi.Setup(x => x.GetAllAsync()).ReturnsAsync(new List<Subnet> { subnet });
         subnetApi.Setup(x => x.GetSubnetByIdAsync(It.IsAny<int>())).ReturnsAsync(subnet);
 

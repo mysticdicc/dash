@@ -89,7 +89,7 @@
     private bool _advancedViewEnabled = true;
 
     private Subnet? _editingSubnet = null;
-    private IP? _editingIP = null;
+    private IpMonitoringTarget? _editingIP = null;
 
     async protected override Task OnInitializedAsync()
     {
@@ -105,7 +105,7 @@
         _subnetEditorVisible = true;
     }
 
-    private void OnClickEditIP(IP ip)
+    private void OnClickEditIP(IpMonitoringTarget ip)
     {
         _editingIP = ip;
         _ipEditorVisible = true;

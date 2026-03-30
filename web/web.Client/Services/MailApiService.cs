@@ -31,7 +31,7 @@ namespace web.Client.Services
             }
         }
 
-        async public Task<bool> SendAlertEmailAsync(List<IP> ipList)
+        async public Task<bool> SendAlertEmailAsync(List<IpMonitoringTarget> ipList)
         {
             try
             {

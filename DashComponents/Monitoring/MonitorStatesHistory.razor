@@ -85,7 +85,7 @@
 
 @code {
     [Parameter] public required List<MonitorState> MonitorStates { get; set; }
-    [Parameter] public required EventCallback<IP> ViewClicked { get; set; }
+    [Parameter] public required EventCallback<IpMonitoringTarget> ViewClicked { get; set; }
     [Parameter] public required bool MonitorHistoryVisible { get; set; }
     [Parameter] public required EventCallback<bool> MonitorHistoryVisibleChanged { get; set; }
 
@@ -94,7 +94,7 @@
         MonitorHistoryVisible = false;
     }
 
-    private async void OnClickView(IP ip)
+    private async void OnClickView(IpMonitoringTarget ip)
     {
         MonitorHistoryVisible = false;
         await ViewClicked.InvokeAsync(ip);

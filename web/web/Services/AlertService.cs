@@ -18,24 +18,24 @@ namespace web.Services
         private LoggingService _logger;
         CancellationTokenSource _cancellationToken;
         MonitoringAPI _monitoringApi;
-        MailAPI _mailApi;
         DiscordService _discordService;
         TelegramService _telegramService;
         SettingsService _settings;
+        MailService _mailService;
         private int _alertEvalTimeInMinutes;
         private static LogEntry.LogSource _logSource = LogEntry.LogSource.AlertService;
 
         public AlertService(
             LoggingService logger, 
-            MonitoringAPI monitoringApi, 
-            MailAPI mailApi, 
+            MonitoringAPI monitoringApi,
+            MailService mailService, 
             DiscordService discordAPI,
             SettingsService settingsService,
             TelegramService telegramService)
         {
             _logger = logger;
             _monitoringApi = monitoringApi;
-            _mailApi = mailApi;
+            _mailService = mailService;
             _discordService = discordAPI;
             _telegramService = telegramService;
             _cancellationToken = new CancellationTokenSource(); 
@@ -52,14 +52,18 @@ namespace web.Services
                 {
                     do
                     {
-                        if (_settings.Monitoring.AlertsEnabled)
-                        {
-                            await RunServiceAction(token);
-                        }
-                        else
-                        {
-                            _logger.LogInfo("Alerts are disabled in settings, going back to sleep.", _logSource);
-                        }
+                        var monitoredIps = await _monitoringApi.GetMonitoredIpsAsync();
+
+                        if (_settings.Monitoring.IcmpDownPercentAlertsEnabled) 
+                            await IcmpDownOverTimeReportAsync(token, monitoredIps);
+                        if (_settings.Monitoring.IcmpDownOnceAlertsEnabled) 
+                            await IcmpDownOnceReportAsync(token, monitoredIps);
+                        if (_settings.Monitoring.TcpDownPercentAlertsEnabled)
+                            await TcpDownOverTimeReportAsync(token, monitoredIps);
+                        if (_settings.Monitoring.TcpDownOnceAlertsEnabled)
+                            await TcpDownOnceReportAsync(token, monitoredIps);
+
+                        var monitoredDns = await _monitoringApi.Get
 
                         _logger.LogInfo($"Alert service sleeping for {_settings.Monitoring.AlertIntervalInSeconds} seconds", _logSource);
                         await Task.Delay((_settings.Monitoring.AlertIntervalInSeconds * 1000), token);
@@ -77,16 +81,14 @@ namespace web.Services
             }
         }
 
-        private async Task RunServiceAction(CancellationToken token)
+        private async Task IcmpDownOverTimeReportAsync(CancellationToken token, List<IpMonitoringTarget> allPolls)
         {
-            _logger.LogInfo("Alert service action running.", _logSource);
+            _logger.LogInfo("Icmp down over time report action running.", _logSource);
+            var alertIps = new List<IpMonitoringTarget>();
 
-            var monitoredIps = await _monitoringApi.GetAllPollsAsync();
-            var alertIps = new List<IP>();
-
-            foreach (var ip in monitoredIps)
+            foreach (var ip in allPolls)
             {
-                var list = new List<IP>() { ip };
+                var list = new List<IpMonitoringTarget>() { ip };
                 var states = MonitorState.GetAllDevicePollsFromIps(list);
 
                 var timespan = TimeSpan.FromMinutes(_alertEvalTimeInMinutes);
@@ -110,42 +112,84 @@ namespace web.Services
 
                 if (uptimePercent < _settings.Monitoring.AlertIfDownForPercent)
                 {
-                    _logger.LogWarning($"Alert: IP {IP.ConvertToString(ip.Address)} has uptime percent {uptimePercent}% which is below the threshold of {_settings.Monitoring.AlertIfDownForPercent}%", _logSource);
+                    _logger.LogWarning($"Alert: IP {IpMonitoringTarget.ConvertToString(ip.Address)} has uptime percent {uptimePercent}% which is below the threshold of {_settings.Monitoring.AlertIfDownForPercent}%", _logSource);
                     alertIps.Add(ip);
                 }
             }
 
             if (alertIps.Count > 0)
             {
-                _logger.LogInfo($"Alert service submitting {alertIps.Count} IP addresses for alert consideration.", _logSource);
+                await SendDowntimeAlertAsync(token, alertIps);
+            }
+        }
 
-                if (_settings.Smtp.AlertsEnabled)
+        private async Task IcmpDownOnceReportAsync(CancellationToken token, List<IpMonitoringTarget> allPolls)
+        {
+            var lastPolls = PingState.(allPolls);
+            var icmpPolls = lastPolls.Where(x => x.PingState != null && !x.PingState.Response).ToList();
+            var ips = icmpPolls.Select(x => x.IP).Distinct().ToList();
+
+            if (ips == null) return;
+
+            if (ips.Count() > 0)
+            {
+                await SendDowntimeAlertAsync(token, ips!);
+            }
+        }
+
+        private async Task TcpDownOverTimeReportAsync(CancellationToken token, List<IP> allPolls)
+        {
+
+        }
+
+        private async Task TcpDownOnceReportAsync(CancellationToken token, List<IP> allPolls)
+        {
+
+        }
+
+        private async Task SendAlertsAsync(CancellationToken token, List<IP> alertIps, string message)
+        {
+
+        }
+
+        private async Task SendDowntimeAlertAsync(CancellationToken token, List<IP> alertIps)
+        {
+            _logger.LogInfo($"Alert service submitting {alertIps.Count} IP addresses for alert consideration.", _logSource);
+            var report = MonitorState.GetDowntimeAlertFromIps(alertIps);
+
+            if (_settings.Smtp.AlertsEnabled)
+            {
+                try
                 {
-                    try
-                    {
-                        await _mailApi.SendAlertEmailAsync(alertIps);
-                    }
-                    catch { }
+                    await _mailService.SendMailAsync("Downtime Alert", report);
                 }
-
-                if (_settings.Discord.AlertsEnabled)
+                catch (Exception ex)
                 {
-                    try
-                    {
-                        var report = MonitorState.GetDowntimeAlertFromIps(alertIps);
-                        await _discordService.SendMessageAsync(report);
-                    }
-                    catch(Exception ex) { _logger.LogError(ex.Message, _logSource); }
+                    _logger.LogError("Error sending mail alert: " + ex.Message, _logSource);
                 }
+            }
 
-                if (_settings.Telegram.AlertsEnabled)
+            if (_settings.Discord.AlertsEnabled)
+            {
+                try
                 {
-                    try
-                    {
-                        var report = MonitorState.GetDowntimeAlertFromIps(alertIps);
-                        await _telegramService.SendMessageAsync(report);
-                    }
-                    catch (Exception ex) { _logger.LogError(ex.Message, _logSource); }
+                    await _discordService.SendMessageAsync(report);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError("Error discord mail alert: " + ex.Message, _logSource);
+                }
+            }
+
+            if (_settings.Telegram.AlertsEnabled)
+            {
+                try
+                {
+                    await _telegramService.SendMessageAsync(report);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError("Error telegram mail alert: " + ex.Message, _logSource);
                 }
             }
         }

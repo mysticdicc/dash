@@ -16,11 +16,11 @@ namespace DashLib.Models.Settings
         {
             get
             {
-                return IP.ConvertToString(PrimaryDnsServerAsByte);
+                return IpMonitoringTarget.ConvertToString(PrimaryDnsServerAsByte);
             }
             set
             {
-                PrimaryDnsServerAsByte = IP.ConvertToByte(value);
+                PrimaryDnsServerAsByte = IpMonitoringTarget.ConvertToByte(value);
             }
         }
         public int PrimaryDnsPort { get; set; }
@@ -29,20 +29,20 @@ namespace DashLib.Models.Settings
         {
             get
             {
-                return IP.ConvertToString(SecondaryDnsServerAsByte);
+                return IpMonitoringTarget.ConvertToString(SecondaryDnsServerAsByte);
             }
             set
             {
-                SecondaryDnsServerAsByte = IP.ConvertToByte(value);
+                SecondaryDnsServerAsByte = IpMonitoringTarget.ConvertToByte(value);
             }
         }
         public int SecondaryDnsPort { get; set; }
 
         public SubnetSettings()
         {
-            PrimaryDnsServerAsByte = IP.ConvertToByte("1.1.1.1");
+            PrimaryDnsServerAsByte = IpMonitoringTarget.ConvertToByte("1.1.1.1");
             PrimaryDnsPort = 53;
-            SecondaryDnsServerAsByte = IP.ConvertToByte("8.8.8.8");
+            SecondaryDnsServerAsByte = IpMonitoringTarget.ConvertToByte("8.8.8.8");
             SecondaryDnsPort = 53;
         }
 

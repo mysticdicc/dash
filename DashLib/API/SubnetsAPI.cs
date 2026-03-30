@@ -64,12 +64,12 @@ namespace DashLib.DankAPI
             }
         }
 
-        public async Task<IP> GetIpByIdAsync(int ID)
+        public async Task<IpMonitoringTarget> GetIpByIdAsync(int ID)
         {
             string endpoint = $"{_baseEndpoint}/ips/get/byid?ID={ID}";
             try
             {
-                var result = await RequestHandler.GetFromJsonAsync<IP>(_httpClient, endpoint);
+                var result = await RequestHandler.GetFromJsonAsync<IpMonitoringTarget>(_httpClient, endpoint);
                 if (result is null)
                     throw new InvalidOperationException("No IPs found.");
                 return result;
@@ -80,12 +80,12 @@ namespace DashLib.DankAPI
             }
         }
 
-        public async Task<List<IP>> GetAllIpsAsync()
+        public async Task<List<IpMonitoringTarget>> GetAllIpsAsync()
         {
             string endpoint = $"{_baseEndpoint}/ips/get/all";
             try
             {
-                var result = await RequestHandler.GetFromJsonAsync<List<IP>>(_httpClient, endpoint);
+                var result = await RequestHandler.GetFromJsonAsync<List<IpMonitoringTarget>>(_httpClient, endpoint);
                 if (result is null)
                     throw new InvalidOperationException("No IPs found.");
                 return result;
@@ -128,7 +128,7 @@ namespace DashLib.DankAPI
             }
         }
 
-        public async Task<bool> EditIpAsync(IP ip)
+        public async Task<bool> EditIpAsync(IpMonitoringTarget ip)
         {
             string endpoint = $"{_baseEndpoint}/ip/put/update";
             try
@@ -193,7 +193,7 @@ namespace DashLib.DankAPI
             }
         }
 
-        public async Task<bool> DeleteIpByObjectAsync(IP ip)
+        public async Task<bool> DeleteIpByObjectAsync(IpMonitoringTarget ip)
         {
             string endpoint = $"{_baseEndpoint}/ip/delete/byobject";
 
@@ -212,7 +212,7 @@ namespace DashLib.DankAPI
 
         public async Task<bool> ReplaceAllSubnetsAsync(List<Subnet> subnets) 
         {
-            List<IP> oldIps = [];
+            List<IpMonitoringTarget> oldIps = [];
             List<Subnet> oldSubnets = [];
 
             bool success = true;

@@ -31,7 +31,8 @@ namespace DashLib.Models
             DiscoveryService,
             ApiController,
             LoggingService,
-            CleanupService
+            CleanupService,
+            MailService
         }
         public LogSource Source { get; set; }
         

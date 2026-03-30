@@ -15,12 +15,14 @@ namespace web.Controllers
         private readonly TelegramService _telegramService;
         private readonly DiscordService _discordService;
         private readonly DiscoveryService _discoveryService;
+        private readonly MailService _mailService;
         public SettingsController(
             MonitorService monitorService, 
             SettingsService settingsService,
             TelegramService telegramService,
             DiscordService discordService,
-            DiscoveryService discoveryService
+            DiscoveryService discoveryService,
+            MailService mailService
             )
         {
             _monitorService = monitorService;
@@ -28,6 +30,7 @@ namespace web.Controllers
             _telegramService = telegramService;
             _discordService = discordService;
             _discoveryService = discoveryService;
+            _mailService = mailService;
         }
 
         [HttpGet]

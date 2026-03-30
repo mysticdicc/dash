@@ -9,7 +9,7 @@ namespace web.Data.Repos
     {
         private readonly IDbContextFactory<DashDbContext> _dbFactory = dbContext;
 
-        public async Task<bool> AddNewIpAsync(IP ip)
+        public async Task<bool> AddNewIpAsync(IpMonitoringTarget ip)
         {
             using var ctx = await _dbFactory.CreateDbContextAsync();
             await ctx.IPs.AddAsync(ip);
@@ -27,7 +27,7 @@ namespace web.Data.Repos
             return rows > 0;
         }
 
-        public async Task<bool> DeleteIpAsync(IP ip)
+        public async Task<bool> DeleteIpAsync(IpMonitoringTarget ip)
         {
             using var ctx = await _dbFactory.CreateDbContextAsync();
             var entity = await ctx.IPs.FirstOrDefaultAsync(x => x.ID == ip.ID);
@@ -53,7 +53,7 @@ namespace web.Data.Repos
             return rows > 0;
         }
 
-        public async Task<IReadOnlyList<IP>> GetAllIpsAsync()
+        public async Task<IReadOnlyList<IpMonitoringTarget>> GetAllIpsAsync()
         {
             using var ctx = await _dbFactory.CreateDbContextAsync();
             var ips = await ctx.IPs.ToListAsync();
@@ -67,7 +67,7 @@ namespace web.Data.Repos
             return subnets;
         }
 
-        public async Task<IP> GetIpByIdAsync(int id)
+        public async Task<IpMonitoringTarget> GetIpByIdAsync(int id)
         {
             using var ctx = await _dbFactory.CreateDbContextAsync();
             var ip = await ctx.IPs.FirstOrDefaultAsync(x => x.ID == id);
@@ -113,7 +113,7 @@ namespace web.Data.Repos
             return rows > 0;
         }
 
-        public async Task<bool> UpdateIpAsync(IP ip)
+        public async Task<bool> UpdateIpAsync(IpMonitoringTarget ip)
         {
             using var ctx = await _dbFactory.CreateDbContextAsync();
             var entity = await ctx.IPs.FirstOrDefaultAsync(x => x.ID == ip.ID);

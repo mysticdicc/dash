@@ -5,7 +5,7 @@
 
 <div id="statusdashcard">
     @if (null != ipAddress) {
-        @IP.ConvertToString(ipAddress.Address)
+        @IpMonitoringTarget.ConvertToString(ipAddress.Address)
         <br />
     }
     @if (_dateString != string.Empty)
@@ -21,7 +21,7 @@
     private System.Timers.Timer? _timer;
     private bool currentStatus = false;
     private string _dateString = string.Empty;
-    private IP? ipAddress;
+    private IpMonitoringTarget? ipAddress;
 
     protected override async Task OnInitializedAsync()
     {

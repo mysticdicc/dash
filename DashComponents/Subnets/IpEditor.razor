@@ -7,7 +7,7 @@
         <div class="faded_background">
             <div class="ip_editor">
                 <header>
-                    <span><strong>@IP.ConvertToString(_ipAddress.Address)</strong></span>
+                    <span><strong>@IpMonitoringTarget.ConvertToString(_ipAddress.Address)</strong></span>
                     <button id="cancelbutton" onclick="@OnClickCancel">
                         <span class="material-icons">cancel</span>
                     </button>
@@ -78,8 +78,8 @@
 }
 
 @code {
-    [Parameter] public required IP IpAddress { get; set; }
-    private IP? _ipAddress;
+    [Parameter] public required IpMonitoringTarget IpAddress { get; set; }
+    private IpMonitoringTarget? _ipAddress;
     private string _portsMonitoredString = string.Empty;
 
     [Parameter] public required bool EditorVisible { get; set;}

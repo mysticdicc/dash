@@ -47,7 +47,7 @@ namespace web.Client.Services
             try
             {
                 await _subnetsAPI.UpdateSubnetByObjectAsync(subnet);
-                _notificationService.ShowAsync("Updated subnet", $"Subnet {IP.ConvertToString(subnet.Address)} has been updated.");
+                _notificationService.ShowAsync("Updated subnet", $"Subnet {IpMonitoringTarget.ConvertToString(subnet.Address)} has been updated.");
 
                 return true;
             }
@@ -58,7 +58,7 @@ namespace web.Client.Services
             }
         }
 
-        public async Task<IP> GetIpByIdAsync(int ID)
+        public async Task<IpMonitoringTarget> GetIpByIdAsync(int ID)
         {
             try
             {
@@ -71,7 +71,7 @@ namespace web.Client.Services
             }
         }
 
-        public async Task<List<IP>> GetAllIpsAsync()
+        public async Task<List<IpMonitoringTarget>> GetAllIpsAsync()
         {
             try
             {
@@ -114,7 +114,7 @@ namespace web.Client.Services
             }
         }
 
-        public async Task<bool> EditIpAsync(IP ip)
+        public async Task<bool> EditIpAsync(IpMonitoringTarget ip)
         {
             try
             {
@@ -162,7 +162,7 @@ namespace web.Client.Services
             }
         }
 
-        public async Task<bool> DeleteIpByObjectAsync(IP ip)
+        public async Task<bool> DeleteIpByObjectAsync(IpMonitoringTarget ip)
         {
             try
             {

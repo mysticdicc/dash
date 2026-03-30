@@ -80,9 +80,9 @@ public class MonitorStatesTest : BunitContext
     {
         var (cut, api) = CreateStandardComponent(Services, true);
         var callbackInvoked = false;
-        IP? callbackIp = null;
+        IpMonitoringTarget? callbackIp = null;
 
-        cut.Render(parameters => parameters.Add(p => p.ViewClicked, EventCallback.Factory.Create<IP>(this, ip =>
+        cut.Render(parameters => parameters.Add(p => p.ViewClicked, EventCallback.Factory.Create<IpMonitoringTarget>(this, ip =>
         {
             callbackInvoked = true;
             callbackIp = ip;
@@ -101,9 +101,9 @@ public class MonitorStatesTest : BunitContext
     {
         var (cut, api) = CreateStandardComponent(Services, true);
         var callbackInvoked = false;
-        IP? callbackIp = null;
+        IpMonitoringTarget? callbackIp = null;
 
-        cut.Render(parameters => parameters.Add(p => p.EditClicked, EventCallback.Factory.Create<IP>(this, ip =>
+        cut.Render(parameters => parameters.Add(p => p.EditClicked, EventCallback.Factory.Create<IpMonitoringTarget>(this, ip =>
         {
             callbackInvoked = true;
             callbackIp = ip;
@@ -121,9 +121,9 @@ public class MonitorStatesTest : BunitContext
     {
         var (cut, api) = CreateStandardComponent(Services, true);
         var callbackInvoked = false;
-        IP? callbackIp = null;
+        IpMonitoringTarget? callbackIp = null;
 
-        cut.Render(parameters => parameters.Add(p => p.HistoryClicked, EventCallback.Factory.Create<IP>(this, ip =>
+        cut.Render(parameters => parameters.Add(p => p.HistoryClicked, EventCallback.Factory.Create<IpMonitoringTarget>(this, ip =>
         {
             callbackInvoked = true;
             callbackIp = ip;

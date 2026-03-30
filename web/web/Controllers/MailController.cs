@@ -14,9 +14,10 @@ using web.Services;
 namespace web.Controllers
 {
     [ApiController]
-    public class MailController(IDbContextFactory<DashDbContext> dbContext) : Controller
+    public class MailController(IDbContextFactory<DashDbContext> dbContext, web.Services.MailService mailService) : Controller
     {
         private readonly IDbContextFactory<DashDbContext> _dbFactory = dbContext;
+        private readonly web.Services.MailService _mailService = mailService;
 
         private MimeMessage CreateMessage(string title, string body)
         {
@@ -59,80 +60,16 @@ namespace web.Controllers
 
         [HttpGet]
         [Route("[controller]/v1/send/test")]
-        public async Task<Results<BadRequest<string>, Ok<string>>> SendTestEmail()
+        public async Task<IActionResult> SendTestEmail()
         {
-            var message = CreateMessage("Test Email", "Test body text");
-            using var client = ConnectMail();
-            
-            try
+            try 
             {
-                await client.SendAsync(message);
-                client.Disconnect(true);
-                return TypedResults.Ok("success");
+                await _mailService.SendMailAsync("Test email", "body text");
+                return Ok();
             }
             catch (Exception ex)
             {
-                return TypedResults.BadRequest(ex.Message);
-            }
-        }
-
-        [HttpPost]
-        [Route("[controller]/v1/send/downtimealert")]
-        public async Task<Results<BadRequest<string>, Ok<List<IP>>>> SendDowntimeAlerts(List<IP> ipList)
-        {
-            var settings = AllSettings.GetCurrentSettingsFile(AllSettings.SettingsPath);
-
-            using var client = ConnectMail();
-            using var context = _dbFactory.CreateDbContext();
-
-            var oldDate = DateTime.UtcNow.AddMinutes(-60);
-            bool send = false;
-
-            string body = string.Empty;
-            
-            if (settings != null)
-            {
-                body = $"<h2>Downtime Alert</h2><p>The following have been down for more than {settings.MonitoringSettings.AlertIfDownForPercent}% of the last {settings.MonitoringSettings.AlertTimePeriodInMinutes} minutes::</p><ul>";
-                oldDate = DateTime.UtcNow.AddMinutes(-settings.MonitoringSettings.AlertAgainAfterInMinutes);
-            }
-            else
-            {
-                body = "<h2>Downtime Alert</h2><p>The following have been down for more than 50% of the last hour::</p><ul>";
-            }
-
-                
-            foreach (var ip in ipList)
-            {
-                if (ip.LastAlertSent < oldDate)
-                {
-                    body += $"<li>{IP.ConvertToString(ip.Address)}</li>";
-                    send = true;
-
-                    var dbIp = context.IPs.Find(ip.ID);
-                    if (dbIp != null)
-                    {
-                        dbIp.LastAlertSent = DateTime.UtcNow;
-                        context.IPs.Update(dbIp);
-                    }
-                }
-                
-            }
-            body += "</ul>";
-
-            var message = CreateMessage("Downtime Alert", body);
-
-            try
-            {
-                if (send)
-                {
-                    await client.SendAsync(message);
-                    await context.SaveChangesAsync();
-                }
-                return TypedResults.Ok(ipList);
-            }
-            catch (Exception ex)
-            {
-                return TypedResults.BadRequest(ex.Message);
+                return Problem(ex.Message);
             }
         }
     }

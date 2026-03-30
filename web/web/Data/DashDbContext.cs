@@ -26,13 +26,21 @@ public partial class DashDbContext : DbContext
     public virtual DbSet<DirectoryItem> DirectoryItems { get; set; }
     public virtual DbSet<ClockWidget> ClockWidgets { get; set; }
     public virtual DbSet<DeviceStatusWidget> DeviceStatusWidgets { get; set; }
-    public virtual DbSet<IP> IPs { get; set; }
-    public virtual DbSet<Subnet> Subnets { get; set; }
-    public virtual DbSet<MonitorState> MonitorStates { get; set; }
-    public virtual DbSet<PingState> PingStates { get; set; } 
+    public virtual DbSet<IpMonitoringTarget> IpTargets { get; set; }
+    public virtual DbSet<DnsMonitoringTarget> DnsTargets { get; set; }
+    public virtual DbSet<Subnet> SubnetContainers { get; set; }
+    public virtual DbSet<DnsContainer> DnsContainers { get; set; }
+    public virtual DbSet<PortState> PortStates { get; set; }
+    public virtual DbSet<PingState> PingStates { get; set; }
     public virtual DbSet<LogEntry> LogEntries { get; set; }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.HasSequence<int>("MonitoringTargetSequence");
+
+        modelBuilder.Entity<BaseMonitoringTarget>()
+            .UseTpcMappingStrategy();
+
         modelBuilder.Entity<Asset>(entity =>
         {
             entity
@@ -126,14 +134,16 @@ public partial class DashDbContext : DbContext
             entity.HasMany<ShortcutItem>(e => e.Children).WithOne(e => e.Parent);
         });
 
-        modelBuilder.Entity<IP>(entity =>
+        modelBuilder.Entity<IpMonitoringTarget>(entity =>
         {
             entity.ToTable("ips");
+            entity.Property(e => e.Id)
+                .HasDefaultValueSql("NEXT VALUE FOR MonitoringTargetSequence");
 
-            entity.HasIndex(e => e.ID);
-            entity.HasKey(e => e.ID);
+            entity.HasIndex(e => e.Id);
+            entity.HasKey(e => e.Id);
             entity.HasIndex(e => e.Address).IsUnique();
-            entity.Property(e => e.ID);
+            entity.Property(e => e.Id);
             entity.Property(e => e.Address)
                 .IsRequired()
                 .HasMaxLength(4)
@@ -141,26 +151,59 @@ public partial class DashDbContext : DbContext
             entity.Property(e => e.Hostname)
                 .HasMaxLength(100)
                 .IsUnicode(false);
-            entity.Property(e => e.SubnetID);
-            entity.Property(e => e.IsMonitoredICMP);
-            entity.Property(e => e.IsMonitoredTCP);
-            entity.Property(e => e.PortsMonitored);
+            entity.Property(e => e.ParentId).IsRequired();
+            entity.Property(e => e.IsMonitoredIcmp).IsRequired();
+            entity.Property(e => e.IsMonitoredTcp).IsRequired();
+            entity.Property(e => e.TcpPortsMonitored).IsRequired();
 
-            entity.HasMany(e => e.MonitorStateList)
-                .WithOne(e => e.IP)
-                .HasForeignKey(e => e.IP_ID)
-                .HasPrincipalKey(e => e.ID);
-            
+            entity.HasMany(e => e.TcpMonitorStates)
+                .WithOne(e => (IpMonitoringTarget)e.Target)
+                .HasForeignKey(e => e.TargetId)
+                .HasPrincipalKey(e => e.Id);
 
+            entity.HasMany(e => e.IcmpMonitorStates)
+                .WithOne(e => (IpMonitoringTarget)e.Target)
+                .HasForeignKey(e => e.TargetId)
+                .HasPrincipalKey(e => e.Id);
+
+        });
+
+        modelBuilder.Entity<DnsMonitoringTarget>(entity =>
+        {
+            entity.ToTable("dns");
+            entity.Property(e => e.Id)
+                .HasDefaultValueSql("NEXT VALUE FOR MonitoringTargetSequence");
+
+            entity.HasIndex(e => e.Id);
+            entity.HasKey(e => e.Id);
+            entity.HasIndex(e => e.Address).IsUnique();
+            entity.Property(e => e.Id);
+            entity.Property(e => e.Address)
+                .IsRequired()
+                .HasMaxLength(512);
+            entity.Property(e => e.Hostname)
+                .HasMaxLength(100)
+                .IsUnicode(false);
+            entity.Property(e => e.ParentId).IsRequired();
+
+            entity.HasMany(e => e.TcpMonitorStates)
+                .WithOne(e => (DnsMonitoringTarget)e.Target)
+                .HasForeignKey(e => e.TargetId)
+                .HasPrincipalKey(e => e.Id);
+
+            entity.HasMany(e => e.IcmpMonitorStates)
+                .WithOne(e => (DnsMonitoringTarget)e.Target)
+                .HasForeignKey(e => e.TargetId)
+                .HasPrincipalKey(e => e.Id);
         });
 
         modelBuilder.Entity<Subnet>(entity =>
         {
-            entity.ToTable("subnets");
+            entity.ToTable("subnet_containers");
 
-            entity.HasIndex(e => e.ID);
+            entity.HasIndex(e => e.Id);
 
-            entity.Property(e => e.ID);
+            entity.Property(e => e.Id);
             entity.Property(e => e.EndAddress)
                 .IsRequired()
                 .HasMaxLength(4)
@@ -178,52 +221,47 @@ public partial class DashDbContext : DbContext
                 .HasMaxLength(4)
                 .IsFixedLength();
 
-            entity.HasMany(e => e.List)
-                .WithOne(e => e.Subnet)
-                .HasForeignKey(e => e.SubnetID)
-                .HasPrincipalKey(e => e.ID);
+            entity.HasMany(e => e.Children)
+                .WithOne(e => e.Parent)
+                .HasForeignKey(e => e.ParentId)
+                .HasPrincipalKey(e => e.Id);
         });
 
-        modelBuilder.Entity<MonitorState>(entity =>
+        modelBuilder.Entity<DnsContainer>(entity =>
         {
-            entity.ToTable("monitoring");
+            entity.ToTable("dns_containers");
 
-            entity.HasIndex(e => e.ID);
+            entity.HasIndex(e => e.Id);
+            entity.Property(e => e.Id);
+            entity.Property(e => e.DisplayName).IsRequired().HasMaxLength(100);
 
-            entity.Property(e => e.ID);
-            entity.Property(e => e.IP_ID);
-            entity.Property(e => e.SubmitTime).HasColumnType("DateTime");
-
-            entity.HasOne(e => e.PingState)
-                .WithOne(e => e.MonitorState);
-
-            entity.HasMany(e => e.PortState)
-                .WithOne(e => e.MonitorState)
-                .HasForeignKey(e => e.MonitorID)
-                .HasPrincipalKey(e => e.ID);
+            entity.HasMany(e => e.Children)
+                .WithOne(e => e.Parent)
+                .HasForeignKey(e => e.ParentId)
+                .HasPrincipalKey(e => e.Id);
         });
 
         modelBuilder.Entity<PortState>(entity =>
         {
             entity.ToTable("monitoring_ports");
 
-            entity.HasIndex(e => e.ID);
-
-            entity.Property(e => e.ID);
-            entity.Property(e => e.MonitorID);
-            entity.Property(e => e.Port);
-            entity.Property(e => e.Status);
+            entity.HasIndex(e => e.Id);
+            entity.Property(e => e.Id);
+            entity.Property(e => e.TargetId).IsRequired();
+            entity.Property(e => e.Timestamp).IsRequired();
+            entity.Property(e => e.TargetPort).IsRequired().HasMaxLength(8);
+            entity.Property(e => e.Response).IsRequired();
         });
 
         modelBuilder.Entity<PingState>(entity =>
         {
             entity.ToTable("monitoring_ping");
 
-            entity.HasIndex(e => e.ID);
-
-            entity.Property(e => e.ID);
-            entity.Property(e => e.MonitorID);
-            entity.Property(e => e.Response);
+            entity.HasIndex(e => e.Id);
+            entity.Property(e => e.Id);
+            entity.Property(e => e.TargetId).IsRequired();
+            entity.Property(e => e.Timestamp).IsRequired();
+            entity.Property(e => e.Response).IsRequired();
         });
 
         modelBuilder.Entity<LogEntry>(entity =>

@@ -95,8 +95,8 @@
 
 
 @code {
-    [Parameter] public required List<IP>? IPAddresses { get; set; }
-    [Parameter] public required EventCallback<List<IP>?> IPAddressesChanged { get; set; }
+    [Parameter] public required List<IpMonitoringTarget>? IPAddresses { get; set; }
+    [Parameter] public required EventCallback<List<IpMonitoringTarget>?> IPAddressesChanged { get; set; }
     [Parameter] public required bool Visible { get; set; }
     [Parameter] public required EventCallback<bool> VisibleChanged { get; set; }
     [Parameter] public required EventCallback<string> ExpandChanged { get; set; }

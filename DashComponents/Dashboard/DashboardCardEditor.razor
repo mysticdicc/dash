@@ -104,7 +104,7 @@
                                         <select @bind="@deviceStatusWidget.IP_ID">
                                             @foreach (var ip in ips)
                                             {
-                                                <option value="@ip.ID">@IP.ConvertToString(ip.Address)</option>
+                                                <option value="@ip.ID">@IpMonitoringTarget.ConvertToString(ip.Address)</option>
                                             }
                                         </select>
                                     </td>
@@ -193,7 +193,7 @@
 
     [Parameter] public required DashboardItemBase Item { get; set; }
     private DashboardItemBase _dashboardItem;
-    private List<IP> ips = [];
+    private List<IpMonitoringTarget> ips = [];
 
     private WidgetItem.WidgetType _widgetType = WidgetItem.WidgetType.Clock;
 

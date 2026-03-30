@@ -172,7 +172,7 @@ namespace web.Controllers
 
         [HttpPost]
         [Route("[controller]/v2/ip/post/new")]
-        public async Task<IActionResult> AddIP(IP ip)
+        public async Task<IActionResult> AddIP(IpMonitoringTarget ip)
         {
             try
             {
@@ -210,7 +210,7 @@ namespace web.Controllers
 
         [HttpPut]
         [Route("[controller]/v2/ip/put/update")]
-        public async Task<IActionResult> UpdateIP(IP ip)
+        public async Task<IActionResult> UpdateIP(IpMonitoringTarget ip)
         {
             try
             {
@@ -248,7 +248,7 @@ namespace web.Controllers
 
         [HttpDelete]
         [Route("[controller]/v2/ip/delete/byobject")]
-        public async Task<IActionResult> DeleteIPByObject(IP ip)
+        public async Task<IActionResult> DeleteIPByObject(IpMonitoringTarget ip)
         {
             try
             {
