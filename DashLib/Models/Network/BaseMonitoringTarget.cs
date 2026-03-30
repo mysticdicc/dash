@@ -47,8 +47,5 @@ namespace DashLib.Models.Network
             TcpMonitorStates = [];
             IcmpMonitorStates = [];
         }
-
-        public abstract Task<PingState> IcmpTestAsync(BaseMonitoringTarget target);
-        public abstract Task<List<PortState>> TcpTestAsync(BaseMonitoringTarget target);
     }
 }

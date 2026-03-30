@@ -15,7 +15,7 @@ using System.Net.Sockets;
 
 namespace DashLib.Models.Network
 {
-    public class IpMonitoringTarget : BaseMonitoringTarget
+    public class IpMonitoringTarget : BaseMonitoringTarget, IMonitoringTarget<IpMonitoringTarget>
     {
         public IpMonitoringTarget() : base()
         {
@@ -74,60 +74,46 @@ namespace DashLib.Models.Network
             return _ip;
         }
 
-        public override async Task<PingState> IcmpTestAsync(BaseMonitoringTarget target)
+        public async Task<PingState> IcmpTestAsync()
         {
-            if (target is IpMonitoringTarget ip)
+            var pingState = new PingState(this);
+            using var ping = new Ping();
+            try
             {
-                var pingState = new PingState(ip);
-                using var ping = new Ping();
+                pingState.Response = (ping.Send(new IPAddress(this.Address)).Status == IPStatus.Success);
+            }
+            catch
+            {
+                pingState.Response = false;
+            }
+            return pingState;
+        }
+
+        public async Task<List<PortState>> TcpTestAsync()
+        {
+            using var client = new TcpClient();
+            var list = new List<PortState>();
+            var address = new IPAddress(this.Address);
+            var ts = DateTime.Now;
+
+            foreach (var port in this.TcpPortsMonitored)
+            {
+                var state = new PortState(this, ts, port);
+
                 try
                 {
-                    pingState.Response = (ping.Send(new IPAddress(ip.Address)).Status == IPStatus.Success);
+                    await client.ConnectAsync(address, port);
+                    state.Response = true;
                 }
                 catch
                 {
-                    pingState.Response = false;
-                }
-                return pingState;
-            } 
-            else
-            {
-                throw new InvalidCastException("IpMonitoringTarget is required as argument.");
-            }
-        }
-
-        public override async Task<List<PortState>> TcpTestAsync(BaseMonitoringTarget target)
-        {
-            if (target is IpMonitoringTarget ip)
-            {
-                using var client = new TcpClient();
-                var list = new List<PortState>();
-                var address = new IPAddress(ip.Address);
-                var ts = DateTime.Now;
-
-                foreach (var port in ip.TcpPortsMonitored)
-                {
-                    var state = new PortState(ip, ts, port);
-
-                    try
-                    {
-                        await client.ConnectAsync(address, port);
-                        state.Response = true;
-                    }
-                    catch
-                    {
-                        state.Response = false;
-                    }
-
-                    list.Add(state);
+                    state.Response = false;
                 }
 
-                return list;
+                list.Add(state);
             }
-            else
-            {
-                throw new InvalidCastException("IpMonitoringTarget is required as argument.");
-            }
+
+            return list;
         }
     }
 }

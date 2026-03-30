@@ -1,4 +1,5 @@
-﻿using DashLib.Models.Monitoring;
+﻿using DashLib.Interfaces.Monitoring;
+using DashLib.Models.Monitoring;
 using System;
 using System.Collections.Generic;
 using System.Net;
@@ -8,7 +9,7 @@ using System.Text;
 
 namespace DashLib.Models.Network
 {
-    public class DnsMonitoringTarget : BaseMonitoringTarget
+    public class DnsMonitoringTarget : BaseMonitoringTarget, IMonitoringTarget<DnsMonitoringTarget>
     {
         public DnsMonitoringTarget() : base()
         {
@@ -24,59 +25,45 @@ namespace DashLib.Models.Network
         new public DnsContainer Parent { get; set; }
         public string Address { get; set; }
 
-        public override async Task<PingState> IcmpTestAsync(BaseMonitoringTarget target)
+        public async Task<PingState> IcmpTestAsync()
         {
-            if (target is DnsMonitoringTarget dns)
+            var pingState = new PingState(this);
+            using var ping = new Ping();
+            try
             {
-                var pingState = new PingState(dns);
-                using var ping = new Ping();
+                pingState.Response = (ping.Send(this.Address).Status == IPStatus.Success);
+            }
+            catch
+            {
+                pingState.Response = false;
+            }
+            return pingState;
+        }
+
+        public async Task<List<PortState>> TcpTestAsync()
+        {
+            using var client = new TcpClient();
+            var list = new List<PortState>();
+            var ts = DateTime.Now;
+
+            foreach (var port in this.TcpPortsMonitored)
+            {
+                var state = new PortState(this, ts, port);
+
                 try
                 {
-                    pingState.Response = (ping.Send(dns.Address).Status == IPStatus.Success);
+                    await client.ConnectAsync(this.Address, port);
+                    state.Response = true;
                 }
                 catch
                 {
-                    pingState.Response = false;
-                }
-                return pingState;
-            }
-            else
-            {
-                throw new InvalidCastException("DnsMonitoringTarget is required as argument.");
-            }
-        }
-
-        public override async Task<List<PortState>> TcpTestAsync(BaseMonitoringTarget target)
-        {
-            if (target is DnsMonitoringTarget dns)
-            {
-                using var client = new TcpClient();
-                var list = new List<PortState>();
-                var ts = DateTime.Now;
-
-                foreach (var port in dns.TcpPortsMonitored)
-                {
-                    var state = new PortState(dns, ts, port);
-
-                    try
-                    {
-                        await client.ConnectAsync(dns.Address, port);
-                        state.Response = true;
-                    }
-                    catch
-                    {
-                        state.Response = false;
-                    }
-
-                    list.Add(state);
+                    state.Response = false;
                 }
 
-                return list;
+                list.Add(state);
             }
-            else
-            {
-                throw new InvalidCastException("DnsMonitoringTarget is required as argument.");
-            }
+
+            return list;
         }
     }
 }

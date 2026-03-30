@@ -7,7 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Text.Json.Serialization;
 using DashLib.Models.Network;
-using DashLib.Interfaces.Network;
+using DashLib.Interfaces.Monitoring;
 
 namespace DashLib.Models.Monitoring
 {
@@ -16,34 +16,19 @@ namespace DashLib.Models.Monitoring
         public PingState(BaseMonitoringTarget target) : base(target) { }
         public PingState(BaseMonitoringTarget target, DateTime timeStamp) : base(target, timeStamp) { }
 
-        static public List<PingState> GetMonitorStatesFromListDns(List<DnsMonitoringTarget> dnsMonitoringTargets)
+        static public List<PingState> GetAllMonitorStatesFromListMonitoringTargets(List<BaseMonitoringTarget> baseTargets)
         {
-            var states = dnsMonitoringTargets.SelectMany(x => x.IcmpMonitorStates).ToList();
+            var states = baseTargets.SelectMany(x => x.IcmpMonitorStates).ToList();
             return states ?? [];
         }
 
-        static public List<PingState> GetMonitorStatesFromListIp(List<IpMonitoringTarget> ipMonitoringTargets)
+        static public List<PingState> GetMostRecentStatesFromListMonitoringTargets(List<BaseMonitoringTarget> baseTargets)
         {
-            var states = ipMonitoringTargets.SelectMany(x => x.IcmpMonitorStates).ToList();
-            return states ?? [];
-        }
-
-        static public List<PingState> GetMostRecentStatesFromListDns(List<DnsMonitoringTarget> dnsMonitoringTargets)
-        {
-            var state = dnsMonitoringTargets.SelectMany(x => x.IcmpMonitorStates)
-                .OrderByDescending(x => x.Timestamp)
-                .First();
-
-            return [state];
-        }
-
-        static public List<PingState> GetMostRecentStatesFromListIp(List<IpMonitoringTarget> ipMonitoringTargets)
-        {
-            var state = ipMonitoringTargets.SelectMany(x => x.IcmpMonitorStates)
-                .OrderByDescending(x => x.Timestamp)
-                .First();
-
-            return [state];
+            return baseTargets.SelectMany(x => x.IcmpMonitorStates)
+                .GroupBy(x => x.Id)
+                .Select(x => x.MaxBy(x => x.Timestamp))
+                .Where(x => x != null)
+                .ToList()!;
         }
     }
 }

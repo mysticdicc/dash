@@ -1,4 +1,4 @@
-﻿using DashLib.Interfaces.Network;
+﻿using DashLib.Interfaces.Monitoring;
 using DashLib.Models.Network;
 using System;
 using System.Collections.Generic;
@@ -29,31 +29,15 @@ namespace DashLib.Models.Monitoring
             TargetPort = port;
         }
 
-        static public List<PortState> GetMonitorStatesFromListIp(List<IpMonitoringTarget> ipTargets)
+        static public List<PortState> GetAllMonitorStatesFromListMonitoringTargets(List<BaseMonitoringTarget> baseTargets)
         {
-            var states = ipTargets.SelectMany(x => x.TcpMonitorStates).ToList();
+            var states = baseTargets.SelectMany(x => x.TcpMonitorStates).ToList();
             return states ?? [];
         }
 
-        static public List<PortState> GetMonitorStatesFromListDns(List<DnsMonitoringTarget> dnsTargets)
+        static public List<PortState> GetMostRecentStatesFromListMonitoringTargets(List<BaseMonitoringTarget> baseTargets)
         {
-            var states = dnsTargets.SelectMany(x => x.TcpMonitorStates).ToList();
-            return states ?? [];
-        }
-
-        static public List<PortState> GetMostRecentStatesFromListIp(List<IpMonitoringTarget> ipMonitoringTargets)
-        {
-            return ipMonitoringTargets
-                .SelectMany(t => t.TcpMonitorStates)
-                .GroupBy(s => (s.TargetId, s.TargetPort))
-                .Select(g => g.MaxBy(x => x.Timestamp))
-                .Where(s => s != null)
-                .ToList()!;
-        }
-
-        static public List<PortState> GetMostRecentStatesFromListDns(List<DnsMonitoringTarget> dnsMonitoringTargets)
-        {
-            return dnsMonitoringTargets
+            return baseTargets
                 .SelectMany(t => t.TcpMonitorStates)
                 .GroupBy(s => (s.TargetId, s.TargetPort))
                 .Select(g => g.MaxBy(x => x.Timestamp))

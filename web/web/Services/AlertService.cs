@@ -53,6 +53,7 @@ namespace web.Services
                     do
                     {
                         var monitoredIps = await _monitoringApi.GetMonitoredIpsAsync();
+                        var monitoredDns = await _monitoringApi.GetAllMonitoredDnsAsync();
 
                         if (_settings.Monitoring.IcmpDownPercentAlertsEnabled) 
                             await IcmpDownOverTimeReportAsync(token, monitoredIps);
@@ -62,8 +63,6 @@ namespace web.Services
                             await TcpDownOverTimeReportAsync(token, monitoredIps);
                         if (_settings.Monitoring.TcpDownOnceAlertsEnabled)
                             await TcpDownOnceReportAsync(token, monitoredIps);
-
-                        var monitoredDns = await _monitoringApi.Get
 
                         _logger.LogInfo($"Alert service sleeping for {_settings.Monitoring.AlertIntervalInSeconds} seconds", _logSource);
                         await Task.Delay((_settings.Monitoring.AlertIntervalInSeconds * 1000), token);
@@ -81,15 +80,16 @@ namespace web.Services
             }
         }
 
-        private async Task IcmpDownOverTimeReportAsync(CancellationToken token, List<IpMonitoringTarget> allPolls)
+        private async Task IcmpDownOverTimeReportAsync(CancellationToken token, List<BaseMonitoringTarget> allPolls)
         {
             _logger.LogInfo("Icmp down over time report action running.", _logSource);
             var alertIps = new List<IpMonitoringTarget>();
+            var alertDns = new List<DnsMonitoringTarget>();
 
             foreach (var ip in allPolls)
             {
                 var list = new List<IpMonitoringTarget>() { ip };
-                var states = MonitorState.GetAllDevicePollsFromIps(list);
+                var states = PingState.GetMonitorStatesFromListIp(list);
 
                 var timespan = TimeSpan.FromMinutes(_alertEvalTimeInMinutes);
                 var oldDate = DateTime.UtcNow - timespan;
@@ -137,22 +137,22 @@ namespace web.Services
             }
         }
 
-        private async Task TcpDownOverTimeReportAsync(CancellationToken token, List<IP> allPolls)
+        private async Task TcpDownOverTimeReportAsync(CancellationToken token, List<IpMonitoringTarget> allPolls)
         {
 
         }
 
-        private async Task TcpDownOnceReportAsync(CancellationToken token, List<IP> allPolls)
+        private async Task TcpDownOnceReportAsync(CancellationToken token, List<IpMonitoringTarget> allPolls)
         {
 
         }
 
-        private async Task SendAlertsAsync(CancellationToken token, List<IP> alertIps, string message)
+        private async Task SendAlertsAsync(CancellationToken token, List<IpMonitoringTarget> alertIps, string message)
         {
 
         }
 
-        private async Task SendDowntimeAlertAsync(CancellationToken token, List<IP> alertIps)
+        private async Task SendDowntimeAlertAsync(CancellationToken token, List<IpMonitoringTarget> alertIps)
         {
             _logger.LogInfo($"Alert service submitting {alertIps.Count} IP addresses for alert consideration.", _logSource);
             var report = MonitorState.GetDowntimeAlertFromIps(alertIps);
