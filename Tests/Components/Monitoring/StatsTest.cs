@@ -11,9 +11,9 @@ using DashLib.Models.Monitoring;
 
 public class StatsTest : BunitContext
 {
-    public (IRenderedComponent<Stats>, Mock<IMonitoringAPI>) CreateStandardComponent(BunitServiceProvider services, bool visible)
+    public (IRenderedComponent<Stats>, Mock<IMonitorStatesAPI>) CreateStandardComponent(BunitServiceProvider services, bool visible)
     {
-        var monitoringApi = new Mock<IMonitoringAPI>();
+        var monitoringApi = new Mock<IMonitorStatesAPI>();
         services.AddSingleton(monitoringApi.Object);
 
         var subnet = new Subnet("192.168.0.0/24");

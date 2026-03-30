@@ -6,7 +6,7 @@ using System.Text;
 
 namespace DashLib.Interfaces.Monitoring
 {
-    public interface IMonitoringRepository
+    public interface IMonitorStateRepository
     {
         public Task<IReadOnlyList<IpMonitoringTarget>> GetMonitoredIpAndStatusAsync();
         public Task<IReadOnlyList<DnsMonitoringTarget>> GetMonitoredDnsAndStatusAsync();

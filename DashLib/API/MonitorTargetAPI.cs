@@ -2,23 +2,23 @@
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading.Tasks;
-using DashLib.Interfaces.Network;
+using DashLib.Interfaces.Monitoring;
 using DashLib.Models.Network;
 
 namespace DashLib.DankAPI
 {
-    public class SubnetsAPI : ISubnetsAPI
+    public class MonitorTargetAPI : IMonitorTargetAPI
     {
         private readonly HttpClient _httpClient;
         private readonly string _baseEndpoint;
 
-        public SubnetsAPI(HttpClient httpClient)
+        public MonitorTargetAPI(HttpClient httpClient)
         {
             _httpClient = httpClient;
-            _baseEndpoint = $"{httpClient.BaseAddress}subnets/v2";
+            _baseEndpoint = $"{httpClient.BaseAddress}monitortargets/v2";
         }
 
-        public async Task<bool> RunDiscoveryTaskAsync(Subnet subnet)
+        public async Task<bool> RunDiscoveryTaskAsync(SubnetContainer subnet)
         {
             string endpoint = $"{_baseEndpoint}/startdiscovery";
             try
@@ -32,7 +32,7 @@ namespace DashLib.DankAPI
             }
         }
 
-        public async Task<bool> AddSubnetByObjectAsync(Subnet subnet)
+        public async Task<bool> AddSubnetByObjectAsync(SubnetContainer subnet)
         {
             string endpoint = $"{_baseEndpoint}/new/byobject";
             try
@@ -48,7 +48,7 @@ namespace DashLib.DankAPI
             }
         }
 
-        public async Task<bool> UpdateSubnetByObjectAsync(Subnet subnet)
+        public async Task<bool> UpdateSubnetByObjectAsync(SubnetContainer subnet)
         {
             string endpoint = $"{_baseEndpoint}/update/byobject";
             try
@@ -96,12 +96,12 @@ namespace DashLib.DankAPI
             }
         }
 
-        public async Task<List<Subnet>> GetAllAsync()
+        public async Task<List<SubnetContainer>> GetAllAsync()
         {
             string endpoint = $"{_baseEndpoint}/get/all";
             try
             {
-                var result = await RequestHandler.GetFromJsonAsync<List<Subnet>>(_httpClient, endpoint);
+                var result = await RequestHandler.GetFromJsonAsync<List<SubnetContainer>>(_httpClient, endpoint);
                 if (result is null)
                     throw new InvalidOperationException("No subnets found.");
                 return result;
@@ -112,7 +112,7 @@ namespace DashLib.DankAPI
             }
         }
 
-        public async Task<bool> DeleteSubnetByObjectAsync(Subnet subnet)
+        public async Task<bool> DeleteSubnetByObjectAsync(SubnetContainer subnet)
         {
             string endpoint = $"{_baseEndpoint}/delete/byobject";
             try
@@ -160,7 +160,7 @@ namespace DashLib.DankAPI
             }
         }
 
-        public async Task<bool> DiscoveryUpdateAsync(Subnet subnet)
+        public async Task<bool> DiscoveryUpdateAsync(SubnetContainer subnet)
         {
             string endpoint = $"{_baseEndpoint}/subnet/post/discoveryupdate";
             try
@@ -176,13 +176,13 @@ namespace DashLib.DankAPI
             }
         }
 
-        public async Task<Subnet> GetSubnetByIdAsync(int ID)
+        public async Task<SubnetContainer> GetSubnetByIdAsync(int ID)
         {
             string endpoint = $"{_baseEndpoint}/get/byid?id={ID}";
 
             try
             {
-                var response = await RequestHandler.GetFromJsonAsync<Subnet>(_httpClient, endpoint);
+                var response = await RequestHandler.GetFromJsonAsync<SubnetContainer>(_httpClient, endpoint);
                 if (response == null)
                     throw new InvalidOperationException("Failed to receive subnet from endpoint.");
                 return response;
@@ -210,10 +210,10 @@ namespace DashLib.DankAPI
             }
         }
 
-        public async Task<bool> ReplaceAllSubnetsAsync(List<Subnet> subnets) 
+        public async Task<bool> ReplaceAllSubnetsAsync(List<SubnetContainer> subnets) 
         {
             List<IpMonitoringTarget> oldIps = [];
-            List<Subnet> oldSubnets = [];
+            List<SubnetContainer> oldSubnets = [];
 
             bool success = true;
 

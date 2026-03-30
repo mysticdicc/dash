@@ -20,11 +20,11 @@ namespace web.Services {
         private DiscordSocketClient _client;
         private TaskCompletionSource _readyTcs = new(TaskCreationOptions.RunContinuationsAsynchronously);
         private readonly SettingsService _settings;
-        private readonly MonitoringAPI _monitoringAPI;
+        private readonly MonitorStateAPI _monitoringAPI;
         private readonly LoggingService _logger;
         private static LogEntry.LogSource _logSource = LogEntry.LogSource.DiscordService;
 
-        public DiscordService(SettingsService settingsService, MonitoringAPI monitoringAPI, LoggingService logger)
+        public DiscordService(SettingsService settingsService, MonitorStateAPI monitoringAPI, LoggingService logger)
         {
             _settings = settingsService;
             _monitoringAPI = monitoringAPI;

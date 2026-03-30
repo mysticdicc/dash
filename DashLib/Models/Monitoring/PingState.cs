@@ -19,16 +19,49 @@ namespace DashLib.Models.Monitoring
         static public List<PingState> GetAllMonitorStatesFromListMonitoringTargets(List<BaseMonitoringTarget> baseTargets)
         {
             var states = baseTargets.SelectMany(x => x.IcmpMonitorStates).ToList();
-            return states ?? [];
+            return states;
+        }
+
+        public static List<PingState> GetAllMonitorStatesFromMonitoringTarget(BaseMonitoringTarget target)
+        {
+            return target.IcmpMonitorStates.ToList();
+        }
+
+        public static List<PingState> GetMostRecentStateFromMonitoringTarget(BaseMonitoringTarget target)
+        {
+            return target.IcmpMonitorStates
+                .GroupBy(x => x.TargetId)
+                .Select(x => x.MaxBy(x => x.Timestamp)!)
+                .ToList();
         }
 
         static public List<PingState> GetMostRecentStatesFromListMonitoringTargets(List<BaseMonitoringTarget> baseTargets)
         {
             return baseTargets.SelectMany(x => x.IcmpMonitorStates)
-                .GroupBy(x => x.Id)
-                .Select(x => x.MaxBy(x => x.Timestamp))
-                .Where(x => x != null)
-                .ToList()!;
+                .GroupBy(x => x.TargetId)
+                .Select(x => x.MaxBy(x => x.Timestamp)!)
+                .ToList();
+        }
+
+        static public float CalculateUptimePercentage(TimeSpan timeFromNow, List<PingState> states)
+        {
+            var oldDate = DateTime.UtcNow - timeFromNow;
+
+            var pingStates = states
+                .Where(x => x.Timestamp > oldDate)
+                .OrderBy(x => x.Timestamp)
+                .ToList();
+
+            int totalCount = pingStates.Count();
+            int upCount = pingStates.Where(x => x.Response == true).ToList().Count();
+
+            if (totalCount <= 0)
+            {
+                totalCount = 1;
+            }
+
+            float uptimePercent = (upCount / totalCount) * 100;
+            return uptimePercent;
         }
     }
 }

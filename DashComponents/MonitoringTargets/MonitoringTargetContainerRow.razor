@@ -1,4 +1,4 @@
-﻿@inject ISubnetsAPI SubnetService
+﻿@inject IMonitorTargetAPI SubnetService
 @inject IJSRuntime JSRuntime
 
 <tr id=@($"subcard-{_subnet.ID}") class="subnet_card" @onclick="@OnClickSubnetCard">
@@ -64,15 +64,15 @@
 }
 
 @code {
-    [Parameter] public required Subnet Subnet { get; set; }
-    private Subnet _subnet = default!;
+    [Parameter] public required SubnetContainer Subnet { get; set; }
+    private SubnetContainer _subnet = default!;
 
     [Parameter] public bool AdvancedViewEnabled { get; set; }
     [Parameter] public EventCallback<bool> AdvancedViewEnabledChanged { get; set; }
 
     [Parameter] public EventCallback<IpMonitoringTarget> OnEditIp { get; set; }
     [Parameter] public EventCallback<bool> OnDeleteIp { get; set; }
-    [Parameter] public EventCallback<Subnet> OnEditSubnet { get; set; }
+    [Parameter] public EventCallback<SubnetContainer> OnEditSubnet { get; set; }
     [Parameter] public EventCallback<bool> OnDeleteClicked { get; set;  }
 
     private IList<IpMonitoringTarget> _ipList = [];

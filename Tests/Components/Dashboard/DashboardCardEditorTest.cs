@@ -2,7 +2,6 @@ using Bunit;
 using DashComponents.Dashboard;
 using DashLib.Interfaces.Dashboard;
 using DashLib.Interfaces.Monitoring;
-using DashLib.Interfaces.Network;
 using DashLib.Models.Dashboard;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.JSInterop;
@@ -57,11 +56,11 @@ public class DashboardCardEditorTest : BunitContext
             .Returns(new ValueTask<object?>(result: null));
         services.AddSingleton<IJSRuntime>(jsRuntimeMock.Object);
 
-        var mockSubnets = new Mock<ISubnetsAPI>();
-        services.AddSingleton<ISubnetsAPI>(mockSubnets.Object);
+        var mockSubnets = new Mock<IMonitorTargetAPI>();
+        services.AddSingleton<IMonitorTargetAPI>(mockSubnets.Object);
 
-        var mockMonitoring = new Mock<IMonitoringAPI>();
-        services.AddSingleton<IMonitoringAPI>(mockMonitoring.Object);
+        var mockMonitoring = new Mock<IMonitorStatesAPI>();
+        services.AddSingleton<IMonitorStatesAPI>(mockMonitoring.Object);
 
         var list = new List<DirectoryItem> { folder };
 

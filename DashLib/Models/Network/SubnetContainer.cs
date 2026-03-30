@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace DashLib.Models.Network
 {
-    public class Subnet : BaseMonitoringTargetContainer
+    public class SubnetContainer : BaseMonitoringTargetContainer
     {
         [Key][DatabaseGenerated(DatabaseGeneratedOption.Identity)] public int Id { get; set; }
         public byte[] Address { get; set; }
@@ -19,9 +19,9 @@ namespace DashLib.Models.Network
         public byte[] EndAddress { get; set; }
         new public List<IpMonitoringTarget> Children { get; set; }
 
-        public Subnet() { }
+        public SubnetContainer() { }
 
-        public Subnet(string CIDR) : base()
+        public SubnetContainer(string CIDR) : base()
         {
             var subnet = IPAddressRange.Parse(CIDR);
 
@@ -48,7 +48,7 @@ namespace DashLib.Models.Network
             Children = temp;
         }
 
-        public static string GetCidrString(Subnet subnet)
+        public static string GetCidrString(SubnetContainer subnet)
         {
             var startAdr = IPAddress.Parse(IpMonitoringTarget.ConvertToString(subnet.StartAddress));
             var subMask = IPAddress.Parse(IpMonitoringTarget.ConvertToString(subnet.SubnetMask));

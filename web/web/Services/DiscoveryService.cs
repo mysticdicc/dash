@@ -28,7 +28,7 @@ namespace web.Services
             _semaphore = new(1, 1);
         }
 
-        public async Task<Subnet> ExecuteDiscoveryTasksAsync(Subnet subnet)
+        public async Task<SubnetContainer> ExecuteDiscoveryTasksAsync(SubnetContainer subnet)
         {
             await _semaphore.WaitAsync();
             _logger.LogInfo("Discovery task initiated.", _logSource);

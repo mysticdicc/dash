@@ -7,7 +7,7 @@ using web.Services;
 
 namespace web.Data.Repos
 {
-    public class MonitoringRepository(IDbContextFactory<DashDbContext> dbContext) : IMonitoringRepository
+    public class MonitorStateRepository(IDbContextFactory<DashDbContext> dbContext) : IMonitorStateRepository
     {
         private readonly IDbContextFactory<DashDbContext> _dbFactory = dbContext;
 

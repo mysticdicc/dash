@@ -7,7 +7,7 @@
 @using web.Client.Services
 @using System.Text.Json
 
-@inject ISubnetsAPI SubnetService
+@inject IMonitorTargetAPI SubnetService
 @inject IJSRuntime JSRuntime
 
 @page "/subtrackr/home"
@@ -62,7 +62,7 @@
                 </th>
                 <th/>
             </tr>
-            @foreach (Subnet subnet in SubnetList)
+            @foreach (SubnetContainer subnet in SubnetList)
             {
                 <SubnetCard Subnet="subnet" OnEditIp="@OnClickEditIP" OnEditSubnet="@OnClickEditSubnet" @bind-AdvancedViewEnabled="@_advancedViewEnabled" OnDeleteClicked="@OnDeleteClicked" OnDeleteIp="@OnDeleteClicked" />
             }
@@ -82,13 +82,13 @@
 )
 
 @code {
-    List<Subnet> SubnetList = [];
+    List<SubnetContainer> SubnetList = [];
     private bool _subnetEditorVisible = false;
     private bool _ipEditorVisible = false;
     private bool _isNewSubnet = false;
     private bool _advancedViewEnabled = true;
 
-    private Subnet? _editingSubnet = null;
+    private SubnetContainer? _editingSubnet = null;
     private IpMonitoringTarget? _editingIP = null;
 
     async protected override Task OnInitializedAsync()
@@ -98,7 +98,7 @@
         StateHasChanged();
     }
 
-    private void OnClickEditSubnet(Subnet subnet)
+    private void OnClickEditSubnet(SubnetContainer subnet)
     {
         _editingSubnet = subnet;
         _isNewSubnet = false;
@@ -114,7 +114,7 @@
     private void OnClickNewSubnet()
     {
         _isNewSubnet = true;
-        _editingSubnet = new Subnet("192.168.0.1/24");
+        _editingSubnet = new SubnetContainer("192.168.0.1/24");
         _subnetEditorVisible = true;
         StateHasChanged();
     }
@@ -124,7 +124,7 @@
         _advancedViewEnabled = !_advancedViewEnabled;
     }
 
-    private async void OnSubnetSaved(Subnet subnet)
+    private async void OnSubnetSaved(SubnetContainer subnet)
     {
         await Task.Delay(100);
         await OnInitializedAsync();
@@ -150,7 +150,7 @@
     async void OnClickUpload(InputFileChangeEventArgs eventArgs)
     {
         var str = await File.InputFileToString(eventArgs);
-        var items = JsonSerializer.Deserialize<List<Subnet>>(str, AllSettings.JsonOptions);
+        var items = JsonSerializer.Deserialize<List<SubnetContainer>>(str, AllSettings.JsonOptions);
 
         if (null != items && items.Count > 0)
         {

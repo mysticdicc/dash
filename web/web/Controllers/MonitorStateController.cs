@@ -17,9 +17,9 @@ using web.Services;
 namespace web.Controllers
 {
     [ApiController]
-    public class MonitoringController(IMonitoringRepository monitoringRepository, MonitorService monitor) : Controller
+    public class MonitorStateController(IMonitorStateRepository monitoringRepository, MonitorService monitor) : Controller
     {
-        private readonly IMonitoringRepository _dbRepo = monitoringRepository;
+        private readonly IMonitorStateRepository _dbRepo = monitoringRepository;
         private readonly MonitorService _monitorService = monitor;
 
         private static readonly JsonSerializerOptions JsonOptions = new()

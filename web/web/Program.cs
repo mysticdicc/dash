@@ -2,7 +2,6 @@ using dankweb.API;
 using DashLib.Interfaces.Dashboard;
 using DashLib.Interfaces.Logging;
 using DashLib.Interfaces.Monitoring;
-using DashLib.Interfaces.Network;
 using DashLib.Models.Monitoring;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Components;
@@ -31,8 +30,8 @@ builder.Services.AddSingleton<LoggingService>();
 
 SharedServices.Register(builder.Services, baseAddress);
 builder.Services.AddSingleton<ILoggingRepository, LoggingRepository>();
-builder.Services.AddSingleton<ISubnetRepository, SubnetRepository>();
-builder.Services.AddSingleton<IMonitoringRepository, MonitoringRepository>();
+builder.Services.AddSingleton<IMonitorTargetRepository, MonitorTargetRepository>();
+builder.Services.AddSingleton<IMonitorStateRepository, MonitorStateRepository>();
 builder.Services.AddSingleton<IDashboardRepository, DashboardRepository>();
 
 builder.Services.AddEndpointsApiExplorer();

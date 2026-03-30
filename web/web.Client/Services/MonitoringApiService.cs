@@ -7,9 +7,9 @@ using System.Diagnostics;
 
 namespace web.Client.Services
 {
-    public class MonitoringApiService(MonitoringAPI monitoringApi, NotificationService notificationService) : IMonitoringAPI
+    public class MonitoringApiService(MonitorStateAPI monitoringApi, NotificationService notificationService) : IMonitorStatesAPI
     {
-        private readonly MonitoringAPI _monitoringApi = monitoringApi;
+        private readonly MonitorStateAPI _monitoringApi = monitoringApi;
         private readonly NotificationService _notificationService = notificationService;
 
         async public Task<List<IpMonitoringTarget>> GetMonitoredIpsAsync()

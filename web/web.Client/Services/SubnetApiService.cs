@@ -1,16 +1,16 @@
 using DashLib.DankAPI;
-using DashLib.Interfaces.Network;
+using DashLib.Interfaces.Monitoring;
 using DashLib.Models.Network;
 using web.Client.Components;
 
 namespace web.Client.Services
 {
-    public class SubnetApiService(SubnetsAPI subnetsAPI, NotificationService notificationService) : ISubnetsAPI
+    public class SubnetApiService(MonitorTargetAPI subnetsAPI, NotificationService notificationService) : IMonitorTargetAPI
     {
-        private readonly SubnetsAPI _subnetsAPI = subnetsAPI;
+        private readonly MonitorTargetAPI _subnetsAPI = subnetsAPI;
         private readonly NotificationService _notificationService = notificationService;
 
-        public async Task<bool> RunDiscoveryTaskAsync(Subnet subnet)
+        public async Task<bool> RunDiscoveryTaskAsync(SubnetContainer subnet)
         {
             try
             {
@@ -25,7 +25,7 @@ namespace web.Client.Services
             }
         }
 
-        public async Task<bool> AddSubnetByObjectAsync(Subnet subnet)
+        public async Task<bool> AddSubnetByObjectAsync(SubnetContainer subnet)
         {
             try
             {
@@ -42,7 +42,7 @@ namespace web.Client.Services
             }
         }
 
-        public async Task<bool> UpdateSubnetByObjectAsync(Subnet subnet)
+        public async Task<bool> UpdateSubnetByObjectAsync(SubnetContainer subnet)
         {
             try
             {
@@ -84,7 +84,7 @@ namespace web.Client.Services
             }
         }
 
-        public async Task<List<Subnet>> GetAllAsync()
+        public async Task<List<SubnetContainer>> GetAllAsync()
         {
             try
             {
@@ -97,7 +97,7 @@ namespace web.Client.Services
             }
         }
 
-        public async Task<bool> DeleteSubnetByObjectAsync(Subnet subnet)
+        public async Task<bool> DeleteSubnetByObjectAsync(SubnetContainer subnet)
         {
             try
             {
@@ -148,7 +148,7 @@ namespace web.Client.Services
             }
         }
 
-        public async Task<Subnet> GetSubnetByIdAsync(int ID)
+        public async Task<SubnetContainer> GetSubnetByIdAsync(int ID)
         {
             try
             {
@@ -158,7 +158,7 @@ namespace web.Client.Services
             catch(Exception ex)
             {
                 _notificationService.ShowAsync($"Failed to fetch subnet with ID: {ID}", ex.Message);
-                return new Subnet();
+                return new SubnetContainer();
             }
         }
 
@@ -177,7 +177,7 @@ namespace web.Client.Services
             }
         }
 
-        public async Task<bool> ReplaceAllSubnetsAsync(List<Subnet> subnets)
+        public async Task<bool> ReplaceAllSubnetsAsync(List<SubnetContainer> subnets)
         {
             try
             {

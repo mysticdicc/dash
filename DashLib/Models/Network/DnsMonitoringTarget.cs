@@ -9,7 +9,7 @@ using System.Text;
 
 namespace DashLib.Models.Network
 {
-    public class DnsMonitoringTarget : BaseMonitoringTarget, IMonitoringTarget<DnsMonitoringTarget>
+    public class DnsMonitoringTarget : BaseMonitoringTarget, IMonitoringTarget
     {
         public DnsMonitoringTarget() : base()
         {
@@ -22,6 +22,7 @@ namespace DashLib.Models.Network
             Address = string.Empty;
         }
 
+        public int ParentId { get; set; }
         new public DnsContainer Parent { get; set; }
         public string Address { get; set; }
 

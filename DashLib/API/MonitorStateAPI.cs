@@ -10,15 +10,15 @@ using DashLib.Models.Network;
 
 namespace DashLib.DankAPI
 {
-    public class MonitoringAPI : IMonitoringAPI
+    public class MonitorStateAPI : IMonitorStatesAPI
     {
         private readonly HttpClient _httpClient;
         public readonly string _base;
 
-        public MonitoringAPI(HttpClient httpClient)
+        public MonitorStateAPI(HttpClient httpClient)
         {
             _httpClient = httpClient;
-            _base = $"{httpClient.BaseAddress}monitoring";
+            _base = $"{httpClient.BaseAddress}monitorstate";
         }
 
         public async Task<List<IpMonitoringTarget>> GetMonitoredIpsAsync()

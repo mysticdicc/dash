@@ -12,12 +12,12 @@ using DashLib.Models.Network;
 
 public class MonitorStatesTest : BunitContext
 {
-    public (IRenderedComponent<MonitorStates>, Mock<IMonitoringAPI>) CreateStandardComponent(BunitServiceProvider services, bool visible)
+    public (IRenderedComponent<MonitorStates>, Mock<IMonitorStatesAPI>) CreateStandardComponent(BunitServiceProvider services, bool visible)
     {
-        var monitoringApi = new Mock<IMonitoringAPI>();
+        var monitoringApi = new Mock<IMonitorStatesAPI>();
         services.AddSingleton(monitoringApi.Object);
 
-        var subnet = new Subnet("192.168.0.0/24");
+        var subnet = new SubnetContainer("192.168.0.0/24");
         var ips = subnet.List;
 
         foreach (var ip in ips)

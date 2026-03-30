@@ -15,7 +15,7 @@ using System.Net.Sockets;
 
 namespace DashLib.Models.Network
 {
-    public class IpMonitoringTarget : BaseMonitoringTarget, IMonitoringTarget<IpMonitoringTarget>
+    public class IpMonitoringTarget : BaseMonitoringTarget, IMonitoringTarget
     {
         public IpMonitoringTarget() : base()
         {
@@ -24,7 +24,7 @@ namespace DashLib.Models.Network
 
         public IpMonitoringTarget(BaseMonitoringTargetContainer parent) : base(parent)
         {
-            Parent = (Subnet)parent;
+            Parent = (SubnetContainer)parent;
             Address = ConvertToByte("192.168.0.1");
         }
 
@@ -42,7 +42,8 @@ namespace DashLib.Models.Network
             Address = ip.Address;
         }
 
-        new public Subnet Parent { get; set; }
+        public int ParentId { get; set; }
+        new public SubnetContainer Parent { get; set; }
         public byte[] Address { get; set; }
 
         static public byte[] ConvertToByte(IPAddress ip)

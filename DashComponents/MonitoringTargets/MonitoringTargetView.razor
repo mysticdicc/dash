@@ -1,4 +1,4 @@
-﻿@inject ISubnetsAPI SubnetsAPI
+﻿@inject IMonitorTargetAPI SubnetsAPI
 
 @if (IpViewVisible)
 {
@@ -50,12 +50,12 @@
 
 
 @code {
-    [Parameter] public required IpMonitoringTarget IpAddress { get; set; }
+    [Parameter] public required BaseMonitoringTarget BaseMonitoringTarget { get; set; }
     [Parameter] public required bool IpViewVisible { get; set; }
     [Parameter] public required EventCallback<bool> IpViewVisibleChanged { get; set; }
     [Parameter] public required EventCallback<IpMonitoringTarget> EditClicked { get; set; }
 
-    private Subnet? _parent;
+    private BaseMonitoringTargetContainer? _parent;
 
     protected override async Task OnParametersSetAsync()
     {

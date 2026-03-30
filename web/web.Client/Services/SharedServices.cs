@@ -4,7 +4,6 @@ using DashLib.Interfaces;
 using DashLib.API;
 using DashLib.Interfaces.Dashboard;
 using DashLib.Interfaces.Monitoring;
-using DashLib.Interfaces.Network;
 using DashLib.Interfaces.Logging;
 
 namespace web.Client.Services
@@ -28,11 +27,11 @@ namespace web.Client.Services
             services.AddSingleton<DashAPI>();
             services.AddSingleton<IDashAPI, DashboardApiService>();
 
-            services.AddSingleton<MonitoringAPI>();
-            services.AddSingleton<IMonitoringAPI, MonitoringApiService>();
+            services.AddSingleton<MonitorStateAPI>();
+            services.AddSingleton<IMonitorStatesAPI, MonitoringApiService>();
 
-            services.AddSingleton<SubnetsAPI>();
-            services.AddScoped<ISubnetsAPI, SubnetApiService>();
+            services.AddSingleton<MonitorTargetAPI>();
+            services.AddScoped<IMonitorTargetAPI, SubnetApiService>();
 
             services.AddSingleton<SettingsAPI>();
             services.AddScoped<ISettingsAPI, SettingsApiService>();

@@ -21,10 +21,10 @@ namespace web.Services
         private readonly HttpClient _httpClient;
         private readonly LoggingService _logger;
         CancellationTokenSource _cancellationToken;
-        MonitoringAPI _monitoringApi;
+        MonitorStateAPI _monitoringApi;
         SettingsService _currentSettings;
         private static LogEntry.LogSource _logSource = LogEntry.LogSource.MonitoringService;
-        public MonitorService(LoggingService logger, HttpClient httpClient, MonitoringAPI monitoringApi, SettingsService settingsService)
+        public MonitorService(LoggingService logger, HttpClient httpClient, MonitorStateAPI monitoringApi, SettingsService settingsService)
         {
             _httpClient = httpClient;
             _timer = null;

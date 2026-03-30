@@ -32,7 +32,7 @@ namespace DashLib.Models.Monitoring
         static public List<PortState> GetAllMonitorStatesFromListMonitoringTargets(List<BaseMonitoringTarget> baseTargets)
         {
             var states = baseTargets.SelectMany(x => x.TcpMonitorStates).ToList();
-            return states ?? [];
+            return states;
         }
 
         static public List<PortState> GetMostRecentStatesFromListMonitoringTargets(List<BaseMonitoringTarget> baseTargets)
@@ -40,9 +40,44 @@ namespace DashLib.Models.Monitoring
             return baseTargets
                 .SelectMany(t => t.TcpMonitorStates)
                 .GroupBy(s => (s.TargetId, s.TargetPort))
-                .Select(g => g.MaxBy(x => x.Timestamp))
+                .Select(g => g.MaxBy(x => x.Timestamp)!)
                 .Where(s => s != null)
-                .ToList()!;
+                .ToList();
+        }
+
+        public static List<PortState> GetAllMonitorStatesFromMonitoringTarget(BaseMonitoringTarget target)
+        {
+            return target.TcpMonitorStates.ToList();
+        }
+
+        public static List<PortState> GetMostRecentStateFromMonitoringTarget(BaseMonitoringTarget target)
+        {
+            return target.TcpMonitorStates
+                .GroupBy(x => (x.TargetId, x.TargetPort))
+                .Select(x => x.MaxBy(x => x.Timestamp)!)
+                .Where(x => x != null)
+                .ToList();
+        }
+
+        public static float CalculateUptimePercentage(TimeSpan timeFromNow, List<PortState> states)
+        {
+            var oldDate = DateTime.UtcNow - timeFromNow;
+
+            var portStates = states
+                .Where(x => x.Timestamp > oldDate)
+                .OrderBy(x => x.Timestamp)
+                .ToList();
+
+            int totalCount = portStates.Count();
+            int upCount = portStates.Where(x => x.Response == true).ToList().Count();
+
+            if (totalCount <= 0)
+            {
+                totalCount = 1;
+            }
+
+            float uptimePercent = (upCount / totalCount) * 100;
+            return uptimePercent;
         }
     }
 }

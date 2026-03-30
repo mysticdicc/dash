@@ -6,7 +6,7 @@ using System.Text;
 
 namespace DashLib.Interfaces.Monitoring
 {
-    public interface IMonitoringTarget<TTarget> where TTarget : BaseMonitoringTarget
+    public interface IMonitoringTarget
     {
         public Task<PingState> IcmpTestAsync();
         public Task<List<PortState>> TcpTestAsync();

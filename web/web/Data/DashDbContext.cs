@@ -21,14 +21,13 @@ public partial class DashDbContext : DbContext
         Database.EnsureCreated();
     }
 
-    public virtual DbSet<Asset> Assets { get; set; }
     public virtual DbSet<ShortcutItem> ShortcutItems { get; set; }
     public virtual DbSet<DirectoryItem> DirectoryItems { get; set; }
     public virtual DbSet<ClockWidget> ClockWidgets { get; set; }
     public virtual DbSet<DeviceStatusWidget> DeviceStatusWidgets { get; set; }
     public virtual DbSet<IpMonitoringTarget> IpTargets { get; set; }
     public virtual DbSet<DnsMonitoringTarget> DnsTargets { get; set; }
-    public virtual DbSet<Subnet> SubnetContainers { get; set; }
+    public virtual DbSet<SubnetContainer> SubnetContainers { get; set; }
     public virtual DbSet<DnsContainer> DnsContainers { get; set; }
     public virtual DbSet<PortState> PortStates { get; set; }
     public virtual DbSet<PingState> PingStates { get; set; }
@@ -36,33 +35,54 @@ public partial class DashDbContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder.HasSequence<int>("MonitoringTargetSequence");
-
-        modelBuilder.Entity<BaseMonitoringTarget>()
-            .UseTpcMappingStrategy();
-
-        modelBuilder.Entity<Asset>(entity =>
+        modelBuilder.Entity<BaseMonitoringTarget>(entity =>
         {
-            entity
-                .HasNoKey()
-                .ToTable("assets");
+            entity.ToTable("monitoring_targets");
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Id).ValueGeneratedOnAdd();
+            entity.UseTptMappingStrategy();
 
-            entity.Property(e => e.Description)
-                .IsRequired()
+            entity.HasMany(e => e.TcpMonitorStates)
+                .WithOne(e => e.Target)
+                .HasForeignKey(e => e.TargetId)
+                .HasPrincipalKey(e => e.Id);
+
+            entity.HasMany(e => e.IcmpMonitorStates)
+                .WithOne(e => e.Target)
+                .HasForeignKey(e => e.TargetId)
+                .HasPrincipalKey(e => e.Id);
+
+            entity.HasIndex(e => e.Id);
+
+            entity.Property(e => e.Hostname)
+                .HasMaxLength(100)
                 .IsUnicode(false);
-            entity.Property(e => e.Id)
+
+            entity.Property(e => e.IsMonitoredIcmp).IsRequired();
+            entity.Property(e => e.IsMonitoredTcp).IsRequired();
+            entity.Property(e => e.TcpPortsMonitored).IsRequired();
+        });
+
+        modelBuilder.Entity<IpMonitoringTarget>(entity =>
+        {
+            entity.ToTable("ips");
+
+            entity.HasIndex(e => e.Address).IsUnique();
+            entity.Property(e => e.Address)
                 .IsRequired()
-                .HasMaxLength(10)
-                .IsFixedLength()
-                .HasColumnName("ID");
-            entity.Property(e => e.Keywords).IsUnicode(false);
-            entity.Property(e => e.Location)
+                .HasMaxLength(4)
+                .IsFixedLength();
+        });
+
+        modelBuilder.Entity<DnsMonitoringTarget>(entity =>
+        {
+            entity.ToTable("dns");
+
+            entity.HasIndex(e => e.Address).IsUnique();
+            entity.Property(e => e.Address)
                 .IsRequired()
-                .IsUnicode(false);
-            entity.Property(e => e.Name)
-                .IsRequired()
-                .IsUnicode(false);
-            entity.Property(e => e.Picture).IsUnicode(false);
+                .HasMaxLength(512);
+            entity.Property(e => e.ParentId).IsRequired();
         });
 
         modelBuilder.Entity<ClockWidget>(entity =>
@@ -134,70 +154,7 @@ public partial class DashDbContext : DbContext
             entity.HasMany<ShortcutItem>(e => e.Children).WithOne(e => e.Parent);
         });
 
-        modelBuilder.Entity<IpMonitoringTarget>(entity =>
-        {
-            entity.ToTable("ips");
-            entity.Property(e => e.Id)
-                .HasDefaultValueSql("NEXT VALUE FOR MonitoringTargetSequence");
-
-            entity.HasIndex(e => e.Id);
-            entity.HasKey(e => e.Id);
-            entity.HasIndex(e => e.Address).IsUnique();
-            entity.Property(e => e.Id);
-            entity.Property(e => e.Address)
-                .IsRequired()
-                .HasMaxLength(4)
-                .IsFixedLength();
-            entity.Property(e => e.Hostname)
-                .HasMaxLength(100)
-                .IsUnicode(false);
-            entity.Property(e => e.ParentId).IsRequired();
-            entity.Property(e => e.IsMonitoredIcmp).IsRequired();
-            entity.Property(e => e.IsMonitoredTcp).IsRequired();
-            entity.Property(e => e.TcpPortsMonitored).IsRequired();
-
-            entity.HasMany(e => e.TcpMonitorStates)
-                .WithOne(e => (IpMonitoringTarget)e.Target)
-                .HasForeignKey(e => e.TargetId)
-                .HasPrincipalKey(e => e.Id);
-
-            entity.HasMany(e => e.IcmpMonitorStates)
-                .WithOne(e => (IpMonitoringTarget)e.Target)
-                .HasForeignKey(e => e.TargetId)
-                .HasPrincipalKey(e => e.Id);
-
-        });
-
-        modelBuilder.Entity<DnsMonitoringTarget>(entity =>
-        {
-            entity.ToTable("dns");
-            entity.Property(e => e.Id)
-                .HasDefaultValueSql("NEXT VALUE FOR MonitoringTargetSequence");
-
-            entity.HasIndex(e => e.Id);
-            entity.HasKey(e => e.Id);
-            entity.HasIndex(e => e.Address).IsUnique();
-            entity.Property(e => e.Id);
-            entity.Property(e => e.Address)
-                .IsRequired()
-                .HasMaxLength(512);
-            entity.Property(e => e.Hostname)
-                .HasMaxLength(100)
-                .IsUnicode(false);
-            entity.Property(e => e.ParentId).IsRequired();
-
-            entity.HasMany(e => e.TcpMonitorStates)
-                .WithOne(e => (DnsMonitoringTarget)e.Target)
-                .HasForeignKey(e => e.TargetId)
-                .HasPrincipalKey(e => e.Id);
-
-            entity.HasMany(e => e.IcmpMonitorStates)
-                .WithOne(e => (DnsMonitoringTarget)e.Target)
-                .HasForeignKey(e => e.TargetId)
-                .HasPrincipalKey(e => e.Id);
-        });
-
-        modelBuilder.Entity<Subnet>(entity =>
+        modelBuilder.Entity<SubnetContainer>(entity =>
         {
             entity.ToTable("subnet_containers");
 
