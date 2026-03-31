@@ -1,4 +1,6 @@
-﻿<tr id="ip" onclick="@(() => OnClickRow())">
+﻿@inject IMonitorTargetAPI MonitorTargetService
+
+<tr id="ip" onclick="@(() => OnClickRow())" @key="_baseMonitorState">
     <td>
         @_baseMonitorState.Timestamp
     </td>
@@ -55,8 +57,9 @@
 
 @code {
     [Parameter] public required BaseMonitorState BaseMonitorState { get; set; }
-    private BaseMonitorState _baseMonitorState = new PingState();
-    private BaseMonitoringTarget _baseTarget = new IpMonitoringTarget();
+    private BaseMonitorState _baseMonitorState = new PingState(); 
+    [Parameter] public BaseMonitoringTarget? BaseTarget { get; set; }
+    private BaseMonitoringTarget _baseTarget = new IpMonitoringTarget() { Address = IpMonitoringTarget.ConvertToByte("192.168.0.1") };
 
     [Parameter] public EventCallback<BaseMonitoringTarget> TargetClicked { get; set; }
     [Parameter] public EventCallback<BaseMonitorState> StateClicked { get; set; }
@@ -64,15 +67,19 @@
     [Parameter] public bool ExpandedView { get; set; } = true;
     [Parameter] public EventCallback<BaseMonitoringTarget> HistoryClicked { get; set; }
 
-    protected override void OnParametersSet()
+    protected override async Task OnParametersSetAsync()
     {
-        if (_baseMonitorState.Id != BaseMonitorState.Id)
+        if (_baseMonitorState != BaseMonitorState)
         {
             _baseMonitorState = BaseMonitorState;
 
             if (null != BaseMonitorState.Target)
             {
                 _baseTarget = BaseMonitorState.Target;
+            }
+            else if (null != BaseTarget)
+            {
+                _baseTarget = BaseTarget;
             }
         }
 

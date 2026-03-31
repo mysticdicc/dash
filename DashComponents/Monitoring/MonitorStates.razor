@@ -12,6 +12,7 @@
                 <div>
                     <table>
                         <tr>
+                            <th>Timestamp</th>
                             <th>Address</th>
                             <th></th>
                             <th>Hostname</th>
@@ -21,7 +22,7 @@
                         </tr>
                         @foreach (var poll in _lastPolls)
                         {
-                            <MonitorStateRow BaseMonitorState="poll" EditClicked="@OnClickEdit" 
+                            <MonitorStateRow BaseMonitorState="poll.Key" BaseTarget="poll.Value" EditClicked="@OnClickEdit" 
                                 HistoryClicked="@OnClickHistory" TargetClicked="@OnClickView" />
                         }
                     </table>
@@ -46,7 +47,7 @@
     [Parameter] public required EventCallback<TimeSpan> ViewLengthChanged { get; set; }
 
     private bool _expanded = false;
-    private List<BaseMonitorState> _lastPolls = [];
+    private Dictionary<BaseMonitorState, BaseMonitoringTarget> _lastPolls = [];
 
     protected override Task OnParametersSetAsync()
     {
@@ -55,8 +56,28 @@
             _baseMonitoringTargets = MonitoringTargets;
 
             _lastPolls = [];
-            _lastPolls.AddRange(PortState.GetMostRecentStatesFromListMonitoringTargets(_baseMonitoringTargets));
-            _lastPolls.AddRange(PingState.GetMostRecentStatesFromListMonitoringTargets(_baseMonitoringTargets));
+            var ports = PortState.GetMostRecentStatesFromListMonitoringTargets(_baseMonitoringTargets);
+            var pings = PingState.GetMostRecentStatesFromListMonitoringTargets(_baseMonitoringTargets);
+
+            foreach (var port in ports)
+            {
+                var parent = _baseMonitoringTargets.Where(x => x.Id == port.TargetId).First();
+
+                if (null != parent)
+                {
+                    _lastPolls.Add(port, parent);
+                }
+            }
+
+            foreach (var ping in pings)
+            {
+                var parent = _baseMonitoringTargets.Where(x => x.Id == ping.TargetId).First();
+
+                if (null != parent)
+                {
+                    _lastPolls.Add(ping, parent);
+                }
+            }
         }
 
         StateHasChanged();

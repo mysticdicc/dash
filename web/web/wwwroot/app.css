@@ -532,7 +532,7 @@ input:checked + .slider:before {
     }
 
 .faded_background {
-    background-color: rgba(0,0,0,0.5);
+    background-color: rgba(0,0,0,0.7);
     z-index: 75;
     height: 100vh;
     width: 100vw;
@@ -688,30 +688,25 @@ input:checked + .slider:before {
     width: 100%;
     text-align: center;
 
-    > tr:has(th):not(:has(> td)) {
-        background-color: var(--black);
-    }
-
     > tr {
         width: 100%;
     }
 }
 
 .subnet_card {
-    background-color: var(--light-grey);
-    box-shadow: 0px 0px 5px rgba(0,0,0,0.2);
+    box-shadow: 0px 0px 5px rgba(0,0,0,0.3);
 
     input {
-        background-color: var(--primary);
+        background-color: var(--light-grey);
     }
 
     button {
-        background-color: var(--light-grey);
+        background-color: var(--grey);
     }
 
     > td {
         padding: 5px;
-        background-color: var(--light-grey);
+        background-color: var(--grey);
 
         > div {
             display: flex;
@@ -810,7 +805,7 @@ input:checked + .slider:before {
     }
 }
 
-    .subnet_editor > header {
+.subnet_editor > header {
     display: flex;
     flex-direction: row;
     width: 100%;
@@ -820,7 +815,7 @@ input:checked + .slider:before {
     > span {
         margin-top: auto;
         margin-bottom: auto;
-        padding-left: 5px;
+        padding-left: 10px;
     }
 
     > button {
@@ -837,7 +832,7 @@ input:checked + .slider:before {
 }
 
 .ip_layout {
-    background-color: var(--light-grey);
+    background-color: var(--black);
 
     > td {
         padding: 10px;
@@ -869,8 +864,8 @@ input:checked + .slider:before {
 }
 
     .ip_row {
-    background-color: var(--primary);
-    color: var(--black);
+    background-color: var(--grey);
+    color: var(--white);
 
     > td {
         padding: 5px;
@@ -886,7 +881,7 @@ input:checked + .slider:before {
 }
 
     .ip_row:hover {
-        background-color: var(--secondary);
+        background-color: var(--light-grey);
     }
 
 .ip_editor {
@@ -1039,7 +1034,7 @@ input:checked + .slider:before {
 
     > div {
         flex: 1 1 45%;
-        background-color: var(--primary);
+        background-color: var(--light-grey);
         border-radius: 10px;
         overflow: hidden;
         box-shadow: 0px 0px 5px rgba(0,0,0,0.3);
@@ -1087,37 +1082,40 @@ article#monitor_states {
         flex: 1;
         overflow-y: auto;
         border-radius: 10px;
-        background-color: var(--secondary);
+        background-color: var(--grey);
+        padding: 2px;
     }
 }
 
-article#monitor_states > div > table {
-    width: 100%;
-    text-align: center;
+    article#monitor_states > div > table {
+        width: 100%;
+        text-align: center;
 
-    > tr:has(td) {
-        background-color: var(--secondary) !important;
-    }
+        > tr:has(td) {
+            background-color: var(--grey) !important;
+        }
 
-    > tr:has(td):hover {
-        background-color: var(--primary-light) !important;
-    }
+            > tr:has(td):hover {
+                background-color: var(--light-grey) !important;
+            }
 
-    > tr:has(th) {
-        position: sticky;
-        top: 0;
-        z-index: 50;
-        background-color: var(--black);
-        color: var(--white);
-    }
+        > tr:has(th) {
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            background-color: var(--black);
+            color: var(--white);
+        }
 
-    td {
-        > button {
-            margin-left: auto;
-            margin-right: auto;
+        td {
+            color: var(--white);
+            
+            > button {
+                margin-left: auto;
+                margin-right: auto;
+            }
         }
     }
-}
 
 .apexcharts-canvas {
     margin: auto;
@@ -1127,9 +1125,24 @@ article#monitor_states > div > table {
 #apex_chart {
     flex: 1;
     margin: 10px;
-    background-color: var(--secondary);
+    background-color: var(--grey);
     border-radius: 10px;
     padding: 20px;
+}
+
+.apexcharts-text {
+    color: var(--white);
+    fill: var(--white);
+}
+
+.apexcharts-title-text {
+    color: var(--white);
+    fill: var(--white);
+}
+
+.apexcharts-legend-text {
+    color: var(--white) !important;
+    fill: var(--white) !important;
 }
 
 div#uptime_chart {
@@ -1150,12 +1163,12 @@ div#uptime_chart {
 
     #apex_chart {
         width: 100%;
-        background-color: var(--secondary);
+        background-color: var(--grey);
         border-radius: 10px;
     }
 
     > div {
-        background: var(--secondary);
+        background: var(--grey);
         border-radius: 10px;
         width: 50%;
         box-sizing: border-box;
@@ -1172,7 +1185,8 @@ div#uptime_chart {
         box-sizing: border-box;
 
         > div {
-            background-color: var(--secondary);
+            background-color: var(--grey);
+            color: var(--white);
             text-align: center;
             display: flex;
             flex-direction: column;
@@ -1186,7 +1200,7 @@ div#uptime_chart {
 
 div#stats_card > article > div > table {
     width: 100%;
-    background-color: var(--secondary);
+    background-color: var(--grey);
     text-align: center;
     table-layout: fixed;
     z-index: 40;
@@ -1216,7 +1230,6 @@ div#stats_card > article > div > table {
     flex-direction: column;
     max-width: 50vw;
     min-width: 20vw;
-    margin: 1rem;
     flex-grow: 1;
     position: absolute;
     top: 50%;
@@ -1243,10 +1256,11 @@ div#stats_card > article > div > table {
 }
 
 .popup_back#ip_view > article {
+    padding: 2rem;
+
     > table {
         width: 100%;
         text-align: center;
-        margin: 20px;
     }
 }
 

@@ -8,10 +8,7 @@
                 <span><strong>
                     @if (_monitoringTarget is IpMonitoringTarget ip)
                     {
-                        if (null != ip.Address)
-                        {
-                            IpMonitoringTarget.ConvertToString(ip.Address);
-                        }
+                        @IpMonitoringTarget.ConvertToString(ip.Address)
                     }
                     else if (_monitoringTarget is DnsMonitoringTarget dns)
                     {
@@ -24,7 +21,7 @@
             </header>
             <article>
                 <table>
-                    @if (IsNewTarget)
+                    @if (IsNewTarget || _monitoringTarget is DnsMonitoringTarget)
                     {
                         <tr>
                             <td>
@@ -111,6 +108,15 @@
         if (_monitoringTarget != MonitoringTarget)
         {
             _monitoringTarget = MonitoringTarget;
+
+            if (_monitoringTarget is DnsMonitoringTarget dns)
+            {
+                _addressString = dns.Address;
+            }
+            else if (_monitoringTarget is IpMonitoringTarget ip)
+            {
+                _addressString = IpMonitoringTarget.ConvertToString(ip.Address);
+            }
 
             if (EditorVisible)
             {

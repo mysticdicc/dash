@@ -1,7 +1,7 @@
 ﻿@inject IMonitorTargetAPI MonitorTargetService
 @inject IJSRuntime JSRuntime
 
-<tr id=@($"subcard-{_monitoringTargetContainer.Id}") class="subnet_card" @onclick="@OnClickSubnetCard">
+<tr id=@($"subcard-{_monitoringTargetContainer.Id}") class="subnet_card" @onclick="@OnClickSubnetCard" @key="@_monitoringTargetContainer">
     @if (_monitoringTargetContainer is DnsContainer dns)
     {
         <td></td>
@@ -94,7 +94,7 @@
 
     protected override Task OnParametersSetAsync()
     {
-        if (MonitoringTargetContainer.Id != _monitoringTargetContainer.Id)
+        if (MonitoringTargetContainer != _monitoringTargetContainer)
         {
             _monitoringTargetContainer = MonitoringTargetContainer;
             _targetList = _monitoringTargetContainer.GetChildren().ToList();

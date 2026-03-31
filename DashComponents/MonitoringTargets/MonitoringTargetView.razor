@@ -43,16 +43,16 @@
                             @if (_parent is DnsContainer dns)
                             {
                                 <td>
-                                    Parent DNS Container:
+                                    Parent Container:
                                 </td>
                                 <td>
-                                    @dns.
+                                    @dns.DisplayName
                                 </td>
                             }
                             else if (_parent is SubnetContainer subnet)
                             {
                                 <td>
-                                    Parent Subnet:
+                                    Parent Container:
                                 </td>
                                 <td>
                                     @IpMonitoringTarget.ConvertToString(subnet.Address) : @IpMonitoringTarget.ConvertToString(subnet.SubnetMask)
