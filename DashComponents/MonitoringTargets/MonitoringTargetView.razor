@@ -1,6 +1,6 @@
-﻿@inject IMonitorTargetAPI SubnetsAPI
+﻿@inject IMonitorTargetAPI MonitorTargetService
 
-@if (IpViewVisible)
+@if (Visible)
 {
     <div class="faded_background">
         <div class="popup_back" id="ip_view">
@@ -19,7 +19,14 @@
                             Address:
                         </td>
                         <td>
-                            @IpMonitoringTarget.ConvertToString(IpAddress.Address)
+                            @if (_monitoringTarget is IpMonitoringTarget ip)
+                            {
+                                @IpMonitoringTarget.ConvertToString(ip.Address)
+                            }
+                            else if (_monitoringTarget is DnsMonitoringTarget dns)
+                            {
+                                @dns.Address
+                            }
                         </td>
                     </tr>
                     <tr>
@@ -27,18 +34,30 @@
                             Hostname:
                         </td>
                         <td>
-                            @IpAddress.Hostname
+                            @_monitoringTarget.Hostname
                         </td>
                     </tr>
                     @if (_parent != null)
                     {
                         <tr>
-                            <td>
-                                Parent Subnet:
-                            </td>
-                            <td>
-                                @IpMonitoringTarget.ConvertToString(_parent.Address) : @IpMonitoringTarget.ConvertToString(_parent.SubnetMask)
-                            </td>
+                            @if (_parent is DnsContainer dns)
+                            {
+                                <td>
+                                    Parent DNS Container:
+                                </td>
+                                <td>
+                                    @dns.
+                                </td>
+                            }
+                            else if (_parent is SubnetContainer subnet)
+                            {
+                                <td>
+                                    Parent Subnet:
+                                </td>
+                                <td>
+                                    @IpMonitoringTarget.ConvertToString(subnet.Address) : @IpMonitoringTarget.ConvertToString(subnet.SubnetMask)
+                                </td>
+                            }
                         </tr>
                     }
                 </table>
@@ -50,29 +69,51 @@
 
 
 @code {
-    [Parameter] public required BaseMonitoringTarget BaseMonitoringTarget { get; set; }
-    [Parameter] public required bool IpViewVisible { get; set; }
-    [Parameter] public required EventCallback<bool> IpViewVisibleChanged { get; set; }
-    [Parameter] public required EventCallback<IpMonitoringTarget> EditClicked { get; set; }
+    [Parameter] public required BaseMonitoringTarget MonitoringTarget { get; set; }
+    private BaseMonitoringTarget _monitoringTarget = new IpMonitoringTarget();
+
+    [Parameter] public required bool Visible { get; set; }
+    [Parameter] public required EventCallback<bool> VisibleChanged { get; set; }
+    [Parameter] public required EventCallback<BaseMonitoringTarget> EditClicked { get; set; }
 
     private BaseMonitoringTargetContainer? _parent;
 
     protected override async Task OnParametersSetAsync()
     {
-        _parent = await SubnetsAPI.GetSubnetByIdAsync(IpAddress.SubnetID);
+        if (_monitoringTarget.Id != MonitoringTarget.Id)
+        {
+            _monitoringTarget = MonitoringTarget;
+
+            if (null == _monitoringTarget.Parent)
+            {
+                if (_monitoringTarget is DnsMonitoringTarget dns)
+                {
+                    _parent = await MonitorTargetService.GetDnsContainerByIdAsync(dns.ParentId);
+                }
+                else if (_monitoringTarget is IpMonitoringTarget ip)
+                {
+                    _parent = await MonitorTargetService.GetSubnetContainerByIdAsync(ip.ParentId);
+                }
+            }
+            else
+            {
+                _parent = _monitoringTarget.Parent;
+            }
+        }
+
         await base.OnParametersSetAsync();
     }
 
     private async void OnClickCancel()
     {
-        await IpViewVisibleChanged.InvokeAsync(false);
-        IpViewVisible = false;
+        await VisibleChanged.InvokeAsync(false);
+        Visible = false;
     }
 
     private async void OnClickEdit()
     {
-        await IpViewVisibleChanged.InvokeAsync(false);
-        IpViewVisible = false;
-        await EditClicked.InvokeAsync(IpAddress);
+        await VisibleChanged.InvokeAsync(false);
+        Visible = false;
+        await EditClicked.InvokeAsync(_monitoringTarget);
     }
 }

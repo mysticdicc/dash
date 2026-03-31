@@ -1,16 +1,26 @@
-﻿@inject IMonitorTargetAPI SubnetService
+﻿@inject IMonitorTargetAPI MonitorTargetService
 @inject IJSRuntime JSRuntime
 
-<tr id=@($"subcard-{_subnet.ID}") class="subnet_card" @onclick="@OnClickSubnetCard">
-    <td>
-        @IpMonitoringTarget.ConvertToString(_subnet.Address)
-    </td>
-    <td>
-        @IpMonitoringTarget.ConvertToString(_subnet.StartAddress)
-    </td>
-    <td>
-        @IpMonitoringTarget.ConvertToString(_subnet.EndAddress)
-    </td>
+<tr id=@($"subcard-{_monitoringTargetContainer.Id}") class="subnet_card" @onclick="@OnClickSubnetCard">
+    @if (_monitoringTargetContainer is DnsContainer dns)
+    {
+        <td></td>
+        <td>@dns.DisplayName</td>
+        <td></td>
+    }
+    else if (_monitoringTargetContainer is SubnetContainer subnetTitle)
+    {
+        <td>
+            @IpMonitoringTarget.ConvertToString(subnetTitle.Address)
+        </td>
+        <td>
+            @IpMonitoringTarget.ConvertToString(subnetTitle.StartAddress)
+        </td>
+        <td>
+            @IpMonitoringTarget.ConvertToString(subnetTitle.EndAddress)
+        </td>
+    }
+
     <td>
         <div>
             <input type="text" @bind="_searchString" @bind:event="oninput" @onkeydown="OnKeyDownInSubnetInput" @onclick:stopPropagation="true" />
@@ -30,19 +40,22 @@
             <button id="deletebutton" @onclick="@OnClickDelete" @onclick:stopPropagation="true">
                 <span class="material-icons" title="Delete Subnet">delete</span>
             </button>
-            <button id="discoverbutton" @onclick="@OnClickDiscovery" @onclick:stopPropagation="true">
-                <span class="material-icons" title="Rediscover Subnet">refresh</span>
-            </button>
+            @if (_monitoringTargetContainer is SubnetContainer subnet)
+            {
+                <button id="discoverbutton" @onclick="@OnClickDiscovery" @onclick:stopPropagation="true">
+                    <span class="material-icons" title="Rediscover Subnet">refresh</span>
+                </button>
+            }
         </div>
     </td>
 </tr>
-@if (_ipListVisible)
+@if (_targetListVisible)
 {
     <tr class="ip_layout">
         <td colspan="10">
             <table>
                 <tr>
-                    <th>IP Address</th>
+                    <th>Address</th>
                     <th>Hostname</th>
                     @if (AdvancedViewEnabled)
                     {
@@ -52,10 +65,10 @@
                     }
                     <th />
                 </tr>
-                @if (null != _ipList && _ipList.Count > 0)
+                @if (null != _targetList && _targetList.Count > 0)
                 {
-                    <Virtualize Items="@_ipList" Context="context">
-                        <IpRow IpAddress="@context" @bind-AdvancedViewEnabled="AdvancedViewEnabled" OnEditIp="@OnEditIp" OnDeleteIp="@OnDeleteIp" />
+                    <Virtualize Items="@_targetList" Context="context">
+                        <MonitoringTargetRow MonitoringTarget="@context" @bind-AdvancedViewEnabled="AdvancedViewEnabled" OnEditTarget="@OnEditTarget" OnDeleteTarget="@OnClickDelete" />
                     </Virtualize>
                 }
             </table>
@@ -64,32 +77,27 @@
 }
 
 @code {
-    [Parameter] public required SubnetContainer Subnet { get; set; }
-    private SubnetContainer _subnet = default!;
+    [Parameter] public required BaseMonitoringTargetContainer MonitoringTargetContainer { get; set; }
+    private BaseMonitoringTargetContainer _monitoringTargetContainer = new DnsContainer("");
 
     [Parameter] public bool AdvancedViewEnabled { get; set; }
     [Parameter] public EventCallback<bool> AdvancedViewEnabledChanged { get; set; }
 
-    [Parameter] public EventCallback<IpMonitoringTarget> OnEditIp { get; set; }
+    [Parameter] public EventCallback<BaseMonitoringTarget> OnEditTarget { get; set; }
     [Parameter] public EventCallback<bool> OnDeleteIp { get; set; }
-    [Parameter] public EventCallback<SubnetContainer> OnEditSubnet { get; set; }
+    [Parameter] public EventCallback<BaseMonitoringTargetContainer> OnEditTargetContainer { get; set; }
     [Parameter] public EventCallback<bool> OnDeleteClicked { get; set;  }
 
-    private IList<IpMonitoringTarget> _ipList = [];
-    private bool _ipListVisible { get; set; } = false;
+    private List<BaseMonitoringTarget> _targetList = [];
+    private bool _targetListVisible { get; set; } = false;
     private string _searchString = string.Empty;
 
     protected override Task OnParametersSetAsync()
     {
-        _subnet = Subnet;
-
-        if (null != _subnet && null != _subnet.List)
+        if (MonitoringTargetContainer.Id != _monitoringTargetContainer.Id)
         {
-            _ipList = _subnet.List;
-        }
-        else
-        {
-            _ipList = [];
+            _monitoringTargetContainer = MonitoringTargetContainer;
+            _targetList = _monitoringTargetContainer.Children;
         }
 
         return base.OnParametersSetAsync();
@@ -97,29 +105,38 @@
 
     private void OnClickExpand()
     {
-        _ipListVisible = !_ipListVisible;
+        _targetListVisible = !_targetListVisible;
         StateHasChanged();
     }
 
     private void OnClickEditSubnet()
     {
-        OnEditSubnet.InvokeAsync(Subnet);
+        OnEditTargetContainer.InvokeAsync(_monitoringTargetContainer);
     }
 
     private async Task OnClickSearch()
     {
         if (string.IsNullOrEmpty(_searchString))
         {
-            _ipList = _subnet.List ?? [];
+            _targetList = _monitoringTargetContainer.Children ?? [];
         }
         else
         {
-            _ipList = (_subnet.List ?? [])
-                .Where(x => IpMonitoringTarget.ConvertToString(x.Address).Contains(_searchString, StringComparison.OrdinalIgnoreCase) ||
-                            (x.Hostname != null && x.Hostname.Contains(_searchString, StringComparison.OrdinalIgnoreCase)))
-                .ToList();
-
-            _searchString = string.Empty;
+            if (_monitoringTargetContainer is DnsContainer dns)
+            {
+                _targetList = (dns.Children ?? [])
+                                .Where(x => x.Address.Contains(_searchString, StringComparison.OrdinalIgnoreCase))
+                                .Cast<BaseMonitoringTarget>()
+                                .ToList();
+            }
+            else if (_monitoringTargetContainer is SubnetContainer subnet)
+            {
+                _targetList = (subnet.Children ?? [])
+                    .Where(x => IpMonitoringTarget.ConvertToString(x.Address).Contains(_searchString, StringComparison.OrdinalIgnoreCase) ||
+                                (x.Hostname != null && x.Hostname.Contains(_searchString, StringComparison.OrdinalIgnoreCase)))
+                    .Cast<BaseMonitoringTarget>()
+                    .ToList();
+            }
         }
 
         await InvokeAsync(StateHasChanged);
@@ -127,19 +144,24 @@
 
     private async Task OnClickDiscovery()
     {
-        if (null != _subnet)
+        if (_monitoringTargetContainer is SubnetContainer subnet)
         {
-            await SubnetService.RunDiscoveryTaskAsync(_subnet);
+            await MonitorTargetService.RunDiscoveryTaskAsync(subnet);
         }
     }
 
     private async Task OnClickDelete()
     {
-        if (null != _subnet)
+        if (_monitoringTargetContainer is SubnetContainer subnet)
         {
-            await SubnetService.DeleteSubnetByObjectAsync(_subnet);
-            await OnDeleteClicked.InvokeAsync(true);
+            await MonitorTargetService.DeleteSubnetContainerAsync(subnet);
         }
+        else if (_monitoringTargetContainer is DnsContainer dns)
+        {
+            await MonitorTargetService.DeleteDnsContainerAsync(dns);
+        }
+
+        await OnDeleteClicked.InvokeAsync(true);
     }
 
     private async Task OnKeyDownInSubnetInput(KeyboardEventArgs e)
@@ -152,12 +174,12 @@
 
     private async Task OnClickSubnetCard()
     {
-        _ipListVisible = !_ipListVisible;
+        _targetListVisible = !_targetListVisible;
         StateHasChanged();
-        await JSRuntime.InvokeVoidAsync("shakeonclick", Subnet.ID);
+        await JSRuntime.InvokeVoidAsync("shakeonclick", _monitoringTargetContainer.Id);
     }
 
-    private async Task OnClickDeleteIp()
+    private async Task OnClickDeleteTarget()
     {
         await OnDeleteIp.InvokeAsync(true);
     }

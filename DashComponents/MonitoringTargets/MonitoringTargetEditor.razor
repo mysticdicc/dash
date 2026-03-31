@@ -1,85 +1,91 @@
-﻿@inject IMonitorTargetAPI SubnetService
+﻿@inject IMonitorTargetAPI MonitorTargetService
 
-@if (EditorVisible)
+@if (EditorVisible && null != _monitoringTarget)
 {
-    if (null != _ipAddress)
-    {
-        <div class="faded_background">
-            <div class="ip_editor">
-                <header>
-                    <span><strong>@IpMonitoringTarget.ConvertToString(_ipAddress.Address)</strong></span>
-                    <button id="cancelbutton" onclick="@OnClickCancel">
-                        <span class="material-icons">cancel</span>
-                    </button>
-                </header>
-                <article>
-                    <table>
-                        <tr>
-                            <td>
-                                <input id="hostnameinput" type="text" @bind="_ipAddress.Hostname" placeholder="Hostname"/>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>
-                                Icmp Monitored
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>
-                                <div>
-                                    True
-                                    <input type="radio" value="true" checked="@(_ipAddress.IsMonitoredICMP == true)" @onchange="@((e) => OnIcmpMonitoredChange(e))" />
-                                </div>
-                                <div>
-                                    False
-                                    <input type="radio" value="false" checked="@(_ipAddress.IsMonitoredICMP == false)" @onchange="@((e) => OnIcmpMonitoredChange(e))" />
-                                </div>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>
-                                TCP Monitored
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>
-                                <div>
-                                    True
-                                    <input type="radio" value="true" checked="@(_ipAddress.IsMonitoredTCP == true)" @onchange="@((e) => OnTcpMonitoredChange(e))" />
-                                </div>
-                                <div>
-                                    False
-                                    <input type="radio" value="false" checked="@(_ipAddress.IsMonitoredTCP == false)" @onchange="@((e) => OnTcpMonitoredChange(e))" />
-                                </div>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>
-                                @if (_ipAddress.IsMonitoredTCP)
-                                {
-                                    <input type="text" @bind="_portsMonitoredString" placeholder="Monitored Ports" />
-                                }
-                                else
-                                {
-                                    <input type="text" @bind="_portsMonitoredString" placeholder="Monitored Ports" readonly="readonly"/>
-                                }
-                            </td>
-                        </tr>
-                    </table>
-                </article>
-                <footer>
-                    <button id="savebutton" onclick="@OnClickSave">
-                        <span class="material-icons">save</span>
-                    </button>
-                </footer>
-            </div>
+    <div class="faded_background">
+        <div class="ip_editor">
+            <header>
+                <span><strong>
+                    @if (_monitoringTarget is IpMonitoringTarget ip)
+                    {
+                        @IpMonitoringTarget.ConvertToString(ip.Address)
+                    }
+                    else if (_monitoringTarget is DnsMonitoringTarget dns)
+                    {
+                        @dns.Address
+                    }
+                </strong></span>
+                <button id="cancelbutton" onclick="@OnClickCancel">
+                    <span class="material-icons">cancel</span>
+                </button>
+            </header>
+            <article>
+                <table>
+                    <tr>
+                        <td>
+                            <input id="hostnameinput" type="text" @bind="_monitoringTarget.Hostname" placeholder="Hostname" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            Icmp Monitored
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <div>
+                                True
+                                <input type="radio" value="true" checked="@(_monitoringTarget.IsMonitoredIcmp == true)" @onchange="@((e) => OnIcmpMonitoredChange(e))" />
+                            </div>
+                            <div>
+                                False
+                                <input type="radio" value="false" checked="@(_monitoringTarget.IsMonitoredIcmp == false)" @onchange="@((e) => OnIcmpMonitoredChange(e))" />
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            TCP Monitored
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <div>
+                                True
+                                <input type="radio" value="true" checked="@(_monitoringTarget.IsMonitoredTcp == true)" @onchange="@((e) => OnTcpMonitoredChange(e))" />
+                            </div>
+                            <div>
+                                False
+                                <input type="radio" value="false" checked="@(_monitoringTarget.IsMonitoredTcp == false)" @onchange="@((e) => OnTcpMonitoredChange(e))" />
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            @if (_monitoringTarget.IsMonitoredTcp)
+                            {
+                                <input type="text" @bind="_portsMonitoredString" placeholder="Monitored Ports" />
+                            }
+                            else
+                            {
+                                <input type="text" @bind="_portsMonitoredString" placeholder="Monitored Ports" readonly="readonly" />
+                            }
+                        </td>
+                    </tr>
+                </table>
+            </article>
+            <footer>
+                <button id="savebutton" onclick="@OnClickSave">
+                    <span class="material-icons">save</span>
+                </button>
+            </footer>
         </div>
-    }
+    </div>
 }
 
 @code {
-    [Parameter] public required IpMonitoringTarget IpAddress { get; set; }
-    private IpMonitoringTarget? _ipAddress;
+    [Parameter] public required BaseMonitoringTarget MonitoringTarget { get; set; }
+    private BaseMonitoringTarget _monitoringTarget = new IpMonitoringTarget();
     private string _portsMonitoredString = string.Empty;
 
     [Parameter] public required bool EditorVisible { get; set;}
@@ -87,24 +93,27 @@
 
     protected override void OnParametersSet()
     {
-        _ipAddress = IpAddress;
-
-        if (EditorVisible)
+        if (_monitoringTarget.Id != MonitoringTarget.Id)
         {
-            if (_ipAddress?.PortsMonitored != null && _ipAddress.PortsMonitored.Count > 0)
+            _monitoringTarget = MonitoringTarget;
+
+            if (EditorVisible)
             {
-                _portsMonitoredString = string.Join(",", _ipAddress.PortsMonitored);
-            }
-            else
-            {
-                _portsMonitoredString = string.Empty;
+                if (_monitoringTarget.TcpPortsMonitored.Count > 0)
+                {
+                    _portsMonitoredString = string.Join(",", _monitoringTarget.TcpPortsMonitored);
+                }
+                else
+                {
+                    _portsMonitoredString = string.Empty;
+                }
             }
         }
     }
 
     private async Task OnClickCancel()
     {
-        _ipAddress = null;
+        _monitoringTarget = new IpMonitoringTarget();
         _portsMonitoredString = string.Empty;
         await EditorVisibleChanged.InvokeAsync(false);
         EditorVisible = false;
@@ -112,11 +121,11 @@
 
     private void UpdatePortsMonitored()
     {
-        if (_ipAddress == null) return;
+        if (_monitoringTarget == null) return;
 
         if (string.IsNullOrWhiteSpace(_portsMonitoredString))
         {
-            _ipAddress.PortsMonitored = null;
+            _monitoringTarget.TcpPortsMonitored = [];
         }
         else
         {
@@ -127,44 +136,53 @@
                 .Select(int.Parse)
                 .ToList();
 
-            _ipAddress.PortsMonitored = ports.Count > 0 ? ports : null;
+            _monitoringTarget.TcpPortsMonitored = ports.Count > 0 ? ports : [];
         }
     }
 
     private async void OnClickSave()
     {
-        if (null != _ipAddress)
+        if (null != _monitoringTarget)
         {
             UpdatePortsMonitored();
-            await SubnetService.EditIpAsync(_ipAddress);
+
+            if (_monitoringTarget is DnsMonitoringTarget dns)
+            {
+                await MonitorTargetService.UpdateDnsTargetAsync(dns);
+            }
+            else if (_monitoringTarget is IpMonitoringTarget ip)
+            {
+                await MonitorTargetService.UpdateIpTargetAsync(ip);
+            }
+
             await EditorVisibleChanged.InvokeAsync(false);
         }
     }
 
     private void OnIcmpMonitoredChange(ChangeEventArgs e)
     {
-        if (null != _ipAddress)
+        if (null != _monitoringTarget)
         {
             var selected = e.Value?.ToString();
-            _ipAddress.IsMonitoredICMP = selected == "true";
+            _monitoringTarget.IsMonitoredIcmp = selected == "true";
 
-            if (!_ipAddress.IsMonitoredICMP)
+            if (!_monitoringTarget.IsMonitoredIcmp)
             {
-                _ipAddress.IsMonitoredTCP = false;
+                _monitoringTarget.IsMonitoredTcp = false;
             }
         }
     }
 
     private void OnTcpMonitoredChange(ChangeEventArgs e)
     {
-        if (null != _ipAddress)
+        if (null != _monitoringTarget)
         {
             var selected = e.Value?.ToString();
-            _ipAddress.IsMonitoredTCP = selected == "true";
+            _monitoringTarget.IsMonitoredTcp = selected == "true";
 
-            if (!_ipAddress.IsMonitoredICMP)
+            if (!_monitoringTarget.IsMonitoredIcmp)
             {
-                _ipAddress.IsMonitoredICMP = true;
+                _monitoringTarget.IsMonitoredIcmp = true;
             }
         }
     }

@@ -1,19 +1,26 @@
-﻿@inject IMonitorTargetAPI SubnetService
+﻿@inject IMonitorTargetAPI MonitorTargetService
 
 <tr class="ip_row" @onclick="@OnClickEditIp">
     <td>
-        @IpMonitoringTarget.ConvertToString(_ipAddress.Address)
+        @if (_monitoringTarget is IpMonitoringTarget ip)
+        {
+            @IpMonitoringTarget.ConvertToString(ip.Address)
+        }
+        else if (_monitoringTarget is DnsMonitoringTarget dns)
+        {
+            @dns.Address
+        }
     </td>
     <td>
-        @_ipAddress.Hostname
+        @_monitoringTarget.Hostname
     </td>
     @if (AdvancedViewEnabled)
     {
         <td>
-            @_ipAddress.IsMonitoredICMP
+            @_monitoringTarget.IsMonitoredIcmp
         </td>
         <td>
-            @_ipAddress.IsMonitoredTCP
+            @_monitoringTarget.IsMonitoredTcp
         </td>
         <td>
             @_portsMonitoredString
@@ -29,26 +36,31 @@
 </tr>
 
 @code {
-    [Parameter] public required IpMonitoringTarget IpAddress { get; set; }
-    private IpMonitoringTarget _ipAddress => IpAddress;
+    [Parameter] public required BaseMonitoringTarget MonitoringTarget { get; set; }
+    private BaseMonitoringTarget _monitoringTarget = new IpMonitoringTarget();
 
     [Parameter] public bool AdvancedViewEnabled { get; set; }
     [Parameter] public EventCallback<bool> AdvancedViewEnabledChanged { get; set; }
 
-    [Parameter] public EventCallback<IpMonitoringTarget> OnEditIp { get; set; }
-    [Parameter] public EventCallback<bool> OnDeleteIp { get; set; }
+    [Parameter] public EventCallback<BaseMonitoringTarget> OnEditTarget { get; set; }
+    [Parameter] public EventCallback<bool> OnDeleteTarget { get; set; }
 
     private string _portsMonitoredString = string.Empty;
 
     protected override void OnParametersSet()
     {
-        if (_ipAddress?.PortsMonitored != null && _ipAddress.PortsMonitored.Count > 0)
+        if (_monitoringTarget.Id != MonitoringTarget.Id)
         {
-            _portsMonitoredString = string.Join(",", _ipAddress.PortsMonitored);
-        }
-        else
-        {
-            _portsMonitoredString = string.Empty;
+            _monitoringTarget = MonitoringTarget;
+
+            if (_monitoringTarget.TcpPortsMonitored.Count > 0)
+            {
+                _portsMonitoredString = string.Join(",", _monitoringTarget.TcpPortsMonitored);
+            }
+            else
+            {
+                _portsMonitoredString = string.Empty;
+            }
         }
 
         base.OnParametersSet();
@@ -56,12 +68,20 @@
 
     private void OnClickEditIp()
     {
-        OnEditIp.InvokeAsync(_ipAddress);
+        OnEditTarget.InvokeAsync(_monitoringTarget);
     }
 
     private async void OnClickDelete()
     {
-        await SubnetService.DeleteIpByObjectAsync(_ipAddress);
-        await OnDeleteIp.InvokeAsync(true);
+        if (_monitoringTarget is DnsMonitoringTarget dns)
+        {
+            await MonitorTargetService.DeleteDnsTargetAsync(dns);
+        }
+        else if (_monitoringTarget is IpMonitoringTarget ip)
+        {
+            await MonitorTargetService.DeleteIpTargetAsync(ip);
+        }
+
+        await OnDeleteTarget.InvokeAsync(true);
     }
 }

@@ -1,120 +1,156 @@
-﻿@inject IMonitorTargetAPI SubnetService
+﻿@inject IMonitorTargetAPI MonitorTargetService
 
 @if (EditorVisible)
 {
-    @if (null != _subnet)
-    {
-        <div class="faded_background">
-            <div class="subnet_editor">
-                <header>
-                    @if (IsNewSubnet)
-                    {
-                        <span><strong>@IpMonitoringTarget.ConvertToString(_subnet.Address) - NEW! </strong></span>
-                    }
-                    else
-                    {
-                        <span><strong>@IpMonitoringTarget.ConvertToString(_subnet.Address)</strong></span>
-                    }
-                    <button id="cancelbutton" onclick="@OnClickCancel">
-                        <span class="material-icons">cancel</span>
-                    </button>
-                </header>
-                <article>
-                    <table>
-                        <tr>
-                            <td>
-                                Generate Subnet
-                            </td>
-                        </tr>
-                        <tr id="cidr">
-                            <td colspan="10">
-                                <input id="cidrinput" type="text" @bind="_cidrString" @bind:event="oninput" @onkeydown="OnKeyDownCidrInput" placeholder="192.168.0.1/24" />
+    <div class="faded_background">
+        <div class="subnet_editor">
+            <header>
+                <span>
+                    <strong>
+                        @if (IsNewContainer)
+                        {
+                            @if (_monitoringTargetContainer is DnsContainer dns)
+                            {
+                                @dns.DisplayName <strong>- New!</strong>
+                            }
+                            else if (_monitoringTargetContainer is SubnetContainer subnet)
+                            {
+                                @IpMonitoringTarget.ConvertToString(subnet.Address) <strong>- New!</strong>
+                            }
+                        }
+                        else
+                        {
+                            @if (_monitoringTargetContainer is DnsContainer dns)
+                            {
+                                @dns.DisplayName
+                            }
+                            else if (_monitoringTargetContainer is SubnetContainer subnet)
+                            {
+                                @IpMonitoringTarget.ConvertToString(subnet.Address)
+                            }
+                        }
+                    </strong>
+                </span>
+                <button id="cancelbutton" onclick="@OnClickCancel">
+                    <span class="material-icons">cancel</span>
+                </button>
+            </header>
+            <article>
+                <table>
+                    <tr>
+                        <td>
+                            Generate Subnet
+                        </td>
+                    </tr>
+                    <tr id="cidr">
+                        <td colspan="10">
+                            <input id="cidrinput" type="text" @bind="_address" @bind:event="oninput" @onkeydown="OnKeyDownCidrInput" placeholder="192.168.0.1/24" />
+                            @if (_monitoringTargetContainer is SubnetContainer)
+                            {
                                 <button id="generatebutton" type="button" @onclick="OnClickCidrGenerate">
                                     <span class="material-icons">start</span>
                                 </button>
-                            </td>
-                        </tr>
-                        <tr>
+                            }
+                        </td>
+                    </tr>
+                    <tr>
+                        @if (_monitoringTargetContainer is SubnetContainer)
+                        {
                             <td>
                                 Start Address
                             </td>
                             <td>
                                 End Address
                             </td>
-                        </tr>
-                        <tr>
-                            <td>
-                                <input type="text" @bind="_subnet.StartAddress" readonly="readonly" />
-                            </td>
-                            <td>
-                                <input type="text" @bind="_subnet.EndAddress" readonly="readonly" />
-                            </td>
-                        </tr>
-                        <tr>
-                            <td colspan="10">
-                                <button id="iplist" onclick="@OnClickIpListExpand">
-                                    <span class="material-icons">list</span>
-                                    <span><strong>IP List</strong></span>
-                                </button>
-                            </td>
-                        </tr>
-                        @if (_subnet.List.Count > 0 && _ipListVisible)
-                        {
-                            <Virtualize Items="_subnet.List">
-                                <ItemContent>
-                                    <tr id="ip">
-                                        <td colspan="10">
-                                            <span>@IpMonitoringTarget.ConvertToString(context.Address)</span>
-                                            <span>@context.Hostname</span>
-                                            <button id="deleteipbutton" onclick="@(() => OnClickDeleteIp(context))">
-                                                 <span class="material-icons">delete</span>
-                                             </button>
-                                        </td>
-                                    </tr>
-                                </ItemContent>
-                            </Virtualize>
                         }
-                    </table>
-                </article>
-                <footer>
-                    <button id="savebutton" onclick="@OnClickSave">
-                        <span class="material-icons">save</span>
-                    </button>
-                </footer>
-            </div>
+                    </tr>
+                    <tr>
+                        @if (_monitoringTargetContainer is SubnetContainer container)
+                        {
+                            <td>
+                                <input type="text" @bind="container.StartAddress" readonly="readonly" />
+                            </td>
+                            <td>
+                                <input type="text" @bind="container.EndAddress" readonly="readonly" />
+                            </td>
+                        }
+                    </tr>
+                    <tr>
+                        <td colspan="10">
+                            <button id="iplist" onclick="@OnClickIpListExpand">
+                                <span class="material-icons">list</span>
+                                <span><strong>IP List</strong></span>
+                            </button>
+                        </td>
+                    </tr>
+                    @if (_monitoringTargetContainer.Children.Count > 0 && _targetListVisible)
+                    {
+                        <Virtualize Items="_monitoringTargetContainer.Children" Context="target">
+                            <ItemContent>
+                                <tr id="ip">
+                                    <td colspan="10">
+                                        <span>
+                                            @if (target is DnsMonitoringTarget dnsTarget)
+                                            {
+                                                @dnsTarget.Address   
+                                            }
+                                            else if (target is IpMonitoringTarget ipTarget)
+                                            {
+                                                @IpMonitoringTarget.ConvertToString(ipTarget.Address)
+                                            }
+                                        </span>
+                                        <span>@target.Hostname</span>
+                                        <button id="deleteipbutton" onclick="@(() => OnClickDeleteTarget(target))">
+                                            <span class="material-icons">delete</span>
+                                        </button>
+                                    </td>
+                                </tr>
+                            </ItemContent>
+                        </Virtualize>
+                    }
+                </table>
+            </article>
+            <footer>
+                <button id="savebutton" onclick="@OnClickSave">
+                    <span class="material-icons">save</span>
+                </button>
+            </footer>
         </div>
-    }
+    </div>
 }
 
 @code {
     [Parameter] public required bool EditorVisible { get; set; }
     [Parameter] public required EventCallback<bool> EditorVisibleChanged { get; set; }
 
-    [Parameter] public required bool IsNewSubnet { get; set; }
-    [Parameter] public required EventCallback<bool> IsNewSubnetChanged { get; set; }
-    [Parameter] public required EventCallback<SubnetContainer> SubnetSaved { get; set; }
+    [Parameter] public required bool IsNewContainer { get; set; }
+    [Parameter] public required EventCallback<bool> IsNewContainerChanged { get; set; }
+    [Parameter] public required EventCallback<BaseMonitoringTargetContainer> ContainerSaved { get; set; }
 
-    [Parameter] public required SubnetContainer Subnet { get; set; }
-    private SubnetContainer? _subnet;
+    [Parameter] public required BaseMonitoringTargetContainer MonitoringTargetContainer { get; set; }
+    private BaseMonitoringTargetContainer _monitoringTargetContainer = new DnsContainer("");
 
-    private string _cidrString = string.Empty;
-    private bool _ipListVisible = false;
+    private string _address = string.Empty;
+    private bool _targetListVisible = false;
 
     override protected async Task OnParametersSetAsync()
     {
-        _subnet = Subnet;
+        if (MonitoringTargetContainer.Id != _monitoringTargetContainer.Id)
+        {
+            _monitoringTargetContainer = MonitoringTargetContainer;
 
-        if (!IsNewSubnet)
-        {
-            try 
+            if (!IsNewContainer && _monitoringTargetContainer is SubnetContainer subnet)
             {
-                _cidrString = SubnetContainer.GetCidrString(_subnet);
+                try
+                {
+                    _address = SubnetContainer.GetCidrString(subnet);
+                }
+                catch { }
             }
-            catch { }
-        }
-        else
-        {
-            _cidrString = string.Empty;
+            else
+            {
+                _address = string.Empty;
+            }
         }
 
         await base.OnParametersSetAsync();
@@ -128,44 +164,61 @@
 
     void OnClickCidrGenerate()
     {
-        _subnet = new SubnetContainer(_cidrString);
-        _ipListVisible = false;
+        _monitoringTargetContainer = new SubnetContainer(_address);
+        _targetListVisible = false;
         StateHasChanged();
     }
 
     void OnClickIpListExpand()
     {
-        _ipListVisible = !_ipListVisible;
+        _targetListVisible = !_targetListVisible;
     }
 
-    async Task OnClickDeleteIp(IpMonitoringTarget ip)
+    async Task OnClickDeleteTarget(BaseMonitoringTarget target)
     {
-        if (_subnet != null)
+        if (target is IpMonitoringTarget ip)
         {
-            await SubnetService.DeleteIpByObjectAsync(ip);
-            _subnet.List.Remove(ip);
-            StateHasChanged();
+            await MonitorTargetService.DeleteIpTargetAsync(ip);
         }
+        else if (target is DnsMonitoringTarget dns)
+        {
+            await MonitorTargetService.DeleteDnsTargetAsync(dns);
+        }
+
+        _monitoringTargetContainer.Children.Remove(target);
+        StateHasChanged();
     }
 
     async void OnClickSave()
     {
-        if (null != _subnet)
+        if (IsNewContainer)
         {
-            if (IsNewSubnet)
+            if (_monitoringTargetContainer is DnsContainer dns)
             {
-                await SubnetService.AddSubnetByObjectAsync(_subnet);
-                
+                dns.DisplayName = _address;
+                await MonitorTargetService.AddDnsContainerAsync(dns);
             }
-            else
+            else if (_monitoringTargetContainer is SubnetContainer subnet)
             {
-                await SubnetService.UpdateSubnetByObjectAsync(_subnet);
+                await MonitorTargetService.AddSubnetContainerAsync(subnet);
             }
-
-            _cidrString = string.Empty;
-            await EditorVisibleChanged.InvokeAsync(false);
-            await SubnetSaved.InvokeAsync(_subnet);
         }
+        else
+        {
+            if (_monitoringTargetContainer is DnsContainer dns)
+            {
+                dns.DisplayName = _address;
+                await MonitorTargetService.UpdateDnsContainerAsync(dns);
+            }
+            else if (_monitoringTargetContainer is SubnetContainer subnet)
+            {
+                await MonitorTargetService.UpdateSubnetContainerAsync(subnet);
+            }
+        }
+
+        _address = string.Empty;
+        await EditorVisibleChanged.InvokeAsync(false);
+        await ContainerSaved.InvokeAsync(_monitoringTargetContainer);
     }
 
     private async Task OnKeyDownCidrInput(KeyboardEventArgs e)
