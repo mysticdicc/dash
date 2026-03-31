@@ -16,6 +16,15 @@ namespace DashLib.Models.Monitoring
         public DateTime Timestamp { get; set; }
         public bool Response { get; set; }
 
+        public BaseMonitorState()
+        {
+            Id = 0;
+            TargetId = 0;
+            Target = new IpMonitoringTarget();
+            Timestamp = DateTime.Now;
+            Response = false;
+        }
+
         public BaseMonitorState(BaseMonitoringTarget target)
         {
             Id = 0;

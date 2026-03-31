@@ -13,6 +13,7 @@ namespace DashLib.Models.Monitoring
 {
     public class PingState : BaseMonitorState, IMonitorState<PingState>
     {
+        public PingState() : base () { }
         public PingState(BaseMonitoringTarget target) : base(target) { }
         public PingState(BaseMonitoringTarget target, DateTime timeStamp) : base(target, timeStamp) { }
 

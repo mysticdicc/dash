@@ -1,0 +1,97 @@
+﻿<tr id="ip" onclick="@(() => OnClickRow())">
+    <td>
+        @_baseMonitorState.Timestamp
+    </td>
+    <td>
+        @if (_baseTarget is DnsMonitoringTarget dns)
+        {
+            @dns.Address
+        }
+        else if (_baseTarget is IpMonitoringTarget ip)
+        {
+            @IpMonitoringTarget.ConvertToString(ip.Address)
+        }
+    </td>
+    @if (ExpandedView)
+    {
+        <td>
+            <button id="editbutton" @onclick="@(() => OnClickEdit(_baseTarget))" @onclick:stopPropagation="true">
+                <span title="Edit IP Address" class="material-icons">edit</span>
+            </button>
+        </td>
+        <td>
+            @_baseTarget.Hostname
+        </td>
+    }
+    <td>
+        @if (_baseMonitorState is PingState ping)
+        {
+            <span>ICMP</span>
+        }
+        else if (_baseMonitorState is PortState port)
+        {
+            <span>TCP: @port.TargetPort</span>
+        }
+    </td>
+    <td>
+        @if (_baseMonitorState.Response)
+        {
+            <span>Online</span>
+        }
+        else
+        {
+            <span>Offline</span>
+        }
+    </td>
+    @if (ExpandedView)
+    {
+        <td>
+            <button id="history" @onclick="@(() => OnClickHistory(_baseTarget))" @onclick:stopPropagation="true">
+                <span title="View monitor history" class="material-icons">history</span>
+            </button>
+        </td>
+    }
+</tr>
+
+@code {
+    [Parameter] public required BaseMonitorState BaseMonitorState { get; set; }
+    private BaseMonitorState _baseMonitorState = new PingState();
+    private BaseMonitoringTarget _baseTarget = new IpMonitoringTarget();
+
+    [Parameter] public EventCallback<BaseMonitoringTarget> TargetClicked { get; set; }
+    [Parameter] public EventCallback<BaseMonitorState> StateClicked { get; set; }
+    [Parameter] public EventCallback<BaseMonitoringTarget> EditClicked { get; set; }
+    [Parameter] public bool ExpandedView { get; set; } = true;
+    [Parameter] public EventCallback<BaseMonitoringTarget> HistoryClicked { get; set; }
+
+    protected override void OnParametersSet()
+    {
+        if (_baseMonitorState.Id != BaseMonitorState.Id)
+        {
+            _baseMonitorState = BaseMonitorState;
+
+            if (null != BaseMonitorState.Target)
+            {
+                _baseTarget = BaseMonitorState.Target;
+            }
+        }
+
+        base.OnParametersSet();
+    }
+
+    private async void OnClickRow()
+    {
+        await TargetClicked.InvokeAsync(_baseTarget);
+        await StateClicked.InvokeAsync(_baseMonitorState);
+    }
+
+    private async void OnClickEdit(BaseMonitoringTarget target)
+    {
+        await EditClicked.InvokeAsync(target);
+    }
+
+    private async void OnClickHistory(BaseMonitoringTarget target)
+    {
+        await HistoryClicked.InvokeAsync(target);
+    }
+}

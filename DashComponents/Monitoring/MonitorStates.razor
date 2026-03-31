@@ -12,120 +12,70 @@
                 <div>
                     <table>
                         <tr>
-                            <th>IP</th>
+                            <th>Address</th>
                             <th></th>
                             <th>Hostname</th>
+                            <th>Target</th>
                             <th>Status</th>
-                            <th>Ports</th>
                             <th></th>
                         </tr>
                         @foreach (var poll in _lastPolls)
                         {
-                            <tr id="ip" onclick="@(() => OnClickView(poll.IP))">
-                                <td>
-                                    @if (null != poll.IP)
-                                    {
-                                        @IpMonitoringTarget.ConvertToString(poll.IP.Address)
-                                    }
-                                </td>
-                                <td>
-                                    @if (null != poll.IP)
-                                    {
-                                        <button id="editbutton" @onclick="@(() => OnClickEditIP(poll.IP))" @onclick:stopPropagation="true">
-                                            <span title="Edit IP Address" class="material-icons">edit</span>
-                                        </button>
-                                    }
-                                </td>
-                                <td>
-                                    @if (null != poll.IP)
-                                    {
-                                        @poll.IP.Hostname
-                                    }
-                                </td>
-                                <td>
-                                    @if (null != poll.PingState)
-                                    {
-                                        @if (poll.PingState.Response == true)
-                                        {
-                                            <span>Online</span>
-                                        }
-                                        else
-                                        {
-                                            <span>Offline</span>
-                                        }
-                                    }
-                                </td>
-                                <td>
-                                    @if (null != poll.PortState && poll.PortState.Count > 0)
-                                    {
-                                        <span>@string.Join(',', poll.PortState.Select(x => x.Port))</span>
-                                    }
-                                    else
-                                    {
-                                        <span>None</span>
-                                    }
-                                </td>
-                                <td>
-                                    @if (null != poll.IP)
-                                    {
-                                        <button id="history" @onclick="@(() => OnClickHistory(poll.IP))" @onclick:stopPropagation="true">
-                                            <span title="View monitor history" class="material-icons">history</span>
-                                        </button>
-                                    }
-                                </td>
-                            </tr>
+                            <MonitorStateRow BaseMonitorState="poll" EditClicked="@OnClickEdit" 
+                                HistoryClicked="@OnClickHistory" TargetClicked="@OnClickView" />
                         }
                     </table>
                 </div>
-
             }
         </article>
     </div>
 }
 
 @code {
-    [Parameter] public required List<IpMonitoringTarget> IPAddresses { get; set; }
-    [Parameter] public required EventCallback<List<IpMonitoringTarget>?> IPAddressesChanged { get; set; }
-    [Parameter] public required EventCallback<IpMonitoringTarget> ViewClicked { get; set; }
-    [Parameter] public required EventCallback<IpMonitoringTarget> EditClicked { get; set; }
-    [Parameter] public required EventCallback<IpMonitoringTarget> HistoryClicked { get; set; }
+    [Parameter] public required List<BaseMonitoringTarget> BaseMonitoringTargets { get; set; }
+    private List<BaseMonitoringTarget> _baseMonitoringTargets = [];
+
+    [Parameter] public required EventCallback<List<BaseMonitoringTarget>?> TargetsChanged { get; set; }
+    [Parameter] public required EventCallback<BaseMonitoringTarget> ViewClicked { get; set; }
+    [Parameter] public required EventCallback<BaseMonitoringTarget> EditClicked { get; set; }
+    [Parameter] public required EventCallback<BaseMonitoringTarget> HistoryClicked { get; set; }
     [Parameter] public required bool Visible { get; set; }
     [Parameter] public required EventCallback<bool> VisibleChanged { get; set; }
     [Parameter] public required EventCallback<string> ExpandChanged { get; set; }
     [Parameter] public required TimeSpan ViewLength { get; set; }
     [Parameter] public required EventCallback<TimeSpan> ViewLengthChanged { get; set; }
 
-    public bool _expanded = false;
-    public List<MonitorState> _lastPolls = [];
+    private bool _expanded = false;
+    private List<BaseMonitorState> _lastPolls = [];
 
     protected override Task OnParametersSetAsync()
     {
-        if (null != IPAddresses)
+        if (_baseMonitoringTargets != BaseMonitoringTargets)
         {
-            _lastPolls = MonitorState.GetLastDevicePollsFromIps(IPAddresses);
-        }
-        else
-        {
+            _baseMonitoringTargets = BaseMonitoringTargets;
+
             _lastPolls = [];
+            _lastPolls.AddRange(PortState.GetMostRecentStatesFromListMonitoringTargets(_baseMonitoringTargets));
+            _lastPolls.AddRange(PingState.GetMostRecentStatesFromListMonitoringTargets(_baseMonitoringTargets));
         }
 
         StateHasChanged();
         return base.OnParametersSetAsync();
     }
 
-    private async void OnClickView(IpMonitoringTarget ip)
+    private async void OnClickView(BaseMonitoringTarget target)
     {
-        await ViewClicked.InvokeAsync(ip);
+        await ViewClicked.InvokeAsync(target);
     }
 
-    private async void OnClickEditIP(IpMonitoringTarget ip)
+    private async void OnClickEdit(BaseMonitoringTarget target)
     {
-        await EditClicked.InvokeAsync(ip);
+        await EditClicked.InvokeAsync(target);
     }
 
-    private async void OnClickHistory(IpMonitoringTarget ip)
+    private async void OnClickHistory(BaseMonitoringTarget target)
     {
-        await HistoryClicked.InvokeAsync(ip);
+        await HistoryClicked.InvokeAsync(target);
     }
 
     private async Task OnClickExpand()

@@ -15,6 +15,8 @@ namespace DashLib.Models.Monitoring
     {
         public int TargetPort { get; set; }
 
+        public PortState() : base() { }
+
         public PortState(BaseMonitoringTarget target) : base(target) { }
 
         public PortState(BaseMonitoringTarget target, DateTime timeStamp) : base(target, timeStamp) { }

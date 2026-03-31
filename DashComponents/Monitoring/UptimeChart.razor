@@ -50,8 +50,10 @@
 }
 
 @code {
-    [Parameter] public required List<IpMonitoringTarget>? IPAddresses { get; set; }
-    [Parameter] public required EventCallback<List<IpMonitoringTarget>?> IPAddressesChanged { get; set; }
+    [Parameter] public required List<BaseMonitoringTarget> MonitoringTargets { get; set; }
+    private List<BaseMonitoringTarget> _monitoringTargets = [];
+
+    [Parameter] public required EventCallback<List<BaseMonitoringTarget>> MonitoringTargetsChanged { get; set; }
     [Parameter] public required bool Visible { get; set; }
     [Parameter] public required EventCallback<bool> VisibleChanged { get; set; }
     [Parameter] public required EventCallback<string> ExpandChanged { get; set; }
@@ -149,59 +151,65 @@
     protected override async Task OnParametersSetAsync()
     {
         _chartsReady = false;
-        UptimePoints.Clear();
-        OnlineHeatMapPoints.Clear();
-        OfflineHeatMapPoints.Clear();
 
-        if (IPAddresses == null)
-            return;
-
-        foreach (var ip in IPAddresses.Where(ip => (ip.IsMonitoredTCP || ip.IsMonitoredICMP) && ip.Address != null))
+        if (MonitoringTargets != _monitoringTargets)
         {
-            var states = ip.MonitorStateList?.Where(ms => ms != null && ms.PingState != null).ToList();
-            if (states == null || states.Count == 0)
-                continue;
+            _monitoringTargets = MonitoringTargets;
 
-            int total = states.Count;
-            int up = states.Count(ms => ms.PingState!.Response);
-            decimal percent = total > 0 ? Math.Round((decimal)up / total * 100, 1) : 0;
+            UptimePoints.Clear();
+            OnlineHeatMapPoints.Clear();
+            OfflineHeatMapPoints.Clear();
 
-            string label = IpMonitoringTarget.ConvertToString(ip.Address);
-            if (!string.IsNullOrWhiteSpace(ip.Hostname))
-                label += $" ({ip.Hostname})";
-
-            UptimePoints.Add(new UptimePoint
+            foreach (var target in MonitoringTargets.Where(x => (x.IsMonitoredIcmp || x.IsMonitoredTcp) && x.Parent != null))
             {
-                Percentage = percent,
-                DeviceLabel = label
-            });
-        }
+                var states = PingState.GetAllMonitorStatesFromListMonitoringTargets(_monitoringTargets);
 
-        var allStates = IPAddresses
-            .Where(ip => ip.MonitorStateList != null)
-            .SelectMany(ip => ip.MonitorStateList!)
-            .Where(ms => ms.PingState != null)
-            .ToList();
+                if (states == null || states.Count == 0)
+                    continue;
 
-        var grouped = allStates
-            .GroupBy(ms => ms.SubmitTime)
-            .OrderBy(g => g.Key);
+                int total = states.Count;
+                int up = states.Count(ms => ms.Response);
+                decimal percent = total > 0 ? Math.Round((decimal)up / total * 100, 1) : 0;
 
-        foreach (var group in grouped)
-        {
-            string timeLabel = group.Key.ToString("dd/MM HH:mm");
+                string label = string.Empty;
 
-            OnlineHeatMapPoints.Add(new HeatMapPoint
-            {
-                TimeLabel = timeLabel,
-                Count = group.Count(ms => ms.PingState!.Response)
-            });
+                if (target is DnsMonitoringTarget dns)
+                {
+                    label = dns.Address;
+                }
+                else if (target is IpMonitoringTarget ip)
+                {
+                    label = IpMonitoringTarget.ConvertToString(ip.Address);
+                }
 
-            OfflineHeatMapPoints.Add(new HeatMapPoint
-            {
-                TimeLabel = timeLabel,
-                Count = group.Count(ms => !ms.PingState!.Response)
-            });
+                if (!string.IsNullOrWhiteSpace(target.Hostname))
+                    label += $" ({target.Hostname})";
+
+                UptimePoints.Add(new UptimePoint
+                {
+                    Percentage = percent,
+                    DeviceLabel = label
+                });
+
+                var grouped = states.GroupBy(x => x.Timestamp).OrderBy(g => g.Key);
+
+                foreach (var group in grouped)
+                {
+                    string timeLabel = group.Key.ToString("dd/MM HH:mm");
+
+                    OnlineHeatMapPoints.Add(new HeatMapPoint
+                    {
+                        TimeLabel = timeLabel,
+                        Count = group.Count(ms => ms.Response)
+                    });
+
+                    OfflineHeatMapPoints.Add(new HeatMapPoint
+                    {
+                        TimeLabel = timeLabel,
+                        Count = group.Count(ms => !ms.Response)
+                    });
+                }
+            }
         }
 
         await Task.Delay(500);

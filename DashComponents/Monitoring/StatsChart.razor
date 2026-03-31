@@ -87,8 +87,10 @@
 }
 
 @code {
-    [Parameter] public required List<IpMonitoringTarget>? IPAddresses { get; set; }
-    [Parameter] public required EventCallback<List<IpMonitoringTarget>?> IPAddressesChanged { get; set; }
+    [Parameter] public required List<BaseMonitoringTarget> MonitoringTargets { get; set; }
+    private List<BaseMonitoringTarget> _monitoringTargets = [];
+
+    [Parameter] public required EventCallback<List<BaseMonitoringTarget>> MonitoringTargetsChanged { get; set; }
     [Parameter] public required bool Visible { get; set; }
     [Parameter] public required EventCallback<bool> VisibleChanged { get; set; }
     [Parameter] public required EventCallback<string> ExpandChanged { get; set; }
@@ -120,38 +122,36 @@
     {
         _chartsReady = false;
 
-        if (IPAddresses == null)
+        if (MonitoringTargets != _monitoringTargets)
         {
-            ChartData = [];
-            return;
+            _monitoringTargets = MonitoringTargets;
+
+            CreateChartData(_monitoringTargets, ViewLength);
+            ChartOptions = GenerateApexChartOptions();
+
+            await Task.Delay(500);
+            StateHasChanged();
         }
 
-        CreateChartData(IPAddresses, ViewLength);
-        ChartOptions = GenerateApexChartOptions();
-
-        await Task.Delay(500);
-        StateHasChanged();
         _chartsReady = true;
     }
 
-    private void CreateChartData(List<IpMonitoringTarget> ipAddresses, TimeSpan viewLength)
+    private void CreateChartData(List<BaseMonitoringTarget> targets, TimeSpan viewLength)
     {
-        var allStates = ipAddresses
-            .Where(ip => ip.MonitorStateList != null)
-            .SelectMany(ip => ip.MonitorStateList!)
-            .Where(ms => ms.PingState != null)
-            .ToList();
+        var allStates = new List<BaseMonitorState>();
+        allStates.AddRange(PingState.GetAllMonitorStatesFromListMonitoringTargets(targets));
+        allStates.AddRange(PortState.GetAllMonitorStatesFromListMonitoringTargets(targets));
 
         var grouped = allStates
-            .GroupBy(ms => ms.SubmitTime)
+            .GroupBy(ms => ms.Timestamp)
             .OrderBy(g => g.Key);
 
         var allChartPoints = grouped
             .Select(g => new ChartPoint
             {
                 Time = g.Key,
-                OnlineCount = g.Count(ms => ms.PingState!.Response),
-                OfflineCount = g.Count(ms => !ms.PingState!.Response),
+                OnlineCount = g.Count(ms => ms.Response),
+                OfflineCount = g.Count(ms => !ms.Response),
                 MonitoredCount = g.Count()
             })
             .OrderBy(point => point.Time)

@@ -95,17 +95,19 @@
 
 
 @code {
-    [Parameter] public required List<IpMonitoringTarget>? IPAddresses { get; set; }
-    [Parameter] public required EventCallback<List<IpMonitoringTarget>?> IPAddressesChanged { get; set; }
+    [Parameter] public required List<BaseMonitoringTarget> MonitoringTargets { get; set; }
+    private List<BaseMonitoringTarget> _monitoringTargets = [];
+
+    [Parameter] public required EventCallback<List<BaseMonitoringTarget>?> MonitoringTargetsChanged { get; set; }
     [Parameter] public required bool Visible { get; set; }
     [Parameter] public required EventCallback<bool> VisibleChanged { get; set; }
     [Parameter] public required EventCallback<string> ExpandChanged { get; set; }
     [Parameter] public required TimeSpan ViewLength { get; set; }
     [Parameter] public required EventCallback<TimeSpan> ViewLengthChanged { get; set; }
 
-    MonitorState _lastPoll = new() { SubmitTime = new DateTime() };
-    List<MonitorState> _lastPolls = [];
-    List<MonitorState> _allPolls = [];
+    BaseMonitorState _lastPoll = new PingState();
+    List<BaseMonitorState> _lastPolls = [];
+    List<BaseMonitorState> _allPolls = [];
 
     private int _monitored;
     private int _failedPolls;
@@ -119,27 +121,31 @@
 
     public bool _expanded = false;
 
-
     protected override async Task OnParametersSetAsync()
     {
-        if (IPAddresses != null && IPAddresses.Count > 0)
+        if (MonitoringTargets != _monitoringTargets)
         {
-            _lastPolls = MonitorState.GetLastDevicePollsFromIps(IPAddresses);
-            _allPolls = MonitorState.GetAllDevicePollsFromIps(IPAddresses);
+            _monitoringTargets = MonitoringTargets;
 
-            _successPolls = _allPolls.Where(x => x.PingState != null && x.PingState.Response == true).Count();
-            _failedPolls = _allPolls.Where(x => x.PingState != null && x.PingState.Response == false).Count();
+            _lastPolls.AddRange(PingState.GetMostRecentStatesFromListMonitoringTargets(_monitoringTargets));
+            _lastPolls.AddRange(PortState.GetMostRecentStatesFromListMonitoringTargets(_monitoringTargets));
+
+            _allPolls.AddRange(PingState.GetAllMonitorStatesFromListMonitoringTargets(_monitoringTargets));
+            _allPolls.AddRange(PortState.GetAllMonitorStatesFromListMonitoringTargets(_monitoringTargets));
+
+            _successPolls = _allPolls.Where(x => x.Response == true).Count();
+            _failedPolls = _allPolls.Where(x => x.Response == false).Count();
             _totalPolls = _allPolls.Count();
-            _monitored = IPAddresses.Count(); // api needs to return where icmpmonitored is no longer true
+            _monitored = _monitoringTargets.Count(); // api needs to return where icmpmonitored is no longer true
 
-            _lastMonitored = IPAddresses.Count();
-            _lastOffline = _lastPolls.Where(x => x.PingState != null && x.PingState.Response == false).Count();
-            _lastOnline = _lastPolls.Where(x => x.PingState != null && x.PingState.Response == true).Count();
+            _lastMonitored = _monitoringTargets.Count();
+            _lastOffline = _lastPolls.Where(x => x.Response == false).Count();
+            _lastOnline = _lastPolls.Where(x => x.Response == true).Count();
 
             if (_lastPolls.Count > 0)
             {
-                _lastPoll = _lastPolls.OrderByDescending(x => x.SubmitTime).First();
-                _lastSubmitTime = _lastPoll.SubmitTime;
+                _lastPoll = _lastPolls.OrderByDescending(x => x.Timestamp).First();
+                _lastSubmitTime = _lastPoll.Timestamp;
             }
         }
 
