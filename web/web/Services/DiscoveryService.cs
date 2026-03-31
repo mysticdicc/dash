@@ -32,9 +32,9 @@ namespace web.Services
         {
             await _semaphore.WaitAsync();
             _logger.LogInfo("Discovery task initiated.", _logSource);
-            List<Task<IP>> tasks = new();
+            List<Task<IpMonitoringTarget>> tasks = new();
 
-            foreach (var ip in subnet.List)
+            foreach (var ip in subnet.Children)
             {
                 tasks.Add(Task.Factory.StartNew(() =>
                     {
@@ -45,27 +45,27 @@ namespace web.Services
             _logger.LogInfo("Discovery tasks created awaiting results.", _logSource);
             await Task.WhenAll(tasks);
 
-            subnet.List = tasks.Select(x => x.Result).ToList();
+            subnet.Children = tasks.Select(x => x.Result).ToList();
 
             _logger.LogInfo("Discovery tasks completed returning results.", _logSource);
             _semaphore?.Dispose();
             return subnet;
         }
 
-        public IP DiscoveryTask(IP ip)
+        public IpMonitoringTarget DiscoveryTask(IpMonitoringTarget ip)
         {
             using var ping = new Ping();
             var ipAddress = new IPAddress(ip.Address);
 
             if (ping.Send(ipAddress).Status == IPStatus.Success)
             {
-                _logger.LogInfo($"{(IP.ConvertToString(ip.Address))} responded to ping", _logSource);
-                ip.IsMonitoredICMP = true;
+                _logger.LogInfo($"{(IpMonitoringTarget.ConvertToString(ip.Address))} responded to ping", _logSource);
+                ip.IsMonitoredIcmp = true;
 
                 try
                 {
                     ip.Hostname = _dnsLookupClient.GetHostName(ipAddress) ?? string.Empty;
-                    _logger.LogInfo($"{IP.ConvertToString(ip.Address)} resolved to {ip.Hostname}", _logSource);
+                    _logger.LogInfo($"{IpMonitoringTarget.ConvertToString(ip.Address)} resolved to {ip.Hostname}", _logSource);
                 }
                 catch { }
             }

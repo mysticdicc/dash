@@ -1,4 +1,5 @@
 using DashLib.DankAPI;
+using DashLib.Interfaces.Monitoring;
 using DashLib.Models;
 using DashLib.Models.Monitoring;
 using DashLib.Models.Network;
@@ -21,17 +22,17 @@ namespace web.Services
         private readonly HttpClient _httpClient;
         private readonly LoggingService _logger;
         CancellationTokenSource _cancellationToken;
-        MonitorStateAPI _monitoringApi;
+        IMonitorStateRepository _monitoringRepo;
         SettingsService _currentSettings;
         private static LogEntry.LogSource _logSource = LogEntry.LogSource.MonitoringService;
-        public MonitorService(LoggingService logger, HttpClient httpClient, MonitorStateAPI monitoringApi, SettingsService settingsService)
+        public MonitorService(LoggingService logger, HttpClient httpClient, IMonitorStateRepository monitoringRepo, SettingsService settingsService)
         {
             _httpClient = httpClient;
             _timer = null;
             _logger = logger;
             _cancellationToken = new();
             _currentSettings = settingsService;
-            _monitoringApi = monitoringApi;
+            _monitoringRepo = monitoringRepo;
 
             _logger.LogInfo("Service started", _logSource);
         }
@@ -45,56 +46,86 @@ namespace web.Services
 
                 DateTime submit = DateTime.UtcNow;
 
-                List<IP>? ips = [];
+                _logger.LogInfo("Fetching monitored devices from database", _logSource);
 
-                _logger.LogInfo("Fetching monitored devices from API endpoint", _logSource);
-                ips = await _monitoringApi.GetMonitoredIpsAsync();
+                var ipList = await _monitoringRepo.GetAllMonitoredIpsAsync();
+                int ipUpdate = 0;
+                _logger.LogInfo($"{ipList.Count} IP targets monitored.", _logSource);
 
-                if (null != ips)
+                var dnsList = await _monitoringRepo.GetAllMonitoredDnsAsync();
+                int dnsUpdate = 0;
+                _logger.LogInfo($"{dnsList.Count} DNS targets monitored.", _logSource);
+
+                foreach (var ip in ipList)
                 {
-                    _logger.LogInfo($"Fetched {ips.Count()} from API", _logSource);
-
-                    foreach (IP ip in ips)
+                    switch ((ip.IsMonitoredIcmp, ip.IsMonitoredTcp))
                     {
-                        MonitorState currentMonitorState = new()
-                        {
-                            SubmitTime = submit,
-                            IP_ID = ip.ID
-                        };
+                        case (true, true):
+                            ip.IcmpMonitorStates.Add(await ip.IcmpTestAsync());
+                            ip.TcpMonitorStates.AddRange(await ip.TcpTestAsync());
+                            ipUpdate++;
+                            break;
 
-                        ip.MonitorStateList = [];
+                        case (true, false):
+                            ip.IcmpMonitorStates.Add(await ip.IcmpTestAsync());
+                            ipUpdate++;
+                            break;
 
-                        switch ((ip.IsMonitoredICMP, ip.IsMonitoredTCP))
-                        {
-                            case (true, true):
-                                currentMonitorState.PortState = TcpTest(ip);
-                                currentMonitorState.PingState = IcmpTest(ip);
-                                break;
-                            case (true, false):
-                                currentMonitorState.PingState = IcmpTest(ip);
-                                break;
-                            case (false, true):
-                                currentMonitorState.PortState = TcpTest(ip);
-                                break;
-                        }
-
-                        ip.MonitorStateList.Add(currentMonitorState);
-
+                        case (false, true):
+                            ip.TcpMonitorStates.AddRange(await ip.TcpTestAsync());
+                            ipUpdate++;
+                            break;
                     }
+                }
 
+                _logger.LogInfo($"{ipUpdate} IP monitor tasks completed and will be submitted to database.", _logSource);
+
+                if (ipUpdate > 0)
+                {
                     try
                     {
-                        await _monitoringApi.PostNewDevicePollAsync(ips);
-                        _logger.LogInfo("Ips submitted to api endpoint", _logSource);
+                        await _monitoringRepo.AddMonitorStatesFromListIpAsync(ipList.ToList());
                     }
                     catch (Exception ex)
                     {
-                        _logger.LogError(ex.Message, _logSource);
+                        _logger.LogError($"Failed to save IP states: {ex.Message}", _logSource);
                     }
                 }
-                else
+
+                foreach (var dns in dnsList)
                 {
-                    _logger.LogError("Could not fetch IP list from api endpoint", _logSource);
+                    switch ((dns.IsMonitoredIcmp, dns.IsMonitoredTcp))
+                    {
+                        case (true, true):
+                            dns.IcmpMonitorStates.Add(await dns.IcmpTestAsync());
+                            dns.TcpMonitorStates.AddRange(await dns.TcpTestAsync());
+                            dnsUpdate++;
+                            break;
+
+                        case (true, false):
+                            dns.IcmpMonitorStates.Add(await dns.IcmpTestAsync());
+                            dnsUpdate++;
+                            break;
+
+                        case (false, true):
+                            dns.TcpMonitorStates.AddRange(await dns.TcpTestAsync());
+                            dnsUpdate++;
+                            break;
+                    }
+                }
+
+                _logger.LogInfo($"{dnsUpdate} DNS monitor tasks completed and will be submitted to API.", _logSource);
+
+                if (dnsUpdate > 0)
+                {
+                    try
+                    {
+                        await _monitoringRepo.AddMonitorStatesFromListDnsAsync(dnsList.ToList());
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError($"Failed to save DNS states: {ex.Message}", _logSource);
+                    }
                 }
             }
             catch (OperationCanceledException)
@@ -107,59 +138,6 @@ namespace web.Services
 
                 await Task.Delay(15000, token);
             }
-        }
-
-        List<PortState> TcpTest(IP ip)
-        {
-            _logger.LogInfo($"TCP testing {IP.ConvertToString(ip.Address)}", _logSource);
-
-            List<PortState> portStates = [];
-            
-            if (null != ip.PortsMonitored)
-            {
-                foreach (int port in ip.PortsMonitored)
-                {
-                    _logger.LogInfo($"Testing {port.ToString()} on {IP.ConvertToString(ip.Address)}", _logSource);
-
-                    using var client = new TcpClient();
-                    bool status = false;
-
-                    try
-                    {
-                        var address = new IPAddress(ip.Address);
-                        client.Connect(address, port);
-                        status = true;
-                    }
-                    catch
-                    {
-                        status = false;
-                    }
-
-                    PortState state = new()
-                    {
-                        Port = port,
-                        Status = status
-                    };
-
-                    portStates.Add(state);
-                }
-            }
-
-            return portStates;
-        }
-
-        PingState IcmpTest(IP ip)
-        {
-            _logger.LogInfo($"Ping testing {IP.ConvertToString(ip.Address)}", _logSource);
-
-            using Ping ping = new();
-
-            PingState pingState = new()
-            {
-                Response = ping.Send(new IPAddress(ip.Address)).Status == IPStatus.Success
-            };
-
-            return pingState;
         }
 
         async public void Restart()
