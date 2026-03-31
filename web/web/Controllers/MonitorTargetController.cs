@@ -17,18 +17,6 @@ namespace web.Controllers
         private readonly DiscoveryService _discoveryService = discoveryService;
         private readonly IMonitorTargetRepository _dbRepo = subnetRepository;
 
-        private static readonly JsonSerializerOptions JsonOptions = new()
-        {
-            ReferenceHandler = ReferenceHandler.IgnoreCycles,
-            PropertyNamingPolicy = null,
-            WriteIndented = true
-        };
-
-        private static string SerializeObject(object obj)
-        {
-            return JsonSerializer.Serialize(obj, JsonOptions);
-        }
-
         [HttpPost]
         [Route("[controller]/v2/startdiscovery")]
         public async Task<IActionResult> StartSubnetDiscovery(SubnetContainer subnet)

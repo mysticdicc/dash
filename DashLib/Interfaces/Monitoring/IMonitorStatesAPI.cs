@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace DashLib.Interfaces.Monitoring
 {
-    public interface IMonitoringAPI
+    public interface IMonitorStatesAPI
     {
         public Task<List<PortState>> GetAllPortStatesAsync();
         public Task<List<PingState>> GetAllPingStatesAsync();

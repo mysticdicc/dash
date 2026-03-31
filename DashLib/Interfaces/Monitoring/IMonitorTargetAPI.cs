@@ -27,6 +27,5 @@ namespace DashLib.Interfaces.Monitoring
         public Task<bool> DeleteDnsTargetAsync(DnsMonitoringTarget dns);
         public Task<bool> DeleteSubnetByIdAsync(int id);
         public Task<bool> DeleteDnsContainerByIdAsync(int id);
-        public Task<bool> ReplaceAllSubnetsAsync(List<SubnetContainer> subnets);
     }
 }
