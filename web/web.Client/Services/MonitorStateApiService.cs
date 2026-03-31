@@ -7,7 +7,7 @@ using System.Diagnostics;
 
 namespace web.Client.Services
 {
-    public class MonitoringApiService(MonitorStateAPI monitoringApi, NotificationService notificationService) : IMonitorStatesAPI
+    public class MonitorStateApiService(MonitorStateAPI monitoringApi, NotificationService notificationService) : IMonitorStatesAPI
     {
         private readonly MonitorStateAPI _monitoringApi = monitoringApi;
         private readonly NotificationService _notificationService = notificationService;

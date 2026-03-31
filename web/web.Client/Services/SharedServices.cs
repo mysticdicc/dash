@@ -28,10 +28,10 @@ namespace web.Client.Services
             services.AddSingleton<IDashAPI, DashboardApiService>();
 
             services.AddSingleton<MonitorStateAPI>();
-            services.AddSingleton<IMonitorStatesAPI, MonitoringApiService>();
+            services.AddSingleton<IMonitorStatesAPI, MonitorStateApiService>();
 
             services.AddSingleton<MonitorTargetAPI>();
-            services.AddScoped<IMonitorTargetAPI, SubnetApiService>();
+            services.AddScoped<IMonitorTargetAPI, MonitorTargetApiService>();
 
             services.AddSingleton<SettingsAPI>();
             services.AddScoped<ISettingsAPI, SettingsApiService>();
