@@ -12,17 +12,11 @@ namespace DashLib.Models.Settings
     {
         public int PollingIntervalInSeconds { get; set; }
         public int MonitorStateRetentionPeriodInHours { get; set; }
-        public int AlertIntervalInSeconds { get; set; }
-        public float AlertIfDownForPercent { get; set; }
-        public bool IcmpDownPercentAlertsEnabled { get; set; }
-        public bool IcmpDownOnceAlertsEnabled { get; set; }
-        public bool TcpDownPercentAlertsEnabled { get; set; }
-        public bool TcpDownOnceAlertsEnabled { get; set; }
-        public int AlertTimePeriodInMinutes { get; set; }
-        public int AlertAgainAfterInMinutes { get; set; }
+
         public SmtpSettings SmtpSettings { get; set; }
         public DiscordSettings DiscordSettings { get; set; }
         public TelegramSettings TelegramSettings { get; set; }
+        public AlertSettings AlertSettings { get; set; }
         
         public MonitoringSettings()
         {
@@ -32,17 +26,10 @@ namespace DashLib.Models.Settings
         {
             PollingIntervalInSeconds = 600;
             MonitorStateRetentionPeriodInHours = 144;
-            AlertIntervalInSeconds = 600;
-            AlertIfDownForPercent = 50.0F;
-            IcmpDownPercentAlertsEnabled = false;
-            IcmpDownOnceAlertsEnabled = false;
-            TcpDownPercentAlertsEnabled = false;
-            TcpDownOnceAlertsEnabled = false;
-            AlertTimePeriodInMinutes = 30;
-            AlertAgainAfterInMinutes = 30;
             SmtpSettings = new SmtpSettings();
             DiscordSettings = new DiscordSettings();
             TelegramSettings = new TelegramSettings();
+            AlertSettings = new AlertSettings(true);
         }
     }
 }

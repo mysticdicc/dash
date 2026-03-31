@@ -162,5 +162,23 @@ namespace DashLib.DankAPI
             if (result.IsSuccessStatusCode) return true;
             return false;
         }
+
+        public async Task<List<IpMonitoringTarget>> GetMonitoredIpAndStatusAsync()
+        {
+            string endpoint = $"{_base}/v2/get/deviceandstatus/ips";
+            var result = await RequestHandler.GetFromJsonAsync<List<IpMonitoringTarget>>(_httpClient, endpoint);
+
+            if (result == null) throw new InvalidDataException("No response from API");
+            return result;
+        }
+
+        public async Task<List<DnsMonitoringTarget>> GetMonitoredDnsAndStatusAsync()
+        {
+            string endpoint = $"{_base}/v2/get/deviceandstatus/dns";
+            var result = await RequestHandler.GetFromJsonAsync<List<DnsMonitoringTarget>>(_httpClient, endpoint);
+
+            if (result == null) throw new InvalidDataException("No response from API");
+            return result;
+        }
     }
 }

@@ -1,4 +1,4 @@
-﻿@inject IMonitorStatesAPI MonitoringAPI
+﻿@inject IMonitorStatesAPI MonitorStatesAPI
 @inject IJSRuntime JSRuntime
 
 @page "/monitoring/home"
@@ -13,9 +13,16 @@
         @if (null != _polls)
         {
             <select @onchange="@((e) => OnSelectFilterIpChanged(e))">
-                @foreach (var ip in Polls)
+                @foreach (var target in Polls)
                 {
-                    <option value="@ip.ID">@IpMonitoringTarget.ConvertToString(ip.Address)</option>
+                    @if (target is DnsMonitoringTarget dns)
+                    {
+                        <option value="@dns.Id">@dns.Address</option>
+                    }
+                    else if (target is IpMonitoringTarget ip)
+                    {
+                        <option value="@ip.Id">@IpMonitoringTarget.ConvertToString(ip.Address)</option>
+                    }
                 }
                 <option value="@string.Empty"></option>
             </select>
@@ -50,29 +57,30 @@
                 @bind-Visible="@_monitorStatesVisible" 
                 @bind-ViewLength="@_viewLength"
                 ExpandChanged="@OnClickExpandMonitoringWindow" 
-                ViewClicked="@OnIpViewClicked" 
-                EditClicked="@OnIpEditClicked" 
+                ViewClicked="@OnTargetViewClicked" 
+                EditClicked="@OnTargetEditClicked" 
                 HistoryClicked="@OnMonitorHistoryClicked"/>
         </div>
     </content>
 </article>
 
-@if (null != _viewIp)
+@if (null != _viewTarget)
 {
-    <IpView @bind-IpViewVisible="@_ipViewVisible" IpAddress="@_viewIp" EditClicked="@OnIpEditClicked" />
+    <MonitoringTargetView @bind-Visible="@_ipViewVisible" MonitoringTarget="@_viewTarget" EditClicked="@OnTargetEditClicked"/>
 }
-@if (null != _editIp)
+@if (null != _editTarget)
 {
-    <IpEditor @bind-EditorVisible="@_ipEditorVisible" IpAddress="@_editIp"/>
+    <MonitoringTargetEditor @bind-EditorVisible="@_ipEditorVisible" MonitoringTarget="@_editTarget"/>
 }
 @if (_viewHistory.Count > 0)
 {
-    <MonitorStatesHistory @bind-MonitorHistoryVisible="@_monitorHistoryVisible" MonitorStates="@_viewHistory" ViewClicked="@OnIpViewClicked"/>
+    <MonitorStatesHistory @bind-MonitorHistoryVisible="@_monitorHistoryVisible" 
+    MonitorStates="@_viewHistory" ViewClicked="@OnTargetViewClicked"/>
 }
 
 @code {
-    List<IpMonitoringTarget> Polls = new();
-    List<IpMonitoringTarget> _polls = new();
+    List<BaseMonitoringTarget> Polls = new();
+    List<BaseMonitoringTarget> _polls = new();
 
     private bool _ipViewVisible = false;
     private bool _ipEditorVisible = false;
@@ -85,40 +93,43 @@
 
     private TimeSpan _viewLength = TimeSpan.FromHours(24);
 
-    private IpMonitoringTarget? _viewIp;
-    private IpMonitoringTarget? _editIp;
-    private IpMonitoringTarget? _filterIp;
-    private List<MonitorState> _viewHistory = [];
+    private BaseMonitoringTarget? _viewTarget;
+    private BaseMonitoringTarget? _editTarget;
+    private BaseMonitoringTarget? _filterTarget;
+    private List<BaseMonitorState> _viewHistory = [];
 
     protected override async Task OnInitializedAsync()
     {
-        Polls = await MonitoringAPI.GetAllPollsAsync();
-        _polls = MonitorState.GetMonitorStatesFromTimespan(Polls, _viewLength);
+        Polls = [];
+        Polls.AddRange(await MonitorStatesAPI.GetMonitoredIpAndStatusAsync());
+        Polls.AddRange(await MonitorStatesAPI.GetMonitoredDnsAndStatusAsync());
+
+        _polls = BaseMonitorState.GetMonitorStatesFromTimespan(Polls, _viewLength);
         await base.OnInitializedAsync();
         StateHasChanged();
     }
 
-    private void OnIpEditClicked(IpMonitoringTarget ip)
+    private void OnTargetEditClicked(BaseMonitoringTarget target)
     {
-        _editIp = ip;
+        _editTarget = target;
         _ipViewVisible = false;
         _ipEditorVisible = true;
         _monitorHistoryVisible = false;
     }
 
-    private void OnIpViewClicked(IpMonitoringTarget ip)
+    private void OnTargetViewClicked(BaseMonitoringTarget target)
     {
-        _viewIp = ip;
+        _viewTarget = target;
         _ipViewVisible = true;
         _ipEditorVisible = false;
         _monitorHistoryVisible = false;
     }
 
-    private void OnMonitorHistoryClicked(IpMonitoringTarget ip)
+    private void OnMonitorHistoryClicked(BaseMonitoringTarget target)
     {
-        var list = new List<IpMonitoringTarget>();
-        list.Add(ip);
-        _viewHistory = MonitorState.GetAllDevicePollsFromIps(list);
+        _viewHistory = [];
+        _viewHistory.AddRange(PortState.GetAllMonitorStatesFromMonitoringTarget(target));
+        _viewHistory.AddRange(PingState.GetAllMonitorStatesFromMonitoringTarget(target));
 
         _ipViewVisible = false;
         _ipEditorVisible = false;
@@ -136,12 +147,12 @@
 
         if (!string.IsNullOrEmpty(selectedValue))
         {
-            var selectedIp = MonitorState.GetMonitorStatesFromTimespan(Polls, _viewLength).Where(x => x.ID.ToString() == selectedValue).FirstOrDefault();
+            var target = BaseMonitorState.GetMonitorStatesFromTimespan(Polls, _viewLength).Where(x => x.Id.ToString() == selectedValue).FirstOrDefault();
 
-            if (selectedIp != null)
+            if (target != null)
             {
-                _filterIp = selectedIp;
-                _polls = new List<IpMonitoringTarget> { selectedIp };
+                _filterTarget = target;
+                _polls = new List<BaseMonitoringTarget> { target };
                 StateHasChanged();
             }
         }
@@ -197,7 +208,7 @@
     {
         if (TimeSpan.TryParse(e.Value?.ToString(), out var newSpan))
         {
-            _polls = MonitorState.GetMonitorStatesFromTimespan(Polls, newSpan);
+            _polls = BaseMonitorState.GetMonitorStatesFromTimespan(Polls, newSpan);
             _viewLength = newSpan;
             StateHasChanged();
         }

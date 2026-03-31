@@ -1,5 +1,5 @@
 ﻿@inject IDashAPI DashboardService
-@inject IMonitorStatesAPI MonitoringService
+@inject IMonitorStatesAPI MonitorStatesService
 
 @if (!Hidden)
 {
@@ -102,9 +102,16 @@
                                 <tr>
                                     <td>
                                         <select @bind="@deviceStatusWidget.IP_ID">
-                                            @foreach (var ip in ips)
+                                            @foreach (var target in _targets)
                                             {
-                                                <option value="@ip.ID">@IpMonitoringTarget.ConvertToString(ip.Address)</option>
+                                                @if (target is DnsMonitoringTarget dns)
+                                                {
+                                                    <option value="@dns.Id">@dns.Address</option>
+                                                }
+                                                else if (target is IpMonitoringTarget ip)
+                                                {
+                                                    <option value="@ip.Id">@IpMonitoringTarget.ConvertToString(ip.Address)</option>
+                                                }
                                             }
                                         </select>
                                     </td>
@@ -193,14 +200,16 @@
 
     [Parameter] public required DashboardItemBase Item { get; set; }
     private DashboardItemBase _dashboardItem;
-    private List<IpMonitoringTarget> ips = [];
+    private List<BaseMonitoringTarget> _targets = [];
 
     private WidgetItem.WidgetType _widgetType = WidgetItem.WidgetType.Clock;
 
     protected override async Task OnParametersSetAsync()
     {
         _dashboardItem = Item;
-        ips = await MonitoringService.GetMonitoredIpsAsync();
+        _targets = [];
+        _targets.AddRange(await MonitorStatesService.GetAllMonitoredDnsAsync());
+        _targets.AddRange(await MonitorStatesService.GetAllMonitoredIpsAsync());
 
         if (Item is ShortcutItem shortcut)
         {

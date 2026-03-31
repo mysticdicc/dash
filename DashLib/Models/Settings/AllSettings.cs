@@ -121,6 +121,7 @@ namespace DashLib.Models.Settings
             SubnetSettings ??= new SubnetSettings();
             LoggingSettings ??= new LoggingSettings();
 
+            MonitoringSettings.AlertSettings ??= new AlertSettings(true);
             MonitoringSettings.SmtpSettings ??= new SmtpSettings();
             MonitoringSettings.DiscordSettings ??= new DiscordSettings();
             MonitoringSettings.TelegramSettings ??= new TelegramSettings();

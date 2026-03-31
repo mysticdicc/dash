@@ -1,6 +1,6 @@
 ﻿@implements IDisposable
-@inject IMonitorStatesAPI MonitoringService
-@inject IMonitorTargetAPI SubnetService
+@inject IMonitorStatesAPI MonitorStateService
+@inject IMonitorTargetAPI MonitorTargetService
 @using System.Globalization
 
 <div id="statusdashcard">
@@ -30,24 +30,20 @@
         TimerElapsed(this, null);
         _timer.Start();
 
-        ipAddress = await SubnetService.GetIpByIdAsync(Widget.IP_ID);
+        ipAddress = await MonitorTargetService.GetIpTargetByIdAsync(Widget.IP_ID);
 
         await base.OnInitializedAsync();
     }
 
     private async void TimerElapsed(object? source, System.Timers.ElapsedEventArgs? e)
     {
-        var status = await MonitoringService.GetByDeviceByIdAsync(Widget.IP_ID);
+        var status = await MonitorStateService.GetIpMonitorStatesByDeviceIdAsync(Widget.IP_ID);
+        var ping = PingState.GetMostRecentStateFromMonitoringTarget(status).OrderByDescending(x => x.Timestamp).First();
 
-        if (null != status && status.Count > 0)
+        if (ping != null)
         {
-            var last = status.Where(x => x.PingState != null).OrderBy(x => x.SubmitTime).LastOrDefault();
-
-            if (last != null)
-            {
-                currentStatus = last.PingState!.Response;
-                _dateString = last.SubmitTime.ToString("HH:mm:ss");
-            }
+            currentStatus = ping.Response;
+            _dateString = ping.Timestamp.ToString("HH:mm:ss");
         }
         else
         {

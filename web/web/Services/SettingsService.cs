@@ -10,6 +10,7 @@ namespace web.Services
         public AllSettings All { get; set; }
         public DiscordSettings Discord => All.MonitoringSettings.DiscordSettings;
         public MonitoringSettings Monitoring => All.MonitoringSettings;
+        public AlertSettings Alerts => All.MonitoringSettings.AlertSettings;
         public TelegramSettings Telegram => All.MonitoringSettings.TelegramSettings;
         public DashboardSettings Dashboard => All.DashboardSettings;
         public SubnetSettings Subnet => All.SubnetSettings;

@@ -42,5 +42,16 @@ namespace DashLib.Models.Monitoring
             Timestamp = timeStamp;
             Response = false;
         }
+
+        static public List<BaseMonitoringTarget> GetMonitorStatesFromTimespan(List<BaseMonitoringTarget> targets, TimeSpan length)
+        {
+            var oldDate = DateTime.Now - length;
+            foreach (var target in targets)
+            {
+                target.TcpMonitorStates = target.TcpMonitorStates.Where(x => x.Timestamp > oldDate).ToList();
+                target.IcmpMonitorStates = target.IcmpMonitorStates.Where(x => x.Timestamp > oldDate).ToList();
+            }
+            return targets;
+        }
     }
 }

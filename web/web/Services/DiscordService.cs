@@ -176,18 +176,15 @@ namespace web.Services {
                     {
                         sb.AppendLine($"Address: {IpMonitoringTarget.ConvertToString(ip.Address)}");
 
-                        if (null != ip.MonitorStateList)
+                        if (null != ip.IcmpMonitorStates)
                         {
-                            var last = ip.MonitorStateList
-                                .Where(x => x.PingState != null)
-                                .OrderByDescending(x => x.SubmitTime)
-                                .FirstOrDefault();
+                            var last = PingState.GetMostRecentStateFromMonitoringTarget(ip).First();
 
                             if (null != last)
                             {
-                                string status = last.PingState?.Response == true ? "online" : "offline";
+                                string status = last.Response == true ? "online" : "offline";
                                 sb.AppendLine($"Last Online State: {status}");
-                                sb.AppendLine($"Last Poll Time: {last.SubmitTime}");
+                                sb.AppendLine($"Last Poll Time: {last.Timestamp}");
                             }
                             else
                             {
@@ -259,10 +256,11 @@ namespace web.Services {
             {
                 await DeferIfNeededAsync(command, ephemeral: true);
 
-                var ips = await _monitoringAPI.GetAllPollsAsync();
-                var report = MonitorState.GetMonitorStateSummaryFromIps(ips, _settings.All);
+                //var ips = await _monitoringAPI.GetAllPingStatesAsync();
+                //var report = MonitorState.GetMonitorStateSummaryFromIps(ips, _settings.All);
+                throw new NotImplementedException();
 
-                await command.FollowupAsync(report, ephemeral: true);
+                //await command.FollowupAsync(report, ephemeral: true);
             }
             catch (Exception ex)
             {
@@ -286,25 +284,26 @@ namespace web.Services {
             try
             {
                 IpMonitoringTarget ip = await _monitoringAPI.GetDeviceAndMonitorStatesByStringIpAsync(ipText);
+                var pings = PingState.GetMostRecentStateFromMonitoringTarget(ip);
+                var ports = PortState.GetMostRecentStateFromMonitoringTarget(ip);
 
-                if (ip.MonitorStateList == null || ip.MonitorStateList.Count == 0)
+                if (pings.Count + ports.Count == 0)
                 {
                     await command.FollowupAsync("No monitor state found for the specified IP.", ephemeral: true);
                     return;
                 }
 
-                var lastState = ip.MonitorStateList.OrderByDescending(x => x.SubmitTime).FirstOrDefault();
-
-                if (lastState == null)
+                var ping = pings.First();
+                if (ping == null)
                 {
-                    await command.FollowupAsync("No monitor state found for the specified IP.", ephemeral: true);
-                    return;
+                    await command.FollowupAsync("Last ping state returned null for the specified IP.", ephemeral: true);
                 }
-
-                string status = lastState.PingState?.Response == true ? "online" : "offline";
-                _logger.LogInfo("Online status parsed, sending to discord.", _logSource);
-                await command.FollowupAsync($"The device with IP {ipText} was last seen as {status} at {lastState.SubmitTime}.", ephemeral: true);
-                return;
+                else
+                {
+                    string status = ping.Response == true ? "online" : "offline";
+                    _logger.LogInfo("Online status parsed, sending to discord.", _logSource);
+                    await command.FollowupAsync($"The device with IP {ipText} was last seen as {status} at {ping.Timestamp}.", ephemeral: true);
+                }
             }
             catch(Exception ex)
             {

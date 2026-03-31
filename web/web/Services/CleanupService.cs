@@ -1,5 +1,6 @@
 ﻿using dankweb.API;
 using DashLib.Models;
+using DashLib.Models.Monitoring;
 using Microsoft.EntityFrameworkCore;
 
 namespace web.Services
@@ -26,12 +27,21 @@ namespace web.Services
 
                     var stateRetentionPeriod = TimeSpan.FromHours(_settings.Monitoring.MonitorStateRetentionPeriodInHours);
                     var stateDate = DateTime.Now - stateRetentionPeriod;
-                    var states = await ctx.MonitorStates.Where(x => x.SubmitTime < stateDate).ToListAsync();
-                    _logger.LogInfo($"{states.Count} monitor states are older than retention period and will therefore be deleted.", _logSource);
+                    
+                    var pings = await ctx.PingStates.Where(x => x.Timestamp < stateDate).ToListAsync();
+                    _logger.LogInfo($"{pings.Count} ICMP monitor states are older than retention period and will therefore be deleted.", _logSource);
 
-                    if (states.Count > 0)
+                    if (pings.Count > 0)
                     {
-                        ctx.MonitorStates.RemoveRange(states);
+                        ctx.PingStates.RemoveRange(pings);
+                    }
+
+                    var ports = await ctx.PortStates.Where(x => x.Timestamp < stateDate).ToListAsync();
+                    _logger.LogInfo($"{ports.Count} TCP monitor states are older than retention period and will therefore be deleted.", _logSource);
+
+                    if (pings.Count > 0)
+                    {
+                        ctx.PortStates.RemoveRange(ports);
                     }
 
                     var logRetentionPeriod = TimeSpan.FromHours(_settings.Logs.RetentionPeriodHours);

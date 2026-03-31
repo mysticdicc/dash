@@ -7,10 +7,10 @@
 @using web.Client.Services
 @using System.Text.Json
 
-@inject IMonitorTargetAPI SubnetService
+@inject IMonitorTargetAPI MonitorTargetService
 @inject IJSRuntime JSRuntime
 
-@page "/subtrackr/home"
+@page "/targets/home"
 
 <PageTitle>subnet trackr</PageTitle>
 
@@ -18,7 +18,7 @@
 
 <article>
     <header>
-        <button onclick="@OnClickNewSubnet">
+        <button onclick="@OnClickNew">
             <span class="material-icons">add</span>
         </button>
         @if (_advancedViewEnabled)
@@ -62,60 +62,74 @@
                 </th>
                 <th/>
             </tr>
-            @foreach (SubnetContainer subnet in SubnetList)
+            @foreach (var container in _containers)
             {
-                <SubnetCard Subnet="subnet" OnEditIp="@OnClickEditIP" OnEditSubnet="@OnClickEditSubnet" @bind-AdvancedViewEnabled="@_advancedViewEnabled" OnDeleteClicked="@OnDeleteClicked" OnDeleteIp="@OnDeleteClicked" />
+                <MonitoringTargetContainerRow 
+                    MonitoringTargetContainer="container" 
+                    OnEditTarget="@OnClickEditTarget"
+                    OnDeleteClicked="@OnDeleteClicked" 
+                    OnDeleteTarget="@OnDeleteClicked" 
+                    @bind-AdvancedViewEnabled="@_advancedViewEnabled"/>
             }
         </table>
     </content>
 </article>
 
-@if (null != _editingSubnet)
+@if (null != _editingContainer)
 {
-    <SubnetEditor @bind-EditorVisible="@_subnetEditorVisible" Subnet="_editingSubnet" @bind-IsNewSubnet="@_isNewSubnet" SubnetSaved="@OnSubnetSaved"/>
+    <MonitoringTargetContainerEditor 
+        @bind-EditorVisible="@_containerEditorVisible" 
+        MonitoringTargetContainer="_editingContainer"
+        @bind-IsNewContainer="@_isNewContainer" 
+        ContainerSaved="@OnContainerSaved"/>
 }
 
-@if (null != _editingIP)
+@if (null != _editingTarget)
 {
-    <IpEditor @bind-EditorVisible="@_ipEditorVisible" IpAddress="_editingIP" />
+    <MonitoringTargetEditor 
+        @bind-EditorVisible="@_targetEditorVisible"
+        MonitoringTarget="@_editingTarget"/>
 }
 )
 
 @code {
-    List<SubnetContainer> SubnetList = [];
-    private bool _subnetEditorVisible = false;
-    private bool _ipEditorVisible = false;
-    private bool _isNewSubnet = false;
+    private List<BaseMonitoringTargetContainer> _containers = [];
+    private bool _containerEditorVisible = false;
+    private bool _targetEditorVisible = false;
+    private bool _isNewContainer = false;
     private bool _advancedViewEnabled = true;
 
-    private SubnetContainer? _editingSubnet = null;
-    private IpMonitoringTarget? _editingIP = null;
+    private BaseMonitoringTargetContainer? _editingContainer = null;
+    private BaseMonitoringTarget? _editingTarget = null;
 
     async protected override Task OnInitializedAsync()
     {
-        SubnetList = await SubnetService.GetAllAsync();
+        _containers = [];
+        _containers.AddRange(await MonitorTargetService.GetAllDnsContainersAsync());
+        _containers.AddRange(await MonitorTargetService.GetAllSubnetContainersAsync());
+
         await base.OnInitializedAsync();
         StateHasChanged();
     }
 
-    private void OnClickEditSubnet(SubnetContainer subnet)
+    private void OnClickEditContainer(BaseMonitoringTargetContainer container)
     {
-        _editingSubnet = subnet;
-        _isNewSubnet = false;
-        _subnetEditorVisible = true;
+        _editingContainer = container;
+        _isNewContainer = false;
+        _containerEditorVisible = true;
     }
 
-    private void OnClickEditIP(IpMonitoringTarget ip)
+    private void OnClickEditTarget(BaseMonitoringTarget target)
     {
-        _editingIP = ip;
-        _ipEditorVisible = true;
+        _editingTarget = target;
+        _targetEditorVisible = true;
     }
 
-    private void OnClickNewSubnet()
+    private void OnClickNew()
     {
-        _isNewSubnet = true;
-        _editingSubnet = new SubnetContainer("192.168.0.1/24");
-        _subnetEditorVisible = true;
+        _isNewContainer = true;
+        _editingContainer = new SubnetContainer("192.168.0.1/24");
+        _containerEditorVisible = true;
         StateHasChanged();
     }
 
@@ -124,7 +138,7 @@
         _advancedViewEnabled = !_advancedViewEnabled;
     }
 
-    private async void OnSubnetSaved(SubnetContainer subnet)
+    private async void OnContainerSaved(BaseMonitoringTargetContainer container)
     {
         await Task.Delay(100);
         await OnInitializedAsync();
@@ -141,20 +155,22 @@
 
     async void OnClickSave()
     {
-        if (null != SubnetList && SubnetList.Count > 0)
+        if (null != _containers && _containers.Count > 0)
         {
-            await File.SaveAs(JSRuntime, "subnets.json", JsonSerializer.Serialize(SubnetList, AllSettings.JsonOptions));
+            await File.SaveAs(JSRuntime, "subnets.json", JsonSerializer.Serialize(_containers, AllSettings.JsonOptions));
         }
     }
 
     async void OnClickUpload(InputFileChangeEventArgs eventArgs)
     {
+        return;
+
         var str = await File.InputFileToString(eventArgs);
         var items = JsonSerializer.Deserialize<List<SubnetContainer>>(str, AllSettings.JsonOptions);
 
         if (null != items && items.Count > 0)
         {
-            await SubnetService.ReplaceAllSubnetsAsync(items);
+            //await SubnetService.ReplaceAllSubnetsAsync(items);
             await OnInitializedAsync();
         }
     }

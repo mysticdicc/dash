@@ -26,6 +26,7 @@
     </header>
     <content class="settings_layout">
         <MonitoringSettingsDisplay CurrentSettings="@_currentSettings.MonitoringSettings" OnSettingsChanged="@OnSettingsChanged"/>
+        <AlertSettingsDisplay CurrentSettings="@_currentSettings.MonitoringSettings.AlertSettings" @bind-IsVisible="@_currentSettings.MonitoringSettings.AlertSettings.Enabled"/>
         <SmtpSettingsDisplay CurrentSettings="@_currentSettings.MonitoringSettings.SmtpSettings" @bind-IsVisible="@_currentSettings.MonitoringSettings.SmtpSettings.AlertsEnabled"/>
         <DiscordSettingsDisplay CurrentSettings="@_currentSettings.MonitoringSettings.DiscordSettings" @bind-IsVisible="@_currentSettings.MonitoringSettings.DiscordSettings.AlertsEnabled"/>
         <TelegramSettingsDisplay CurrentSettings="@_currentSettings.MonitoringSettings.TelegramSettings" @bind-IsVisible="@_currentSettings.MonitoringSettings.TelegramSettings.AlertsEnabled"/>

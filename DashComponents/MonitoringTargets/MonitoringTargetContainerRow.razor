@@ -84,7 +84,7 @@
     [Parameter] public EventCallback<bool> AdvancedViewEnabledChanged { get; set; }
 
     [Parameter] public EventCallback<BaseMonitoringTarget> OnEditTarget { get; set; }
-    [Parameter] public EventCallback<bool> OnDeleteIp { get; set; }
+    [Parameter] public EventCallback<bool> OnDeleteTarget { get; set; }
     [Parameter] public EventCallback<BaseMonitoringTargetContainer> OnEditTargetContainer { get; set; }
     [Parameter] public EventCallback<bool> OnDeleteClicked { get; set;  }
 
@@ -181,6 +181,6 @@
 
     private async Task OnClickDeleteTarget()
     {
-        await OnDeleteIp.InvokeAsync(true);
+        await OnDeleteTarget.InvokeAsync(true);
     }
 }

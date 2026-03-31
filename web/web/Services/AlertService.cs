@@ -61,17 +61,17 @@ namespace web.Services
                         var monitoredDns = await _monitoringRepo.GetMonitoredDnsAndStatusAsync();
                         list.AddRange(monitoredDns);
 
-                        if (_settings.Monitoring.IcmpDownPercentAlertsEnabled) 
+                        if (_settings.Alerts.IcmpDownPercentAlertsEnabled) 
                             await IcmpDownOverTimeReportAsync(token, list);
-                        if (_settings.Monitoring.IcmpDownOnceAlertsEnabled) 
+                        if (_settings.Alerts.IcmpDownOnceAlertsEnabled) 
                             await IcmpDownOnceReportAsync(token, list);
-                        if (_settings.Monitoring.TcpDownPercentAlertsEnabled)
+                        if (_settings.Alerts.TcpDownPercentAlertsEnabled)
                             await TcpDownOverTimeReportAsync(token, list);
-                        if (_settings.Monitoring.TcpDownOnceAlertsEnabled)
+                        if (_settings.Alerts.TcpDownOnceAlertsEnabled)
                             await TcpDownOnceReportAsync(token, list);
 
-                        _logger.LogInfo($"Alert service sleeping for {_settings.Monitoring.AlertIntervalInSeconds} seconds", _logSource);
-                        await Task.Delay((_settings.Monitoring.AlertIntervalInSeconds * 1000), token);
+                        _logger.LogInfo($"Alert service sleeping for {_settings.Alerts.AlertIntervalInSeconds} seconds", _logSource);
+                        await Task.Delay((_settings.Alerts.AlertIntervalInSeconds * 1000), token);
                     }
                     while (!token.IsCancellationRequested);
                 }
@@ -82,7 +82,7 @@ namespace web.Services
                 catch (Exception ex)
                 {
                     _logger.LogError(ex.Message, _logSource);
-                    await Task.Delay((_settings.Monitoring.AlertIntervalInSeconds * 1000), token);
+                    await Task.Delay((_settings.Alerts.AlertIntervalInSeconds * 1000), token);
                 }
             }
         }
@@ -100,7 +100,7 @@ namespace web.Services
                 var timespan = TimeSpan.FromMinutes(_alertEvalTimeInMinutes);
                 var uptimePercent = PingState.CalculateUptimePercentage(timespan, group.ToList());
 
-                if (uptimePercent < _settings.Monitoring.AlertIfDownForPercent)
+                if (uptimePercent < _settings.Alerts.AlertIfDownForPercent)
                 {
                     var target = monitoringTargets.Where(x => x.Id == group.Key).First();
 
@@ -110,7 +110,7 @@ namespace web.Services
                     }
                     else
                     {
-                        _logger.LogWarning($"Alert: Monitoring target {target.Hostname} has uptime percent {uptimePercent}% on ping which is below the threshold of {_settings.Monitoring.AlertIfDownForPercent}%", _logSource);
+                        _logger.LogWarning($"Alert: Monitoring target {target.Hostname} has uptime percent {uptimePercent}% on ping which is below the threshold of {_settings.Alerts.AlertIfDownForPercent}%", _logSource);
                         alertTargets.Add(target);
                     }
                 }
@@ -147,9 +147,9 @@ namespace web.Services
                 var timespan = TimeSpan.FromMinutes(_alertEvalTimeInMinutes);
                 var uptimePercent = PortState.CalculateUptimePercentage(timespan, targetGroup.ToList());
 
-                if (uptimePercent < _settings.Monitoring.AlertIfDownForPercent)
+                if (uptimePercent < _settings.Alerts.AlertIfDownForPercent)
                 {
-                    _logger.LogWarning($"Alert: Monitoring target {targetGroup.Key.Target.Hostname} has uptime percent {uptimePercent}% on port {targetGroup.Key.TargetPort} which is below the threshold of {_settings.Monitoring.AlertIfDownForPercent}%", _logSource);
+                    _logger.LogWarning($"Alert: Monitoring target {targetGroup.Key.Target.Hostname} has uptime percent {uptimePercent}% on port {targetGroup.Key.TargetPort} which is below the threshold of {_settings.Alerts.AlertIfDownForPercent}%", _logSource);
                     alertTargets.Add(targetGroup.Key.Target);
                 }
             }

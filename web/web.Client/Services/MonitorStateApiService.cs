@@ -214,5 +214,33 @@ namespace web.Client.Services
                 return false;
             }
         }
+
+        public async Task<List<IpMonitoringTarget>> GetMonitoredIpAndStatusAsync()
+        {
+            try
+            {
+                var result = await _monitoringApi.GetMonitoredIpAndStatusAsync();
+                return result;
+            }
+            catch (Exception ex)
+            {
+                _notificationService.ShowAsync("API failure", ex.Message);
+                return [];
+            }
+        }
+
+        public async Task<List<DnsMonitoringTarget>> GetMonitoredDnsAndStatusAsync()
+        {
+            try
+            {
+                var result = await _monitoringApi.GetMonitoredDnsAndStatusAsync();
+                return result;
+            }
+            catch (Exception ex)
+            {
+                _notificationService.ShowAsync("API failure", ex.Message);
+                return [];
+            }
+        }
     }
 }

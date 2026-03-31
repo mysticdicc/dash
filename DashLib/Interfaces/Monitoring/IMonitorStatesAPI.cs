@@ -14,7 +14,9 @@ namespace DashLib.Interfaces.Monitoring
         public Task<List<PortState>> GetAllPortStatesAsync();
         public Task<List<PingState>> GetAllPingStatesAsync();
         public Task<List<IpMonitoringTarget>> GetAllMonitoredIpsAsync();
+        public Task<List<IpMonitoringTarget>> GetMonitoredIpAndStatusAsync();
         public Task<List<DnsMonitoringTarget>> GetAllMonitoredDnsAsync();
+        public Task<List<DnsMonitoringTarget>> GetMonitoredDnsAndStatusAsync();
         public Task<IpMonitoringTarget> GetIpMonitorStatesByDeviceIdAsync(int id);
         public Task<DnsMonitoringTarget> GetDnsMonitorStatesByDeviceIdAsync(int id);
         public Task<bool> RestartServiceAsync();
