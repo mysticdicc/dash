@@ -97,7 +97,7 @@
         if (MonitoringTargetContainer.Id != _monitoringTargetContainer.Id)
         {
             _monitoringTargetContainer = MonitoringTargetContainer;
-            _targetList = _monitoringTargetContainer.Children;
+            _targetList = _monitoringTargetContainer.GetChildren().ToList();
         }
 
         return base.OnParametersSetAsync();
@@ -118,7 +118,7 @@
     {
         if (string.IsNullOrEmpty(_searchString))
         {
-            _targetList = _monitoringTargetContainer.Children ?? [];
+            _targetList = _monitoringTargetContainer.GetChildren().ToList();
         }
         else
         {

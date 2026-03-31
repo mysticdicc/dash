@@ -32,10 +32,10 @@
 }
 
 @code {
-    [Parameter] public required List<BaseMonitoringTarget> BaseMonitoringTargets { get; set; }
+    [Parameter] public required List<BaseMonitoringTarget> MonitoringTargets { get; set; }
     private List<BaseMonitoringTarget> _baseMonitoringTargets = [];
 
-    [Parameter] public required EventCallback<List<BaseMonitoringTarget>?> TargetsChanged { get; set; }
+    [Parameter] public required EventCallback<List<BaseMonitoringTarget>> MonitoringTargetsChanged { get; set; }
     [Parameter] public required EventCallback<BaseMonitoringTarget> ViewClicked { get; set; }
     [Parameter] public required EventCallback<BaseMonitoringTarget> EditClicked { get; set; }
     [Parameter] public required EventCallback<BaseMonitoringTarget> HistoryClicked { get; set; }
@@ -50,9 +50,9 @@
 
     protected override Task OnParametersSetAsync()
     {
-        if (_baseMonitoringTargets != BaseMonitoringTargets)
+        if (_baseMonitoringTargets != MonitoringTargets)
         {
-            _baseMonitoringTargets = BaseMonitoringTargets;
+            _baseMonitoringTargets = MonitoringTargets;
 
             _lastPolls = [];
             _lastPolls.AddRange(PortState.GetMostRecentStatesFromListMonitoringTargets(_baseMonitoringTargets));

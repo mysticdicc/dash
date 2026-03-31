@@ -12,7 +12,7 @@
 
 @page "/targets/home"
 
-<PageTitle>subnet trackr</PageTitle>
+<PageTitle>targets</PageTitle>
 
 <InputFile OnChange="@OnClickUpload" id="upload" style="overflow: hidden; width: 0; height: 0;" accept="*.png" />
 
@@ -47,21 +47,6 @@
     </header>
     <content class="subnet_layout">
         <table>
-            <tr>
-                <th>
-                    Subnet Address
-                </th>
-                <th>
-                    Start Address
-                </th>
-                <th>
-                    End Address
-                </th>
-                <th>
-                    IP Search
-                </th>
-                <th/>
-            </tr>
             @foreach (var container in _containers)
             {
                 <MonitoringTargetContainerRow 

@@ -18,12 +18,11 @@ namespace DashLib.Models.Network
 
         public DnsMonitoringTarget(BaseMonitoringTargetContainer parent) : base(parent)
         {
-            Parent = (DnsContainer)parent;
             Address = string.Empty;
+            ParentId = parent.Id;
         }
 
         public int ParentId { get; set; }
-        new public DnsContainer Parent { get; set; }
         public string Address { get; set; }
 
         public async Task<PingState> IcmpTestAsync()

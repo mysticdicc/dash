@@ -38,22 +38,22 @@
     <content>
         <div class="monitoring_layout">
             <StatsChart 
-                @bind-IPAddresses="@_polls" 
+                @bind-MonitoringTargets="@_polls" 
                 @bind-Visible="@_statsChartVisible" 
                 @bind-ViewLength="@_viewLength"
                 ExpandChanged="@OnClickExpandMonitoringWindow" />
             <Stats 
-                @bind-IPAddresses="@_polls" 
+                @bind-MonitoringTargets="@_polls" 
                 @bind-Visible="@_statsVisible" 
                 @bind-ViewLength="@_viewLength"
                 ExpandChanged="@OnClickExpandMonitoringWindow" />
             <UptimeChart 
-                @bind-IPAddresses="@_polls" 
+                @bind-MonitoringTargets="@_polls" 
                 @bind-Visible="@_uptimeChartVisible" 
                 @bind-ViewLength="@_viewLength"
                 ExpandChanged="@OnClickExpandMonitoringWindow" />
             <MonitorStates 
-                @bind-IPAddresses="@_polls" 
+                @bind-MonitoringTargets="@_polls" 
                 @bind-Visible="@_monitorStatesVisible" 
                 @bind-ViewLength="@_viewLength"
                 ExpandChanged="@OnClickExpandMonitoringWindow" 

@@ -18,7 +18,7 @@ namespace DashLib.DankAPI
         public MonitorStateAPI(HttpClient httpClient)
         {
             _httpClient = httpClient;
-            _base = $"{httpClient.BaseAddress}monitorstate";
+            _base = $"{httpClient.BaseAddress}MonitorState";
         }
 
         public async Task<List<IpMonitoringTarget>> GetMonitoredIpsAsync()

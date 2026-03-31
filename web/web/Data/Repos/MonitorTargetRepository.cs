@@ -15,8 +15,8 @@ namespace web.Data.Repos
         {
             using var ctx = await _dbFactory.CreateDbContextAsync();
             await ctx.DnsContainers.AddAsync(container);
-            var rows = await ctx.SaveChangesAsync();
 
+            var rows = await ctx.SaveChangesAsync();
             return rows > 0;
         }
 
@@ -24,8 +24,8 @@ namespace web.Data.Repos
         {
             using var ctx = await _dbFactory.CreateDbContextAsync();
             await ctx.DnsTargets.AddAsync(dns);
-            var rows = await ctx.SaveChangesAsync();
 
+            var rows = await ctx.SaveChangesAsync();
             return rows > 0;
         }
 

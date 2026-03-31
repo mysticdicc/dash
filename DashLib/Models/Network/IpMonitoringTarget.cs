@@ -24,8 +24,8 @@ namespace DashLib.Models.Network
 
         public IpMonitoringTarget(BaseMonitoringTargetContainer parent) : base(parent)
         {
-            Parent = (SubnetContainer)parent;
             Address = ConvertToByte("192.168.0.1");
+            ParentId = parent.Id;
         }
 
         public IpMonitoringTarget(IpMonitoringTarget ip)
@@ -43,7 +43,6 @@ namespace DashLib.Models.Network
         }
 
         public int ParentId { get; set; }
-        new public SubnetContainer Parent { get; set; }
         public byte[] Address { get; set; }
 
         static public byte[] ConvertToByte(IPAddress ip)

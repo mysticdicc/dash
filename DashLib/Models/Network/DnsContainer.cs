@@ -5,10 +5,10 @@ using System.Text.Json.Serialization;
 
 namespace DashLib.Models.Network
 {
-    public class DnsContainer : BaseMonitoringTargetContainer
+    public class DnsContainer : BaseMonitoringTargetContainer<DnsMonitoringTarget>
     {
         public string DisplayName { get; set; }
-        public new List<DnsMonitoringTarget> Children { get; set; }
+        public override int ChildCount => Children.Count;
         [JsonConstructor] public DnsContainer() { }
         public DnsContainer(string display) : base()
         {

@@ -117,7 +117,7 @@ namespace web.Controllers
         }
 
         [HttpGet]
-        [Route("[controller]/v2/get/devicesandstatus/ips")]
+        [Route("[controller]/v2/get/deviceandstatus/ips")]
         public async Task<IActionResult> GetMonitoredIpAndStatusAsync()
         {
             try

@@ -17,7 +17,7 @@
     private string _title = string.Empty;
     private string _message = string.Empty;
 
-    [Parameter] public TimeSpan CloseDelay { get; set; } = TimeSpan.FromSeconds(5);
+    [Parameter] public TimeSpan CloseDelay { get; set; } = TimeSpan.FromSeconds(10);
     private TimeSpan _closeDelay => CloseDelay;
 
     [Parameter] public bool Hidden { get; set; }

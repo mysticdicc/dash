@@ -42,6 +42,8 @@ public partial class DashDbContext : DbContext
             entity.Property(e => e.Id).ValueGeneratedOnAdd();
             entity.UseTptMappingStrategy();
 
+            entity.Ignore(e => e.Parent);
+
             entity.HasMany(e => e.TcpMonitorStates)
                 .WithOne(e => e.Target)
                 .HasForeignKey(e => e.TargetId)
@@ -72,6 +74,11 @@ public partial class DashDbContext : DbContext
                 .IsRequired()
                 .HasMaxLength(4)
                 .IsFixedLength();
+
+            entity.Property(e => e.ParentId).IsRequired();
+            entity.HasOne<SubnetContainer>("Parent")
+                .WithMany(e => e.Children)
+                .HasForeignKey("ParentId");
         });
 
         modelBuilder.Entity<DnsMonitoringTarget>(entity =>
@@ -83,6 +90,11 @@ public partial class DashDbContext : DbContext
                 .IsRequired()
                 .HasMaxLength(512);
             entity.Property(e => e.ParentId).IsRequired();
+
+            entity.Property(e => e.ParentId).IsRequired();
+            entity.HasOne<DnsContainer>("Parent")
+                .WithMany(e => e.Children)
+                .HasForeignKey("ParentId");
         });
 
         modelBuilder.Entity<ClockWidget>(entity =>
@@ -177,11 +189,6 @@ public partial class DashDbContext : DbContext
                 .IsRequired()
                 .HasMaxLength(4)
                 .IsFixedLength();
-
-            entity.HasMany(e => e.Children)
-                .WithOne(e => e.Parent)
-                .HasForeignKey(e => e.ParentId)
-                .HasPrincipalKey(e => e.Id);
         });
 
         modelBuilder.Entity<DnsContainer>(entity =>
@@ -191,11 +198,6 @@ public partial class DashDbContext : DbContext
             entity.HasIndex(e => e.Id);
             entity.Property(e => e.Id);
             entity.Property(e => e.DisplayName).IsRequired().HasMaxLength(100);
-
-            entity.HasMany(e => e.Children)
-                .WithOne(e => e.Parent)
-                .HasForeignKey(e => e.ParentId)
-                .HasPrincipalKey(e => e.Id);
         });
 
         modelBuilder.Entity<PortState>(entity =>

@@ -3,7 +3,7 @@
 @if (EditorVisible)
 {
     <div class="faded_background">
-        <div class="subnet_editor">
+        <div class="subnet_editor" @key="_monitoringTargetContainer.GetType()">
             <header>
                 <span>
                     <strong>
@@ -11,11 +11,11 @@
                         {
                             @if (_monitoringTargetContainer is DnsContainer dns)
                             {
-                                @dns.DisplayName <strong>- New!</strong>
+                                @dns.DisplayName <strong>New!</strong>
                             }
                             else if (_monitoringTargetContainer is SubnetContainer subnet)
                             {
-                                @IpMonitoringTarget.ConvertToString(subnet.Address) <strong>- New!</strong>
+                                @IpMonitoringTarget.ConvertToString(subnet.Address) <strong>New!</strong>
                             }
                         }
                         else
@@ -39,17 +39,54 @@
                 <table>
                     <tr>
                         <td>
-                            Generate Subnet
+                            Container Type
+                        </td>
+                        <td>
+                            @if (IsNewContainer)
+                            {
+                                <select @bind="_containerType" @bind:after="@OnTypeChanged">
+                                    <option value="0">Subnet</option>
+                                    <option value="1">DNS</option>
+                                </select>
+                            }
+                            else
+                            {
+                                if (_monitoringTargetContainer is SubnetContainer)
+                                {
+                                    <span>Subnet</span>
+                                }
+                                else if (_monitoringTargetContainer is DnsContainer)
+                                {
+                                    <span>DNS</span>
+                                }
+
+                            }
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            @if (_monitoringTargetContainer is SubnetContainer) 
+                            {
+                                <span>Generate Subnet</span>
+                            }
+                            else if (_monitoringTargetContainer is DnsContainer)
+                            {
+                                <span>Display Name</span>
+                            }
                         </td>
                     </tr>
                     <tr id="cidr">
                         <td colspan="10">
-                            <input id="cidrinput" type="text" @bind="_address" @bind:event="oninput" @onkeydown="OnKeyDownCidrInput" placeholder="192.168.0.1/24" />
                             @if (_monitoringTargetContainer is SubnetContainer)
                             {
+                                <input id="cidrinput" type="text" @bind="_address" @bind:event="oninput" @onkeydown="OnKeyDownCidrInput" placeholder="192.168.0.1/24" />
                                 <button id="generatebutton" type="button" @onclick="OnClickCidrGenerate">
                                     <span class="material-icons">start</span>
                                 </button>
+                            }
+                            else if (_monitoringTargetContainer is DnsContainer)
+                            {
+                                <input id="cidrinput" type="text" @bind="_address" @bind:event="oninput" @onkeydown="OnKeyDownCidrInput" placeholder="example.local" />
                             }
                         </td>
                     </tr>
@@ -79,13 +116,16 @@
                         <td colspan="10">
                             <button id="iplist" onclick="@OnClickIpListExpand">
                                 <span class="material-icons">list</span>
-                                <span><strong>IP List</strong></span>
+                                <span><strong>Children</strong></span>
+                            </button>
+                            <button onclick="@OnClickNewChild">
+                                <span class="material-icons">add</span>
                             </button>
                         </td>
                     </tr>
-                    @if (_monitoringTargetContainer.Children.Count > 0 && _targetListVisible)
+                    @if (_monitoringTargetContainer.ChildCount > 0 && _targetListVisible)
                     {
-                        <Virtualize Items="_monitoringTargetContainer.Children" Context="target">
+                        <Virtualize Items="_monitoringTargetContainer.GetChildren().ToList()" TItem="BaseMonitoringTarget" Context="target">
                             <ItemContent>
                                 <tr id="ip">
                                     <td colspan="10">
@@ -117,6 +157,12 @@
             </footer>
         </div>
     </div>
+
+    @if (null != _newTarget)
+    {
+            <MonitoringTargetEditor MonitoringTarget="_newTarget" @bind-EditorVisible="@_targetEditorVisible"
+                @bind-IsNewTarget="@_isNewTarget" OnTargetSaved="@OnChildAdded"/>
+    }
 }
 
 @code {
@@ -132,6 +178,10 @@
 
     private string _address = string.Empty;
     private bool _targetListVisible = false;
+    private bool _targetEditorVisible = false;
+    private bool _isNewTarget = true;
+    private BaseMonitoringTarget? _newTarget;
+    private int _containerType = 1;
 
     override protected async Task OnParametersSetAsync()
     {
@@ -156,10 +206,34 @@
         await base.OnParametersSetAsync();
     }
 
+    private void OnChildAdded(BaseMonitoringTarget target)
+    {
+        _monitoringTargetContainer.AddChild(target);
+        _isNewTarget = false;
+        StateHasChanged();
+    }
+
+    void OnClickNewChild()
+    {
+        if (_monitoringTargetContainer is SubnetContainer)
+        {
+            _newTarget = new IpMonitoringTarget(_monitoringTargetContainer);
+        }
+        else if (_monitoringTargetContainer is DnsContainer)
+        {
+            _newTarget = new DnsMonitoringTarget(_monitoringTargetContainer);
+        }
+
+        _isNewTarget = true;
+        _targetEditorVisible = true;
+        StateHasChanged();
+    }
+
     void OnClickCancel()
     {
         EditorVisibleChanged.InvokeAsync(false);
         EditorVisible = false;
+        _targetEditorVisible = false;
     }
 
     void OnClickCidrGenerate()
@@ -185,7 +259,7 @@
             await MonitorTargetService.DeleteDnsTargetAsync(dns);
         }
 
-        _monitoringTargetContainer.Children.Remove(target);
+        _monitoringTargetContainer.RemoveChild(target);
         StateHasChanged();
     }
 
@@ -226,6 +300,20 @@
         if (e.Code == "Enter" || e.Code == "NumpadEnter")
         {
             OnClickCidrGenerate();
+        }
+    }
+
+    private void OnTypeChanged()
+    {
+        switch(_containerType) {
+            case 0:
+                _monitoringTargetContainer = new SubnetContainer("127.0.0.1/24", true);
+                StateHasChanged();
+                break;
+            case 1:
+                _monitoringTargetContainer = new DnsContainer(string.Empty);
+                StateHasChanged();
+                break;
         }
     }
 }

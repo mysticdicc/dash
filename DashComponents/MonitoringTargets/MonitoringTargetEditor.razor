@@ -3,12 +3,15 @@
 @if (EditorVisible && null != _monitoringTarget)
 {
     <div class="faded_background">
-        <div class="ip_editor">
+        <div class="ip_editor" @key="_monitoringTarget.GetType()">
             <header>
                 <span><strong>
                     @if (_monitoringTarget is IpMonitoringTarget ip)
                     {
-                        @IpMonitoringTarget.ConvertToString(ip.Address)
+                        if (null != ip.Address)
+                        {
+                            IpMonitoringTarget.ConvertToString(ip.Address);
+                        }
                     }
                     else if (_monitoringTarget is DnsMonitoringTarget dns)
                     {
@@ -21,6 +24,14 @@
             </header>
             <article>
                 <table>
+                    @if (IsNewTarget)
+                    {
+                        <tr>
+                            <td>
+                                <input type="text" @bind="_addressString" @bind:after="@OnAddressStringChanged" placeholder="Address" />
+                            </td>
+                        </tr>
+                    }
                     <tr>
                         <td>
                             <input id="hostnameinput" type="text" @bind="_monitoringTarget.Hostname" placeholder="Hostname" />
@@ -85,15 +96,19 @@
 
 @code {
     [Parameter] public required BaseMonitoringTarget MonitoringTarget { get; set; }
-    private BaseMonitoringTarget _monitoringTarget = new IpMonitoringTarget();
+    private BaseMonitoringTarget _monitoringTarget = new DnsMonitoringTarget();
     private string _portsMonitoredString = string.Empty;
+    private string _addressString = string.Empty;
 
+    [Parameter] public bool IsNewTarget { get; set; } = false;
+    [Parameter] public EventCallback<bool> IsNewTargetChanged { get; set; }
+    [Parameter] public EventCallback<BaseMonitoringTarget> OnTargetSaved { get; set; }
     [Parameter] public required bool EditorVisible { get; set;}
     [Parameter] public required EventCallback<bool> EditorVisibleChanged { get; set;}
 
     protected override void OnParametersSet()
     {
-        if (_monitoringTarget.Id != MonitoringTarget.Id)
+        if (_monitoringTarget != MonitoringTarget)
         {
             _monitoringTarget = MonitoringTarget;
 
@@ -117,6 +132,7 @@
         _portsMonitoredString = string.Empty;
         await EditorVisibleChanged.InvokeAsync(false);
         EditorVisible = false;
+        _addressString = string.Empty;
     }
 
     private void UpdatePortsMonitored()
@@ -146,16 +162,24 @@
         {
             UpdatePortsMonitored();
 
-            if (_monitoringTarget is DnsMonitoringTarget dns)
+            if (IsNewTarget)
             {
-                await MonitorTargetService.UpdateDnsTargetAsync(dns);
+                await OnTargetSaved.InvokeAsync(_monitoringTarget);
             }
-            else if (_monitoringTarget is IpMonitoringTarget ip)
+            else
             {
-                await MonitorTargetService.UpdateIpTargetAsync(ip);
+                if (_monitoringTarget is DnsMonitoringTarget dns)
+                {
+                    await MonitorTargetService.UpdateDnsTargetAsync(dns);
+                }
+                else if (_monitoringTarget is IpMonitoringTarget ip)
+                {
+                    await MonitorTargetService.UpdateIpTargetAsync(ip);
+                }
             }
 
             await EditorVisibleChanged.InvokeAsync(false);
+            _addressString = string.Empty;
         }
     }
 
@@ -183,6 +207,25 @@
             if (!_monitoringTarget.IsMonitoredIcmp)
             {
                 _monitoringTarget.IsMonitoredIcmp = true;
+            }
+        }
+    }
+
+    private void OnAddressStringChanged()
+    {
+        if (_monitoringTarget is DnsMonitoringTarget dns)
+        {
+            dns.Address = _addressString;
+        }
+        else if (_monitoringTarget is IpMonitoringTarget ip)
+        {
+            try
+            {
+                ip.Address = IpMonitoringTarget.ConvertToByte(_addressString);
+            }
+            catch
+            {
+                
             }
         }
     }

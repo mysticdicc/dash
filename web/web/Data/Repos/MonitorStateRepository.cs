@@ -3,6 +3,7 @@ using DashLib.Interfaces.Monitoring;
 using DashLib.Models.Monitoring;
 using DashLib.Models.Network;
 using Microsoft.EntityFrameworkCore;
+using System.Net;
 using web.Services;
 
 namespace web.Data.Repos
@@ -62,14 +63,19 @@ namespace web.Data.Repos
 
             foreach (var ip in ips)
             {
-                if (ip.IcmpMonitorStates.Count > 0)
+                foreach (var s in ip.IcmpMonitorStates)
                 {
-                    await ctx.PingStates.AddRangeAsync(ip.IcmpMonitorStates);
+                    s.Target = null!;
+                    await ctx.PingStates.AddAsync(s);
                 }
 
                 if (ip.TcpMonitorStates.Count > 0)
                 {
-                    await ctx.PortStates.AddRangeAsync(ip.TcpMonitorStates);
+                    foreach (var s in ip.TcpMonitorStates)
+                    {
+                        s.Target = null!;
+                        await ctx.PortStates.AddAsync(s);
+                    }
                 }
             }
 
@@ -129,14 +135,19 @@ namespace web.Data.Repos
 
             foreach (var dns in dnsList)
             {
-                if (dns.IcmpMonitorStates.Count > 0)
+                foreach (var s in dns.IcmpMonitorStates)
                 {
-                    await ctx.PingStates.AddRangeAsync(dns.IcmpMonitorStates);
+                    s.Target = null!;
+                    await ctx.PingStates.AddAsync(s);
                 }
 
                 if (dns.TcpMonitorStates.Count > 0)
                 {
-                    await ctx.PortStates.AddRangeAsync(dns.TcpMonitorStates);
+                    foreach (var s in dns.TcpMonitorStates)
+                    {
+                        s.Target = null!;
+                        await ctx.PortStates.AddAsync(s);
+                    }
                 }
             }
 

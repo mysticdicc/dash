@@ -10,16 +10,30 @@ using System.Threading.Tasks;
 
 namespace DashLib.Models.Network
 {
-    public class SubnetContainer : BaseMonitoringTargetContainer
+    public class SubnetContainer : BaseMonitoringTargetContainer<IpMonitoringTarget>
     {
         [Key][DatabaseGenerated(DatabaseGeneratedOption.Identity)] public int Id { get; set; }
         public byte[] Address { get; set; }
         public byte[] SubnetMask { get; set; }
         public byte[] StartAddress { get; set; }
         public byte[] EndAddress { get; set; }
-        new public List<IpMonitoringTarget> Children { get; set; }
+
+        public override int ChildCount => Children.Count;
 
         public SubnetContainer() { }
+
+        public SubnetContainer(string cidr, bool isDefault)
+        {
+            var subnet = IPAddressRange.Parse(cidr);
+            StartAddress = IpMonitoringTarget.ConvertToByte(subnet.Begin);
+            EndAddress = IpMonitoringTarget.ConvertToByte(subnet.End);
+
+            var split = cidr.Split('/');
+
+            SubnetMask = IpMonitoringTarget.GetMaskFromCidr(Int32.Parse(split[1]));
+            Address = IpMonitoringTarget.ConvertToByte(split[0]);
+            Children = [];
+        }
 
         public SubnetContainer(string CIDR) : base()
         {

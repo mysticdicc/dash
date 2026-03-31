@@ -21,7 +21,7 @@ namespace DashLib.DankAPI
         public MonitorTargetAPI(HttpClient httpClient)
         {
             _httpClient = httpClient;
-            _base = $"{httpClient.BaseAddress}monitortargets/v2";
+            _base = $"{httpClient.BaseAddress}monitortarget/v2";
             _baseSubnet = $"{_base}/subnet";
             _baseIp = $"{_base}/ip";
             _baseDnsCont = $"{_base}/dnscont";

@@ -114,7 +114,7 @@ namespace web.Services
                     }
                 }
 
-                _logger.LogInfo($"{dnsUpdate} DNS monitor tasks completed and will be submitted to API.", _logSource);
+                _logger.LogInfo($"{dnsUpdate} DNS monitor tasks completed and will be submitted to database.", _logSource);
 
                 if (dnsUpdate > 0)
                 {

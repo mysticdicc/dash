@@ -14,7 +14,7 @@ namespace DashLib.Models.Network
     public abstract class BaseMonitoringTarget
     {
         [Key][DatabaseGenerated(DatabaseGeneratedOption.Identity)] public int Id { get; set; }
-        public virtual BaseMonitoringTargetContainer? Parent { get; set;  }
+        [JsonIgnore] public virtual BaseMonitoringTargetContainer? Parent { get; set;  }
         public string Hostname { get; set; }
         public bool IsMonitoredIcmp { get; set; }
         public bool IsMonitoredTcp { get; set; }
