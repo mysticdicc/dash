@@ -92,7 +92,6 @@ namespace web.Services
 
         private async Task AddEntryAsync(LogEntry entry)
         {
-            Console.WriteLine(entry.Message);
             await HandleSemaphore(entry.Source);
             try
             {

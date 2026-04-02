@@ -118,10 +118,14 @@ namespace DashLib.DankAPI
             return false;
         }
 
-        public Task<bool> DeleteSubnetContainerAsync(SubnetContainer subnet)
+        public async Task<bool> DeleteSubnetContainerAsync(SubnetContainer subnet)
         {
             string endpoint = $"{_baseSubnet}/delete";
-            throw new NotImplementedException();
+            var result = await RequestHandler.DeleteAsJsonAsync(_httpClient, endpoint, subnet);
+
+            if (result == null) return false;
+            if (result.IsSuccessStatusCode) return true;
+            return false;
         }
 
         public async Task<List<DnsContainer>> GetAllDnsContainersAsync()

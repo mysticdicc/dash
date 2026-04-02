@@ -5,10 +5,7 @@ using web.Client.Auth;
 using web.Client.Services;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
-
-//var baseAddress = new Uri(builder.Configuration.GetValue<string>("WorkerApiAddress")!);
 var baseAddress = new Uri(builder.HostEnvironment.BaseAddress);
-
 SharedServices.Register(builder.Services, baseAddress);
 
 var host = builder.Build();

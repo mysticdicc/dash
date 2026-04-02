@@ -7,7 +7,7 @@ namespace DashLib.Models.Settings.Monitoring
     public class AlertSettings
     {
         public bool Enabled { get; set; }
-        public int AlertIntervalInSeconds { get; set; }
+        public int PollingIntervalInSeconds { get; set; }
         public float AlertIfDownForPercent { get; set; }
         public bool IcmpDownPercentAlertsEnabled { get; set; }
         public bool IcmpDownOnceAlertsEnabled { get; set; }
@@ -20,7 +20,7 @@ namespace DashLib.Models.Settings.Monitoring
 
         public AlertSettings(bool isDefault)
         {
-            AlertIntervalInSeconds = 600;
+            PollingIntervalInSeconds = 600;
             AlertIfDownForPercent = 50.0F;
             IcmpDownPercentAlertsEnabled = false;
             IcmpDownOnceAlertsEnabled = false;

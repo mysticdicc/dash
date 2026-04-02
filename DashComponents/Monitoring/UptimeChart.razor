@@ -63,7 +63,7 @@
     private static List<string> _palette = new() { "#008FFB", "#00E396", "#FEB019", "#FF4560", "#775DD0", "#3F51B5", "#546E7A", "#D4526E", "#8D5B4C", "#F86624" };
 
     public bool _expanded = false;
-    public bool _chartsReady = false;   
+    public bool _chartsReady = false;
     private ApexChart<UptimePoint>? radialChart;
     private ApexChart<HeatMapPoint>? heatMapChart;
 
@@ -160,10 +160,9 @@
             OnlineHeatMapPoints.Clear();
             OfflineHeatMapPoints.Clear();
 
-            foreach (var target in MonitoringTargets.Where(x => (x.IsMonitoredIcmp || x.IsMonitoredTcp) && x.Parent != null))
+            foreach (var target in MonitoringTargets.Where(x => x.IsMonitoredIcmp || x.IsMonitoredTcp))
             {
                 var states = PingState.GetAllMonitorStatesFromMonitoringTarget(target);
-
                 if (states == null || states.Count == 0)
                     continue;
 
@@ -171,16 +170,12 @@
                 int up = states.Count(ms => ms.Response);
                 decimal percent = total > 0 ? Math.Round((decimal)up / total * 100, 1) : 0;
 
-                string label = string.Empty;
-
-                if (target is DnsMonitoringTarget dns)
+                string label = target switch
                 {
-                    label = dns.Address;
-                }
-                else if (target is IpMonitoringTarget ip)
-                {
-                    label = IpMonitoringTarget.ConvertToString(ip.Address);
-                }
+                    DnsMonitoringTarget dns => dns.Address,
+                    IpMonitoringTarget ip => IpMonitoringTarget.ConvertToString(ip.Address),
+                    _ => string.Empty
+                };
 
                 if (!string.IsNullOrWhiteSpace(target.Hostname))
                     label += $" ({target.Hostname})";
@@ -213,8 +208,8 @@
         }
 
         await Task.Delay(500);
-        StateHasChanged();
         _chartsReady = true;
+        await InvokeAsync(StateHasChanged);
     }
 
     private async Task OnClickExpand()

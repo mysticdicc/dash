@@ -4,41 +4,134 @@
 @inject NavigationManager Navigation
 @inject Microsoft.AspNetCore.Components.Authorization.AuthenticationStateProvider AuthStateProvider
 
+@if (_isLogin)
+{
+    <div class="login_wrapper">
+        <EditForm Model="@credentials" OnValidSubmit="HandleLogin" FormName="LoginForm">
+            <DataAnnotationsValidator />
+            <ValidationSummary />
+            <table>
+                <tr>
+                    <td>Username:</td>
+                    <td>
+                        <InputText @bind-Value="credentials.UserName" />
+                    </td>
+                </tr>
+                <tr>
+                    <td>Password:</td>
+                    <td>
+                        <InputText @bind-Value="credentials.Password" type="password" />
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2">
+                        <button type="submit">Sign in</button>
+                    </td>
+                </tr>
+            </table>
+        </EditForm>
 
-<div class="login_wrapper">
-    <EditForm Model="@credentials" OnValidSubmit="HandleLogin" FormName="LoginForm">
-        <DataAnnotationsValidator />
-        <ValidationSummary />
-        <table>
-            <tr>
-                <td>Username:</td>
-                <td>
-                    <InputText @bind-Value="credentials.UserName" />
-                </td>
-            </tr>
-            <tr>
-                <td>Password:</td>
-                <td>
-                    <InputText @bind-Value="credentials.Password" type="password" />
-                </td>
-            </tr>
-            <tr>
-                <td colspan="2">
-                    <button type="submit">Sign in</button>
-                </td>
-            </tr>
-        </table>
-    </EditForm>
+        @if (!string.IsNullOrEmpty(Error))
+        {
+            <div class="error">@Error</div>
+        }
+    </div>
+}
+else
+{
+    <div class="login_wrapper">
+        <h3>Register</h3>
 
-    @if (!string.IsNullOrEmpty(Error))
+        <EditForm Model="model" OnValidSubmit="HandleRegister" FormName="RegisterForm">
+            <table>
+                <tr>
+                    <td>Username:</td>
+                    <td>
+                        <InputText @bind-Value="@model.UserName" />
+                    </td>
+                </tr>
+                <tr>
+                    <td>Display Name:</td>
+                    <td>
+                        <InputText @bind-Value="@model.DisplayName" />
+                    </td>
+                </tr>
+                <tr>
+                    <td>Password:</td>
+                    <td>
+                        <InputText @bind-Value="@model.Password" type="password"/>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2">
+                        <button type="submit" disabled="@isSubmitting">Register</button>
+                    </td>
+                </tr>
+            </table>
+        </EditForm>
+    </div>
+
+    @if (!string.IsNullOrEmpty(error))
     {
-        <div class="error">@Error</div>
+        <div class="error">@error</div>
     }
-</div>
+    @if (success)
+    {
+        <div class="success">Registration successful.</div>
+    }
+
+}
+
 
 @code {
     private LoginRequestDto credentials { get; set; } = new LoginRequestDto();
     private string? Error;
+    private bool _isLogin = true;
+
+    private RegisterRequestDto model = new();
+    private bool isSubmitting;
+    private string? error;
+    private bool success;
+
+    private async Task HandleRegister()
+    {
+        error = null;
+        success = false;
+        isSubmitting = true;
+
+        try
+        {
+            var ok = await AuthApi.RegisterAsync(model);
+            if (ok)
+            {
+                success = true;
+                // small delay so user sees the message, then navigate
+                await Task.Delay(700);
+                _isLogin = true;
+            }
+            else
+            {
+                error = "Registration failed. Check server logs.";
+            }
+        }
+        catch (Exception ex)
+        {
+            error = ex.Message;
+        }
+        finally
+        {
+            isSubmitting = false;
+        }
+
+        StateHasChanged();
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        _isLogin = await AuthApi.AccountCheckAsync();
+        StateHasChanged();
+        await base.OnInitializedAsync();
+    }
 
     private async Task HandleLogin()
     {

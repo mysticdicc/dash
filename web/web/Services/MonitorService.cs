@@ -128,7 +128,7 @@ namespace web.Services
             }
             catch (OperationCanceledException)
             {
-                _logger.LogInfo("User intiated service end", _logSource);
+                _logger.LogInfo("User intiated service end.", _logSource);
             }
             catch (Exception ex)
             {
@@ -140,17 +140,26 @@ namespace web.Services
 
         async public void Restart()
         {
-            _logger.LogInfo("Service restart initiated", _logSource);
+            _logger.LogInfo("Service restart initiated.", _logSource);
             _cancellationToken.Cancel();
             _cancellationToken = new();
         }
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            _logger.LogInfo("Service action has intiated", _logSource   );
+            _logger.LogInfo("Service action has been entered.", _logSource   );
 
             while (!stoppingToken.IsCancellationRequested)
             {
-                await RunServiceAsync(_cancellationToken.Token);
+                try
+                {
+                    await RunServiceAsync(_cancellationToken.Token);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex.Message, _logSource);
+                }
+
+                _logger.LogInfo($"Sleeping for {_currentSettings.Monitoring.PollingIntervalInSeconds} seconds.", _logSource);
                 await Task.Delay((_currentSettings.Monitoring.PollingIntervalInSeconds * 1000), stoppingToken);
             }
         }

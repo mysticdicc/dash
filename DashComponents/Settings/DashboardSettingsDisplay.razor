@@ -31,9 +31,19 @@
                                 <InputFile onchange="@(args => OnUploadBackground(args))" id="upload_new_pic" style="width: 0%; height: 0; overflow: hidden;" accept="*.jpg" />
                             </div>
                         }
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        PFX File:
+                    </td>
+                    <td>
                         @if (!string.IsNullOrEmpty(_currentSettings.HttpsCertBase64))
                         {
-                            <div>Pfx Uplaoded</div>
+                            <div>@_currentSettings.HttpsCertBase64</div>
+                            <button @onclick="@OnClickDeleteCert">
+                                <span class="material-symbols-outlined">delete</span>
+                            </button>
                         }
                         else
                         {
@@ -45,6 +55,14 @@
                                 <InputFile onchange="@(args => OnUploadPfx(args))" id="upload_new_cert" style="width: 0%; height: 0; overflow: hidden;" accept="*.pfx" />
                             </div>
                         }
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        PFX Password:
+                    </td>
+                    <td>
+                        <input type="text" @bind="@_currentSettings.HttpsCertPassword"/>
                     </td>
                 </tr>
             </table>
@@ -92,5 +110,12 @@
     {
         _currentSettings.BackgroundImage = string.Empty;
         _currentSettings.BackgroundImageDisplay64 = string.Empty;
+        StateHasChanged();
+    }
+
+    private void OnClickDeleteCert()
+    {
+        _currentSettings.HttpsCertBase64 = string.Empty;
+        StateHasChanged();
     }
 }

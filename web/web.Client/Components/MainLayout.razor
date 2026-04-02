@@ -6,28 +6,28 @@
     <header>
         <img class="header_icon" src="/dash_text.png"/>
 
-        <NavLink href="/home" Match="NavLinkMatch.All" ActiveClass="navlink_match" title="Dashboard">
-            <span class="material-icons">home</span>
-        </NavLink>
-
-        <NavLink href="/targets/home" Match="NavLinkMatch.All" ActiveClass="navlink_match" title="Targets">
-            <span class="material-icons">menu</span>
-        </NavLink>
-
-        <NavLink href="/monitoring/home" Match="NavLinkMatch.All" ActiveClass="navlink_match" title="Monitoring">
-            <span class="material-icons">search</span>
-        </NavLink>
-
-        <NavLink href="/settings/home" Match="NavLinkMatch.All" ActiveClass="navlink_match" title="Settings">
-            <span class="material-icons">settings</span>
-        </NavLink>
-
-        <NavLink href="/logs/home" Match="NavLinkMatch.All" ActiveClass="navlink_match" title="Logs">
-            <span class="material-symbols-outlined">article</span>
-        </NavLink>
-
         <AuthorizeView>
             <Authorized>
+                <NavLink href="/home" Match="NavLinkMatch.All" ActiveClass="navlink_match" title="Dashboard">
+                    <span class="material-icons">home</span>
+                </NavLink>
+
+                <NavLink href="/targets/home" Match="NavLinkMatch.All" ActiveClass="navlink_match" title="Targets">
+                    <span class="material-icons">menu</span>
+                </NavLink>
+
+                <NavLink href="/monitoring/home" Match="NavLinkMatch.All" ActiveClass="navlink_match" title="Monitoring">
+                    <span class="material-icons">search</span>
+                </NavLink>
+
+                <NavLink href="/settings/home" Match="NavLinkMatch.All" ActiveClass="navlink_match" title="Settings">
+                    <span class="material-icons">settings</span>
+                </NavLink>
+
+                <NavLink href="/logs/home" Match="NavLinkMatch.All" ActiveClass="navlink_match" title="Logs">
+                    <span class="material-symbols-outlined">article</span>
+                </NavLink>
+
                 <LogOut/>
             </Authorized>
         </AuthorizeView>

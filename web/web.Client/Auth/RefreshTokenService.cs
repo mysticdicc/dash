@@ -5,12 +5,17 @@ using web.Client.Services;
 
 namespace web.Client.Auth
 {
-    public class RefreshTokenService(IHttpClientFactory httpClientFactory, AuthenticationStateProvider authStateProvider, AuthTokenService store)
+    public class RefreshTokenService(
+        IHttpClientFactory httpClientFactory, 
+        AuthenticationStateProvider authStateProvider, 
+        AuthTokenService store,
+        NotificationService notificationService)
     {
         private static readonly SemaphoreSlim _refreshLock = new(1, 1);
         private readonly IHttpClientFactory _httpClientFactory = httpClientFactory;
         private readonly AuthenticationStateProvider _authStateProvider = authStateProvider;
         private readonly AuthTokenService _tokenStore = store;
+        private readonly NotificationService _notificationService = notificationService;
 
         public async Task<bool> TryRefreshAsync(CancellationToken cancellationToken)
         {
@@ -34,8 +39,9 @@ namespace web.Client.Auth
 
                 return true;
             }
-            catch
+            catch(Exception ex)
             {
+                _notificationService.ShowAsync("Error refreshing token", ex.Message);
                 return false;
             }
             finally

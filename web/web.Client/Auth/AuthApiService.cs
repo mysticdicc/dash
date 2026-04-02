@@ -93,5 +93,18 @@ namespace web.Client.Auth
             if (_authStateProvider is JwtAuthStateProvider jwtProv)
                 jwtProv.NotifyAuthStateChanged();
         }
+
+        public async Task<bool> AccountCheckAsync()
+        {
+            try
+            {
+                var result = await _http.GetAsync("Auth/v1/accountcheck");
+                return result.IsSuccessStatusCode;
+            }
+            catch
+            {
+                return true;
+            }
+        }
     }
 }

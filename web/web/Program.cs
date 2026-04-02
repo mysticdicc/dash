@@ -98,14 +98,21 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 builder.Services.AddSingleton<SettingsService>();
+builder.Services.AddHostedService(sp => sp.GetRequiredService<SettingsService>());
+
 builder.Services.AddSingleton<DiscordService>();
 builder.Services.AddSingleton<TelegramService>();
 builder.Services.AddSingleton<MailService>();
 builder.Services.AddSingleton<DiscoveryService>();
 
-builder.Services.AddHostedService<MonitorService>();
+builder.Services.AddSingleton<MonitorService>();
+builder.Services.AddHostedService(sp => sp.GetRequiredService<MonitorService>());
+
 builder.Services.AddHostedService<AlertService>();
+builder.Services.AddHostedService(sp => sp.GetRequiredService<AlertService>());
+
 builder.Services.AddHostedService<CleanupService>();
+builder.Services.AddHostedService(sp => sp.GetRequiredService<CleanupService>());
 
 builder.Services.AddControllers();
 

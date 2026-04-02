@@ -74,14 +74,28 @@ namespace DashLib.Models.Settings
             File.WriteAllText(path, json);
         }
 
+        static private bool ShouldSaveFile(string current, string newString) 
+        {
+            if (!string.IsNullOrEmpty(current) && !string.IsNullOrEmpty(newString))
+            {
+                if (current != newString) return true;
+                else return false;
+            }
+            else
+            {
+                if (string.IsNullOrEmpty(current) && string.IsNullOrEmpty(newString)) return false;
+                if (string.IsNullOrEmpty(current) && !string.IsNullOrEmpty(newString)) return true;
+                if (!string.IsNullOrEmpty(current) && string.IsNullOrEmpty(newString)) return false;
+                return false;
+            }
+        }
+
         static public void UpdateExistingSettingsFile(string path, AllSettings newSettings)
         {
+            var currentSettings = GetCurrentSettingsFile(path);
             newSettings.Normalize();
-            var json = JsonSerializer.Serialize(newSettings, JsonOptions);
-            File.WriteAllText(path, json);
 
-            if (newSettings.DashboardSettings.BackgroundImage != null
-                || newSettings.DashboardSettings.BackgroundImage != string.Empty)
+            if (ShouldSaveFile(currentSettings.DashboardSettings.BackgroundImage, newSettings.DashboardSettings.BackgroundImage))
             {
                 if (File.Exists(DashboardSettings.BackgroundImagePath))
                 {
@@ -98,6 +112,52 @@ namespace DashLib.Models.Settings
                     File.Delete(DashboardSettings.BackgroundImagePath);
                 }
             }
+
+            if (ShouldSaveFile(currentSettings.DashboardSettings.HttpsCertBase64, newSettings.DashboardSettings.HttpsCertBase64))
+            {
+                if (File.Exists(DashboardSettings.HttpsCertBasePath))
+                {
+                    File.Delete(DashboardSettings.HttpsCertBasePath);
+                }
+
+                byte[] pfxBytes = Convert.FromBase64String(newSettings.DashboardSettings.HttpsCertBase64);
+                File.WriteAllBytes(DashboardSettings.HttpsCertBasePath, pfxBytes);
+            }
+            else
+            {
+                if (File.Exists(DashboardSettings.HttpsCertBasePath))
+                {
+                    File.Delete(DashboardSettings.HttpsCertBasePath);
+                }
+            }
+
+            if (ShouldSaveFile(currentSettings.DashboardSettings.HttpsCertPassword, newSettings.DashboardSettings.HttpsCertPassword))
+            {
+                if (File.Exists(DashboardSettings.HttpsCertPasswordPath))
+                {
+                    File.Delete(DashboardSettings.HttpsCertPasswordPath);
+                }
+
+                try
+                {
+                    File.WriteAllText(DashboardSettings.HttpsCertPasswordPath, newSettings.DashboardSettings.HttpsCertPassword);
+                    newSettings.DashboardSettings.HttpsCertPassword = string.Empty;
+                }
+                catch
+                {
+                    newSettings.DashboardSettings.HttpsCertPassword = "Failed to save.";
+                }
+            }
+            else
+            {
+                if (File.Exists(DashboardSettings.HttpsCertPasswordPath))
+                {
+                    File.Delete(DashboardSettings.HttpsCertPasswordPath);
+                }
+            }
+
+            var json = JsonSerializer.Serialize(newSettings, JsonOptions);
+            File.WriteAllText(path, json);
         }
 
         static public AllSettings GetCurrentSettingsFile(string path)

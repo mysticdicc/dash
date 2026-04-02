@@ -40,7 +40,7 @@ namespace web.Services
             _timer = new PeriodicTimer(TimeSpan.FromMinutes(refreshInterval));
             _timerTask = RefreshSettingsAsync(_cts.Token);
             _logger.SignalSettingsReady(this);
-            await Task.Delay(2500); //wait for logging service to start
+            await Task.Delay(3000); //wait for logging service to start
             _logger.LogInfo("Service started.", _logSource);
         }
           
@@ -56,13 +56,13 @@ namespace web.Services
                     settings = AllSettings.GetCurrentSettingsFile(AllSettings.SettingsPath);
                     if (settings != null)
                     {
-                        _logger.LogInfo($"Attempt {i+1}: Succeeding in fetching or creating default settings file.", _logSource);
+                        _logger.LogInfo($"Attempt {i+1}: Succeeded in fetching settings file.", _logSource);
                         break;
                     }
                 }
                 catch(Exception ex) 
                 {
-                    _logger.LogError($"Attempt {i + 1}: Error fetching or creating default settings file: " + ex.Message, _logSource);
+                    _logger.LogError($"Attempt {i + 1}: Error fetching settings file: " + ex.Message, _logSource);
                 }
 
                 await Task.Delay(retryDelay);
@@ -70,12 +70,13 @@ namespace web.Services
 
             if (settings == null)
             {
-                _logger.LogWarning($"Failed to fetch or create settings file after {retryCount} attempts. Loading default settings to memory.", _logSource);
+                _logger.LogWarning($"Failed to fetch settings file after {retryCount} attempts. Loading default settings to memory.", _logSource);
                 All = new AllSettings(true);
 
                 try
                 {
                     AllSettings.CreateNewSettingsFile(AllSettings.SettingsPath);
+                    _logger.LogInfo("Succeeded in creating new settings file.", _logSource);
                 }
                 catch (Exception ex)
                 {

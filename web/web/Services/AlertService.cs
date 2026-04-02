@@ -70,8 +70,8 @@ namespace web.Services
                         if (_settings.Alerts.TcpDownOnceAlertsEnabled)
                             await TcpDownOnceReportAsync(token, list);
 
-                        _logger.LogInfo($"Alert service sleeping for {_settings.Alerts.AlertIntervalInSeconds} seconds", _logSource);
-                        await Task.Delay((_settings.Alerts.AlertIntervalInSeconds * 1000), token);
+                        _logger.LogInfo($"Alert service sleeping for {_settings.Alerts.PollingIntervalInSeconds} seconds", _logSource);
+                        await Task.Delay((_settings.Alerts.PollingIntervalInSeconds * 1000), token);
                     }
                     while (!token.IsCancellationRequested);
                 }
@@ -82,7 +82,7 @@ namespace web.Services
                 catch (Exception ex)
                 {
                     _logger.LogError(ex.Message, _logSource);
-                    await Task.Delay((_settings.Alerts.AlertIntervalInSeconds * 1000), token);
+                    await Task.Delay((_settings.Alerts.PollingIntervalInSeconds * 1000), token);
                 }
             }
         }
@@ -149,7 +149,7 @@ namespace web.Services
 
                 if (uptimePercent < _settings.Alerts.AlertIfDownForPercent)
                 {
-                    _logger.LogWarning($"Alert: Monitoring target {targetGroup.Key.Target.Hostname} has uptime percent {uptimePercent}% on port {targetGroup.Key.TargetPort} which is below the threshold of {_settings.Alerts.AlertIfDownForPercent}%", _logSource);
+                    _logger.LogWarning($"Alert: Monitoring target {targetGroup.Key.Target.Hostname} has uptime percent {uptimePercent}% on port {targetGroup.Key.TargetPort} which is below the threshold of {_settings.Alerts.AlertIfDownForPercent}%.", _logSource);
                     alertTargets.Add(targetGroup.Key.Target);
                 }
             }
@@ -214,7 +214,7 @@ namespace web.Services
         private async Task SendDownOverTimeAlertAsync(CancellationToken token, List<BaseMonitoringTarget> alertTargets, bool icmp)
         {
             alertTargets = alertTargets.Distinct().ToList();
-            _logger.LogInfo($"Submitting {alertTargets.Count} monitoring targets for down over time alerts..", _logSource);
+            _logger.LogInfo($"Submitting {alertTargets.Count} monitoring targets for down over time alerts.", _logSource);
 
             var sb = new StringBuilder();
             sb.AppendLine("Device Down Over Time Alert");
@@ -322,7 +322,7 @@ namespace web.Services
 
         public async void Restart()
         {
-            _logger.LogInfo("Alert service restart initiated", _logSource);
+            _logger.LogInfo("Alert service restart initiated.", _logSource);
             _cancellationToken.Cancel();
             _cancellationToken = new();
         }

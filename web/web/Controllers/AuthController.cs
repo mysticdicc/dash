@@ -26,6 +26,9 @@ namespace web.Controllers
             if (string.IsNullOrEmpty(request.UserName) || string.IsNullOrEmpty(request.Password))
                 return BadRequest("Username or password was empty.");
 
+            if (_userManager.Users.Any())
+                return BadRequest("Only one account can be made.");
+
             User user = new();
             user.UserName = request.UserName;
             user.DisplayName = request.DisplayName;
@@ -100,6 +103,20 @@ namespace web.Controllers
             });
 
             return Ok();
+        }
+
+        [AllowAnonymous]
+        [HttpGet("accountcheck")]
+        public IActionResult CheckIfAccountExists()
+        {
+            if (_userManager.Users.Any())
+            {
+                return Ok(true);
+            }
+            else
+            {
+                return NotFound(false);
+            }
         }
 
         private AccessTokenDto CreateAccessJwt(User user)

@@ -12,7 +12,6 @@ namespace DashLib.Models.Settings
     {
         public int PollingIntervalInSeconds { get; set; }
         public int MonitorStateRetentionPeriodInHours { get; set; }
-
         public SmtpSettings SmtpSettings { get; set; }
         public DiscordSettings DiscordSettings { get; set; }
         public TelegramSettings TelegramSettings { get; set; }
