@@ -19,15 +19,13 @@ namespace web.Services
     public class MonitorService : BackgroundService
     {
         private Timer? _timer;
-        private readonly HttpClient _httpClient;
         private readonly LoggingService _logger;
         CancellationTokenSource _cancellationToken;
         IMonitorStateRepository _monitoringRepo;
         SettingsService _currentSettings;
         private static LogEntry.LogSource _logSource = LogEntry.LogSource.MonitoringService;
-        public MonitorService(LoggingService logger, HttpClient httpClient, IMonitorStateRepository monitoringRepo, SettingsService settingsService)
+        public MonitorService(LoggingService logger, IMonitorStateRepository monitoringRepo, SettingsService settingsService)
         {
-            _httpClient = httpClient;
             _timer = null;
             _logger = logger;
             _cancellationToken = new();

@@ -13,6 +13,7 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using DashLib.Models.Monitoring;
 using DashLib.Models;
+using DashLib.Interfaces.Monitoring;
 
 namespace web.Services {
     public class DiscordService
@@ -20,11 +21,11 @@ namespace web.Services {
         private DiscordSocketClient _client;
         private TaskCompletionSource _readyTcs = new(TaskCreationOptions.RunContinuationsAsynchronously);
         private readonly SettingsService _settings;
-        private readonly MonitorStateAPI _monitoringAPI;
+        private readonly IMonitorStateRepository _monitoringAPI;
         private readonly LoggingService _logger;
         private static LogEntry.LogSource _logSource = LogEntry.LogSource.DiscordService;
 
-        public DiscordService(SettingsService settingsService, MonitorStateAPI monitoringAPI, LoggingService logger)
+        public DiscordService(SettingsService settingsService, IMonitorStateRepository monitoringAPI, LoggingService logger)
         {
             _settings = settingsService;
             _monitoringAPI = monitoringAPI;
@@ -164,7 +165,7 @@ namespace web.Services {
             {
                 _logger.LogInfo("Fetching monitored devices from API.", _logSource);
                 await DeferIfNeededAsync(command, ephemeral: true);
-                var list = await _monitoringAPI.GetMonitoredIpsAsync();
+                var list = await _monitoringAPI.GetAllMonitoredIpsAsync();
 
                 if (list.Count == 0)
                 {
@@ -227,22 +228,24 @@ namespace web.Services {
             try
             {
                 _logger.LogInfo("Polling dash API for ping response.", _logSource);
-                var response = await _monitoringAPI.PingDeviceByStringIpAsync(ipText);
+                //var response = await _monitoringAPI.PingDeviceByStringIpAsync(ipText);
 
-                if (null == response)
-                {
-                    _logger.LogWarning("HTTP response from ping request null.", _logSource);
-                    await command.FollowupAsync($"No ping response for IP: {ipText}", ephemeral: true);
-                    return;
-                }
-                else
-                {
-                    _logger.LogInfo("Ping response received sending to discord.", _logSource);
-                    await command.FollowupAsync($"Ping response for IP {ipText}: {(response.IcmpResponse ? "Online" : "Offline")}" 
-                        + (string.IsNullOrEmpty(response.Exception) ? "" : $" (Exception: {response.Exception})"), 
-                        ephemeral: true);
-                    return;
-                }
+                throw new NotImplementedException();
+
+                //if (null == response)
+                //{
+                //    _logger.LogWarning("HTTP response from ping request null.", _logSource);
+                //    await command.FollowupAsync($"No ping response for IP: {ipText}", ephemeral: true);
+                //    return;
+                //}
+                //else
+                //{
+                //    _logger.LogInfo("Ping response received sending to discord.", _logSource);
+                //    await command.FollowupAsync($"Ping response for IP {ipText}: {(response.IcmpResponse ? "Online" : "Offline")}" 
+                //        + (string.IsNullOrEmpty(response.Exception) ? "" : $" (Exception: {response.Exception})"), 
+                //        ephemeral: true);
+                //    return;
+                //}
             }
             catch (Exception ex)
             {
@@ -286,7 +289,7 @@ namespace web.Services {
 
             try
             {
-                IpMonitoringTarget ip = await _monitoringAPI.GetDeviceAndMonitorStatesByStringIpAsync(ipText);
+                IpMonitoringTarget ip = await _monitoringAPI.GetIpMonitoringTargetByStringAddressAsync(ipText);
                 var pings = PingState.GetMostRecentStateFromMonitoringTarget(ip);
                 var ports = PortState.GetMostRecentStateFromMonitoringTarget(ip);
 

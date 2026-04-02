@@ -1,0 +1,11 @@
+@inject NavigationManager NavigationManager
+
+@code {
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender && OperatingSystem.IsBrowser())
+        {
+            NavigationManager.NavigateTo("/login", forceLoad: false);
+        }
+    }
+}

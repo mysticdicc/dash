@@ -34,8 +34,7 @@ builder.Services.AddDbContext<DashDbContext>(
     optionsLifetime: ServiceLifetime.Singleton);
 
 builder.Services.AddDbContextFactory<DashDbContext>(
-    options => options.UseSqlite(builder.Configuration.GetConnectionString("SQLite")),
-    lifetime: ServiceLifetime.Transient);
+    options => options.UseSqlite(builder.Configuration.GetConnectionString("SQLite")));
 
 builder.Services.AddIdentityCore<User>(options =>
 {
@@ -87,8 +86,6 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         };
     });
 
-builder.Services.AddAuthorization();
-
 builder.Services.AddSingleton<LoggingService>();
 
 SharedServices.Register(builder.Services, baseAddress);
@@ -101,22 +98,15 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 builder.Services.AddSingleton<SettingsService>();
-builder.Services.AddHostedService(provider => provider.GetRequiredService<SettingsService>());
-
 builder.Services.AddSingleton<DiscordService>();
 builder.Services.AddSingleton<TelegramService>();
 builder.Services.AddSingleton<MailService>();
-
-builder.Services.AddSingleton<MonitorService>();
-builder.Services.AddHostedService(x => x.GetRequiredService<MonitorService>());
-
-builder.Services.AddSingleton<AlertService>();
-builder.Services.AddHostedService(x => x.GetRequiredService<AlertService>());
-
-builder.Services.AddSingleton<CleanupService>();
-builder.Services.AddHostedService(x => x.GetRequiredService<CleanupService>());
-
 builder.Services.AddSingleton<DiscoveryService>();
+
+builder.Services.AddHostedService<MonitorService>();
+builder.Services.AddHostedService<AlertService>();
+builder.Services.AddHostedService<CleanupService>();
+
 builder.Services.AddControllers();
 
 builder.Logging.AddFilter("Microsoft.EntityFrameworkCore.Database.Command", LogLevel.None);

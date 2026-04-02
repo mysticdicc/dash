@@ -9,17 +9,25 @@ namespace web.Client.Services
 
         public async Task<string?> GetTokenAsync()
         {
-            var result = await _js.InvokeAsync<string?>("localStorage.getItem", TokenKey);
-            return result;
+            if (!OperatingSystem.IsBrowser())
+                return null;
+
+            return await _js.InvokeAsync<string?>("localStorage.getItem", TokenKey);
         }
 
         public async Task SetTokenAsync(string token)
         {
+            if (!OperatingSystem.IsBrowser())
+                return;
+
             await _js.InvokeVoidAsync("localStorage.setItem", TokenKey, token);
         }
 
         public async Task ClearTokenAsync()
         {
+            if (!OperatingSystem.IsBrowser())
+                return;
+
             await _js.InvokeVoidAsync("localStorage.removeItem", TokenKey);
         }
     }
