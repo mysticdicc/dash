@@ -17,12 +17,16 @@ namespace web.Controllers
     {
         private readonly UserManager<User> _userManager = userManager;
         private readonly IConfiguration _configuration = config;
+        private const string RefreshCookieName = "dash_refresh";
 
         [AllowAnonymous]
         [HttpPost("register")]
         public async Task<IActionResult> Register(RegisterRequestDto request)
         {
-            var user = new User();
+            if (string.IsNullOrEmpty(request.UserName) || string.IsNullOrEmpty(request.Password))
+                return BadRequest("Username or password was empty.");
+
+            User user = new();
             user.UserName = request.UserName;
             user.DisplayName = request.DisplayName;
 
@@ -46,11 +50,59 @@ namespace web.Controllers
             if (!valid)
                 return Unauthorized("Invalid username or password.");
 
-            var token = CreateJwt(user);
+            var access = CreateAccessJwt(user);
+            var refresh = CreateRefreshJwt(user);
+            var token = new LoginResponseDto(refresh, access);
+            SetRefreshCookie(token.RefreshToken.Token, token.RefreshToken.ValidUntilUtc);
+
             return Ok(token);
         }
 
-        private LoginResponseDto CreateJwt(User user)
+        [AllowAnonymous]
+        [HttpPost("refresh")]
+        public async Task<IActionResult> RefreshToken()
+        {
+            if (!Request.Cookies.TryGetValue(RefreshCookieName, out var refreshToken) ||
+                string.IsNullOrWhiteSpace(refreshToken))
+            {
+                return Unauthorized("Missing refresh token.");
+            }
+
+            var principal = ValidateRefreshToken(refreshToken);
+            if (principal is null)
+                return Unauthorized("Invalid refresh token.");
+
+            var userId = principal.FindFirst(JwtRegisteredClaimNames.Sub)?.Value;
+            if (string.IsNullOrWhiteSpace(userId))
+                return Unauthorized("Invalid refresh token subject.");
+
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user is null)
+                return Unauthorized("User no longer exists.");
+
+            var access = CreateAccessJwt(user);
+            var refresh = CreateRefreshJwt(user);
+            var token = new LoginResponseDto(refresh, access);
+            SetRefreshCookie(token.RefreshToken.Token, token.RefreshToken.ValidUntilUtc);
+
+            return Ok(token);
+        }
+
+        [AllowAnonymous]
+        [HttpPost("logout")]
+        public IActionResult Logout()
+        {
+            Response.Cookies.Delete(RefreshCookieName, new CookieOptions
+            {
+                Path = "/",
+                Secure = Request.IsHttps,
+                SameSite = SameSiteMode.Lax
+            });
+
+            return Ok();
+        }
+
+        private AccessTokenDto CreateAccessJwt(User user)
         {
             var key = _configuration["Auth:JwtKey"] ?? throw new InvalidOperationException("Missing Auth:JwtKey");
             var issuer = _configuration["Auth:Issuer"] ?? "dash_iss";
@@ -77,8 +129,84 @@ namespace web.Controllers
                 signingCredentials: creds);
 
             var token = new JwtSecurityTokenHandler().WriteToken(jwt);
+            return new AccessTokenDto(token);
+        }
 
-            return new LoginResponseDto(expiresAtUtc, token);
+        private RefreshTokenDto CreateRefreshJwt(User user)
+        {
+            var key = _configuration["Auth:JwtKey"] ?? throw new InvalidOperationException("Missing Auth:JwtKey");
+            var issuer = _configuration["Auth:Issuer"] ?? "dash_iss";
+            var audience = _configuration["Auth:Audience"] ?? "dash_aud";
+
+            var refreshDays = int.TryParse(_configuration["Auth:RefreshExpiryDays"], out var days) ? days : 30;
+            var expiresAtUtc = DateTime.UtcNow.AddDays(refreshDays);
+
+            var claims = new List<Claim>
+            {
+                new(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
+                new("token_use", "refresh"),
+                new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
+            };
+
+            var signingKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(key));
+            var creds = new SigningCredentials(signingKey, SecurityAlgorithms.HmacSha256);
+
+            var jwt = new JwtSecurityToken(
+                issuer: issuer,
+                audience: audience,
+                claims: claims,
+                expires: expiresAtUtc,
+                signingCredentials: creds);
+
+            var token = new JwtSecurityTokenHandler().WriteToken(jwt);
+            return new RefreshTokenDto(token);
+        }
+
+        private ClaimsPrincipal? ValidateRefreshToken(string refreshToken)
+        {
+            var key = _configuration["Auth:JwtKey"] ?? throw new InvalidOperationException("Missing Auth:JwtKey");
+            var issuer = _configuration["Auth:Issuer"] ?? "dash_iss";
+            var audience = _configuration["Auth:Audience"] ?? "dash_aud";
+
+            var validation = new TokenValidationParameters
+            {
+                ValidateIssuer = true,
+                ValidateAudience = true,
+                ValidateIssuerSigningKey = true,
+                ValidateLifetime = true,
+                ValidIssuer = issuer,
+                ValidAudience = audience,
+                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(key)),
+                ClockSkew = TimeSpan.FromSeconds(10)
+            };
+
+            try
+            {
+                var handler = new JwtSecurityTokenHandler();
+                var principal = handler.ValidateToken(refreshToken, validation, out _);
+
+                var tokenUse = principal.FindFirst("token_use")?.Value;
+                if (!string.Equals(tokenUse, "refresh", StringComparison.Ordinal))
+                    return null;
+
+                return principal;
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
+        private void SetRefreshCookie(string refreshToken, DateTime expiresUtc)
+        {
+            Response.Cookies.Append(RefreshCookieName, refreshToken, new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = Request.IsHttps,
+                SameSite = SameSiteMode.Lax,
+                Expires = expiresUtc,
+                Path = "/"
+            });
         }
     }
 }

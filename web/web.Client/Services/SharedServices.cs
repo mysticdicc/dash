@@ -17,9 +17,10 @@ namespace web.Client.Services
             services.AddAuthorizationCore();
 
             services.AddScoped<AuthenticationStateProvider, JwtAuthStateProvider>();
-            services.AddScoped<TokenStorageService>();
+            services.AddScoped<AuthTokenService>();
             services.AddScoped<AuthMessageHandler>();
             services.AddScoped<AuthApiService>();
+            services.AddScoped<RefreshTokenService>();
 
             services.AddHttpClient("AuthorizedClient", client =>
             {
@@ -29,6 +30,12 @@ namespace web.Client.Services
 
             services.AddScoped(sp =>
                 sp.GetRequiredService<IHttpClientFactory>().CreateClient("AuthorizedClient"));
+
+            services.AddHttpClient("NoAuthClient", client =>
+            {
+                client.BaseAddress = baseAddress;
+            });
+
 
             services.AddApexCharts();
             services.AddSingleton<NotificationService>();
@@ -55,7 +62,7 @@ namespace web.Client.Services
                 new LoggingHubService(
                     sp.GetRequiredService<ILoggingAPI>(),
                     baseAddress.ToString(), sp.
-                    GetRequiredService<TokenStorageService>()
+                    GetRequiredService<AuthTokenService>()
                 ));
 
 

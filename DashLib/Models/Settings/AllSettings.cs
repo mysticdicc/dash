@@ -69,6 +69,7 @@ namespace DashLib.Models.Settings
                 File.Delete(path);
             }
             var settings = new AllSettings(true);
+            settings.Normalize();
             var json = JsonSerializer.Serialize(settings, JsonOptions);
             File.WriteAllText(path, json);
         }
@@ -101,6 +102,11 @@ namespace DashLib.Models.Settings
 
         static public AllSettings GetCurrentSettingsFile(string path)
         {
+            if (!File.Exists(path))
+            {
+                throw new InvalidDataException($"Path {path} does not exist.");
+            }
+
             string content = File.ReadAllText(path);
             var settings = JsonSerializer.Deserialize<AllSettings>(content, JsonOptions);
             if (settings != null)

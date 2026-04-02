@@ -10,12 +10,12 @@ namespace web.Client.Services
     {
         private HubConnection? _hubConnection;
         private readonly ILoggingAPI _loggingApi;
-        private readonly TokenStorageService _tokenStore;
+        private readonly AuthTokenService _tokenStore;
         private string _baseAddr;
         public List<LogEntry> Logs { get; private set; } = [];
         public event Action? OnLogsUpdated;
 
-        public LoggingHubService(ILoggingAPI loggingApi, string baseAddr, TokenStorageService tokenStore)
+        public LoggingHubService(ILoggingAPI loggingApi, string baseAddr, AuthTokenService tokenStore)
         {
             _loggingApi = loggingApi;
             _tokenStore = tokenStore;

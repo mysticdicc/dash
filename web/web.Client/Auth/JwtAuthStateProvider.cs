@@ -7,9 +7,9 @@ namespace web.Client.Auth
 {
     public class JwtAuthStateProvider : AuthenticationStateProvider
     {
-        private readonly TokenStorageService _storageService;
+        private readonly AuthTokenService _storageService;
 
-        public JwtAuthStateProvider(TokenStorageService storageService)
+        public JwtAuthStateProvider(AuthTokenService storageService)
         {
             _storageService = storageService;
         }

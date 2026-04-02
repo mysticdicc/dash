@@ -37,17 +37,38 @@ namespace web.Controllers
 
         [HttpGet]
         [Route("[controller]/v2/get/current")]
-        public string GetCurrentSettings()
+        public IActionResult GetCurrentSettings()
         {
-            var content = AllSettings.GetOrCreateDefaultSettingsFile();
-
-            if (!string.IsNullOrEmpty(content.MonitoringSettings.SmtpSettings.Password))
+            if (null != _settingsService.All)
             {
-                var unencrypted = SmtpSettings.DecryptPassword(content.MonitoringSettings.SmtpSettings);
-                content.MonitoringSettings.SmtpSettings = unencrypted;
-            }
+                var clone = JsonSerializer.Deserialize<AllSettings>(JsonSerializer.Serialize(_settingsService.All));
 
-            return JsonSerializer.Serialize(content, AllSettings.JsonOptions);
+                if (clone == null)
+                {
+                    return Problem("Error cloning settings from settings service.");
+                }
+
+                if (!string.IsNullOrEmpty(_settingsService.Smtp.Password))
+                {
+                    var unencrypted = SmtpSettings.DecryptPassword(_settingsService.Smtp);
+
+                    clone.MonitoringSettings.SmtpSettings = unencrypted;
+                }
+
+                return Ok(clone);
+            }
+            else
+            {
+                var content = AllSettings.GetOrCreateDefaultSettingsFile();
+
+                if (!string.IsNullOrEmpty(content.MonitoringSettings.SmtpSettings.Password))
+                {
+                    var unencrypted = SmtpSettings.DecryptPassword(content.MonitoringSettings.SmtpSettings);
+                    content.MonitoringSettings.SmtpSettings = unencrypted;
+                }
+
+                return Ok(content);
+            }
         }
 
         [HttpPost]

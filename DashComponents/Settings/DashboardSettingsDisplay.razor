@@ -28,7 +28,21 @@
                                     <span class="material-icons" style="margin: auto;">add</span>
                                 </label>
 
-                                <InputFile onchange="@(args => OnUploadItem(args))" id="upload_new_pic" style="width: 0%; height: 0; overflow: hidden;" accept="*.jpg" />
+                                <InputFile onchange="@(args => OnUploadBackground(args))" id="upload_new_pic" style="width: 0%; height: 0; overflow: hidden;" accept="*.jpg" />
+                            </div>
+                        }
+                        @if (!string.IsNullOrEmpty(_currentSettings.HttpsCertBase64))
+                        {
+                            <div>Pfx Uplaoded</div>
+                        }
+                        else
+                        {
+                            <div class="upload_item_box">
+                                <label for="upload_new_cert">
+                                    <span class="material-icons" style="margin: auto;">add</span>
+                                </label>
+
+                                <InputFile onchange="@(args => OnUploadPfx(args))" id="upload_new_cert" style="width: 0%; height: 0; overflow: hidden;" accept="*.pfx" />
                             </div>
                         }
                     </td>
@@ -53,7 +67,7 @@
         base.OnParametersSet();
     }
 
-    private async Task<string> PictureToBase64String(InputFileChangeEventArgs eventArgs)
+    private async Task<string> FileToBase64Async(InputFileChangeEventArgs eventArgs)
     {
         using var memoryStream = new MemoryStream();
         await eventArgs.File.OpenReadStream(10000000).CopyToAsync(memoryStream);
@@ -63,10 +77,15 @@
         return base64;
     }
 
-    private async Task OnUploadItem(InputFileChangeEventArgs e)
+    private async Task OnUploadBackground(InputFileChangeEventArgs e)
     {
-        _currentSettings.BackgroundImage = await PictureToBase64String(e);
+        _currentSettings.BackgroundImage = await FileToBase64Async(e);
         _currentSettings.BackgroundImageDisplay64 = $"data:{e.File.ContentType};base64,{_currentSettings.BackgroundImage}";
+    }
+
+    private async Task OnUploadPfx(InputFileChangeEventArgs e)
+    {
+        _currentSettings.HttpsCertBase64 = await FileToBase64Async(e);
     }
 
     private void OnClickDeleteBackground()

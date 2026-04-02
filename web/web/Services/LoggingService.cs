@@ -43,18 +43,21 @@ namespace web.Services
         public async void LogWarningAsync(string message, LogEntry.LogSource source)
         {
             var entry = new LogEntry(LogEntry.LogLevel.Warning, source, message);
+            Console.WriteLine($"{DateTime.Now} : WARNING : {source.ToString()} : {message}");
             await AddEntryAsync(entry);
         }
 
         public async void LogErrorAsync(string message, LogEntry.LogSource source)
         {
             var entry = new LogEntry(LogEntry.LogLevel.Error, source, message);
+            Console.WriteLine($"{DateTime.Now} : ERROR : {source.ToString()} : {message}");
             await AddEntryAsync(entry);
         }
 
         public async void LogInfoAsync(string message, LogEntry.LogSource source)
         {
             var entry = new LogEntry(LogEntry.LogLevel.Info, source, message);
+            Console.WriteLine($"{DateTime.Now} : INFO : {source.ToString()} : {message}");
             await AddEntryAsync(entry);
         }
 

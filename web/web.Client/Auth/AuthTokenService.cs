@@ -1,8 +1,12 @@
-﻿using Microsoft.JSInterop;
+﻿using DashLib.DTO.Auth;
+using Microsoft.AspNetCore.Components.Authorization;
+using Microsoft.JSInterop;
+using System.Net.Http.Json;
+using web.Client.Auth;
 
 namespace web.Client.Services
 {
-    public class TokenStorageService(IJSRuntime js)
+    public class AuthTokenService(IJSRuntime js)
     {
         private const string TokenKey = "auth_token";
         private readonly IJSRuntime _js = js;

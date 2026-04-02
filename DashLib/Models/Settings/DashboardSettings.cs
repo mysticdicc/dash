@@ -12,10 +12,13 @@ namespace DashLib.Models.Settings
         public string BackgroundImage { get; set; }
         public string BackgroundImageDisplay64 { get; set; }
         public static string BackgroundImagePath = Path.Combine(AppContext.BaseDirectory, "wwwroot/background.jpg");
+        public string HttpsCertBase64 { get; set; }
+        public static string HttpsCertBasePath = Path.Combine(AppContext.BaseDirectory, "data/certs/tls.pfx");
         public DashboardSettings()
         {
             BackgroundImage = string.Empty;
             BackgroundImageDisplay64 = string.Empty;
+            HttpsCertBase64 = string.Empty;
         }
     }
 }

@@ -6,25 +6,25 @@ namespace DashLib.DTO.Auth
 {
     public class LoginResponseDto
     {
-        public DateTime ValidUntilUtc { get; set; }
-        public string Token { get; set; }
+        public RefreshTokenDto RefreshToken { get; set; }
+        public AccessTokenDto AccessToken { get; set; }
 
-        public LoginResponseDto(string token)
+        public LoginResponseDto(string access, string refresh)
         {
-            ValidUntilUtc = DateTime.UtcNow;
-            Token = token;
+            RefreshToken = new RefreshTokenDto(refresh);
+            AccessToken = new AccessTokenDto(access);
         }
 
         public LoginResponseDto()
         {
-            ValidUntilUtc = DateTime.UtcNow;
-            Token = string.Empty;
+            RefreshToken = new RefreshTokenDto();
+            AccessToken = new AccessTokenDto();
         }
 
-        public LoginResponseDto(DateTime validUntilUtc, string token)
+        public LoginResponseDto(RefreshTokenDto refresh, AccessTokenDto access)
         {
-            ValidUntilUtc = validUntilUtc;
-            Token = token;
+            AccessToken = access;
+            RefreshToken = refresh;
         }
     }
 }

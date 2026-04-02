@@ -22,19 +22,23 @@ RUN dotnet publish "./web.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:Use
 USER $APP_UID
 FROM base AS final
 WORKDIR /app
+
 EXPOSE 8080
-ENV ASPNETCORE_URLS=http://+:8080
+EXPOSE 8443
 
 USER $APP_UID
 COPY --from=publish /app/publish .
-RUN mkdir ./data
+COPY web/web/docker_entry.sh /docker_entry.sh
 
 USER root
+RUN mkdir -p ./data ./data/certs
 RUN apt-get update -y
 RUN apt-get install -y iputils-ping
 RUN chmod 0777 ./appsettings.json
 RUN chmod 0777 ./wwwroot
+RUN chmod +x /docker_entry.sh
+RUN chmod 0777 ./data ./data/certs
 
 #finish publish
 USER $APP_UID
-ENTRYPOINT ["dotnet", "web.dll"]
+ENTRYPOINT ["/docker_entry.sh"]

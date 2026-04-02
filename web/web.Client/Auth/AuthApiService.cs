@@ -9,10 +9,10 @@ namespace web.Client.Auth
     public class AuthApiService
     {
         private readonly HttpClient _http;
-        private readonly TokenStorageService _tokenStore;
+        private readonly AuthTokenService _tokenStore;
         private readonly AuthenticationStateProvider _authStateProvider;
 
-        public AuthApiService(HttpClient http, TokenStorageService tokenStore, AuthenticationStateProvider authStateProvider)
+        public AuthApiService(HttpClient http, AuthTokenService tokenStore, AuthenticationStateProvider authStateProvider)
         {
             _http = http;
             _tokenStore = tokenStore;
@@ -57,9 +57,9 @@ namespace web.Client.Auth
                 {
                     var dto = await res.Content.ReadFromJsonAsync<LoginResponseDto>();
 
-                    if (dto?.Token is not null && dto.Token.Length > 0)
+                    if (dto?.AccessToken.Token is not null && dto.AccessToken.Token.Length > 0)
                     {
-                        await _tokenStore.SetTokenAsync(dto.Token);
+                        await _tokenStore.SetTokenAsync(dto.AccessToken.Token);
                         if (_authStateProvider is JwtAuthStateProvider jwtProv)
                             jwtProv.NotifyAuthStateChanged();
 
@@ -87,6 +87,8 @@ namespace web.Client.Auth
 
         public async Task LogoutAsync()
         {
+            try { await _http.PostAsync("Auth/v1/logout", content: null); } catch { }
+
             await _tokenStore.ClearTokenAsync();
             if (_authStateProvider is JwtAuthStateProvider jwtProv)
                 jwtProv.NotifyAuthStateChanged();
