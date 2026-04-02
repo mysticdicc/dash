@@ -1,4 +1,5 @@
-﻿@inherits LayoutComponentBase
+﻿@using Microsoft.AspNetCore.Components.Authorization
+@inherits LayoutComponentBase
 @inject NavigationManager NavManager
 
 <div class="body">
@@ -39,6 +40,19 @@
                 <span><strong>Logs</strong></span>
             </button>
         </a>
+
+        <AuthorizeView>
+            <Authorized>
+                <LogOut/>
+            </Authorized>
+            <NotAuthorized>
+                <a href="/login">
+                    <button>
+                        <span><strong>Login</strong></span>
+                    </button>
+                </a>
+            </NotAuthorized>
+        </AuthorizeView>
     </header>
     <content>
         @Body

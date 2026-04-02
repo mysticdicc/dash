@@ -142,14 +142,25 @@
         allStates.AddRange(PingState.GetAllMonitorStatesFromListMonitoringTargets(targets));
         allStates.AddRange(PortState.GetAllMonitorStatesFromListMonitoringTargets(targets));
 
+        var bucketSpan = TimeSpan.FromSeconds(20);
+        long bucketTicks = bucketSpan.Ticks;
+
+        var oldDate = DateTime.Now - viewLength;
+
         var grouped = allStates
-            .GroupBy(ms => ms.Timestamp)
+            .Where(x => x.Timestamp > oldDate)
+            .GroupBy(ms =>
+            {
+                var utc = ms.Timestamp.ToUniversalTime();
+                var bucketStartTicks = (utc.Ticks / bucketTicks) * bucketTicks;
+                return new DateTime(bucketStartTicks, DateTimeKind.Utc);
+            })
             .OrderBy(g => g.Key);
 
         var allChartPoints = grouped
-            .Select(g => new ChartPoint
+            .Select(g => new ChartPoint 
             {
-                Time = g.Key,
+                Time = g.Key.ToLocalTime(),
                 OnlineCount = g.Count(ms => ms.Response),
                 OfflineCount = g.Count(ms => !ms.Response),
                 MonitoredCount = g.Count()

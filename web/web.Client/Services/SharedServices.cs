@@ -1,10 +1,12 @@
-﻿using DashLib.DankAPI;
-using ApexCharts;
-using DashLib.Interfaces;
+﻿using ApexCharts;
 using DashLib.API;
+using DashLib.DankAPI;
+using DashLib.Interfaces;
 using DashLib.Interfaces.Dashboard;
-using DashLib.Interfaces.Monitoring;
 using DashLib.Interfaces.Logging;
+using DashLib.Interfaces.Monitoring;
+using Microsoft.AspNetCore.Components.Authorization;
+using web.Client.Auth;
 
 namespace web.Client.Services
 {
@@ -21,8 +23,16 @@ namespace web.Client.Services
             services.AddSingleton<LoggingAPI>();
             services.AddSingleton<ILoggingAPI, LoggingApiService>();
 
-            services.AddSingleton<LoggingHubService>(sp =>
-                new LoggingHubService(sp.GetRequiredService<ILoggingAPI>(), baseAddress.ToString()));
+            services.AddScoped<AuthenticationStateProvider, JwtAuthStateProvider>();
+            services.AddScoped<TokenStorageService>();
+            services.AddScoped<AuthApiService>();
+
+            services.AddScoped<LoggingHubService>(sp =>
+                new LoggingHubService(
+                    sp.GetRequiredService<ILoggingAPI>(), 
+                    baseAddress.ToString(), sp.
+                    GetRequiredService<TokenStorageService>()
+                ));
 
             services.AddSingleton<DashAPI>();
             services.AddSingleton<IDashAPI, DashboardApiService>();

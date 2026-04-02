@@ -60,8 +60,11 @@ namespace web.Services {
 
         private async Task StartAsync()
         {
-            await _client.LoginAsync(TokenType.Bot, _settings.Discord.Token);
-            await _client.StartAsync();
+            if (!string.IsNullOrEmpty(_settings.Discord.Token))
+            {
+                await _client.LoginAsync(TokenType.Bot, _settings.Discord.Token);
+                await _client.StartAsync();
+            }
 
             _logger.LogInfo("Async start completed.", _logSource);
         }

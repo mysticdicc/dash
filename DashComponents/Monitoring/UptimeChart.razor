@@ -162,7 +162,7 @@
 
             foreach (var target in MonitoringTargets.Where(x => (x.IsMonitoredIcmp || x.IsMonitoredTcp) && x.Parent != null))
             {
-                var states = PingState.GetAllMonitorStatesFromListMonitoringTargets(_monitoringTargets);
+                var states = PingState.GetAllMonitorStatesFromMonitoringTarget(target);
 
                 if (states == null || states.Count == 0)
                     continue;

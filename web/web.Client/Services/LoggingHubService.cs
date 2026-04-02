@@ -10,21 +10,26 @@ namespace web.Client.Services
     {
         private HubConnection? _hubConnection;
         private readonly ILoggingAPI _loggingApi;
+        private readonly TokenStorageService _tokenStore;
         private string _baseAddr;
         public List<LogEntry> Logs { get; private set; } = [];
         public event Action? OnLogsUpdated;
 
-        public LoggingHubService(ILoggingAPI loggingApi, string baseAddr)
+        public LoggingHubService(ILoggingAPI loggingApi, string baseAddr, TokenStorageService tokenStore)
         {
             _loggingApi = loggingApi;
-            _baseAddr = baseAddr + "loghub";
+            _tokenStore = tokenStore;
+            _baseAddr = baseAddr.TrimEnd('/') + "/loghub";
             _ = StartAsync(_baseAddr);
         }
 
         public async Task StartAsync(string hubUrl)
         {
             _hubConnection = new HubConnectionBuilder()
-                .WithUrl(hubUrl)
+                .WithUrl(hubUrl, options =>
+                {
+                    options.AccessTokenProvider = async () => await _tokenStore.GetTokenAsync();
+                })
                 .WithAutomaticReconnect()
                 .Build();
 

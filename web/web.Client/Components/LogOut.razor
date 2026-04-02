@@ -1,0 +1,12 @@
+﻿@inject web.Client.Auth.AuthApiService AuthApi
+@inject Microsoft.AspNetCore.Components.NavigationManager Navigation
+
+<button @onclick="OnLogout">Logout</button>
+
+@code {
+    private async Task OnLogout()
+    {
+        await AuthApi.LogoutAsync();
+        Navigation.NavigateTo("/login", true);
+    }
+}

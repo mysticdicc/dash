@@ -965,15 +965,19 @@ input:checked + .slider:before {
     display: block;
     column-width: 500px;
     column-gap: 2rem;
+    width: calc(100vw-4rem);
+    max-width: 100%;
+    box-sizing: border-box;
+    overflow-x: hidden;
 }
 
     .settings_layout > div {
         border-radius: 10px;
         box-shadow: 0px 0px 5px rgba(0,0,0,0.3);
         background-color: var(--primary);
-        display: flex;
+        display: inline-block;
+        width: 100%;
         break-inside: avoid;
-        flex-direction: column;
         margin: 0 0 2rem 0;
         height: fit-content;
 

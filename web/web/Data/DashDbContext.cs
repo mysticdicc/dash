@@ -1,14 +1,17 @@
 ﻿#nullable disable
-using System;
-using System.Collections.Generic;
-using Microsoft.EntityFrameworkCore;
+using DashLib.Models;
+using DashLib.Models.Auth;
+using DashLib.Models.Dashboard;
 using DashLib.Models.Monitoring;
 using DashLib.Models.Network;
-using DashLib.Models.Dashboard;
-using DashLib.Models;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
+using System;
+using System.Collections.Generic;
 
 namespace dankweb.API;
-public partial class DashDbContext : DbContext
+public partial class DashDbContext : IdentityDbContext<User, IdentityRole<Guid>, Guid>
 {
     public DashDbContext()
     {
@@ -35,6 +38,8 @@ public partial class DashDbContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        base.OnModelCreating(modelBuilder);
+
         modelBuilder.Entity<BaseMonitoringTarget>(entity =>
         {
             entity.ToTable("monitoring_targets");
@@ -233,5 +238,6 @@ public partial class DashDbContext : DbContext
             entity.Property(e => e.Message).IsRequired();
             entity.Property(e => e.Source).IsRequired();
         });
+
     }
 }
