@@ -6,10 +6,12 @@ using System.Text.Json.Serialization;
 using System;
 using DashLib.Interfaces.Dashboard;
 using DashLib.Models.Dashboard;
+using Microsoft.AspNetCore.Authorization;
 
 namespace web.Controllers
 {
     [ApiController]
+    [Authorize]
     public class DashboardController(IDashboardRepository dashboardRepository) : Controller
     {
         private readonly IDashboardRepository _dbRepo = dashboardRepository;

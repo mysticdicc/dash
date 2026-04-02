@@ -5,28 +5,36 @@
 @inject Microsoft.AspNetCore.Components.Authorization.AuthenticationStateProvider AuthStateProvider
 
 
-<h3>Sign in</h3>
+<div class="login_wrapper">
+    <EditForm Model="@credentials" OnValidSubmit="HandleLogin" FormName="LoginForm">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+        <table>
+            <tr>
+                <td>Username:</td>
+                <td>
+                    <InputText @bind-Value="credentials.UserName" />
+                </td>
+            </tr>
+            <tr>
+                <td>Password:</td>
+                <td>
+                    <InputText @bind-Value="credentials.Password" type="password" />
+                </td>
+            </tr>
+            <tr>
+                <td colspan="2">
+                    <button type="submit">Sign in</button>
+                </td>
+            </tr>
+        </table>
+    </EditForm>
 
-<EditForm Model="@credentials" OnValidSubmit="HandleLogin" FormName="LoginForm">
-    <DataAnnotationsValidator />
-    <ValidationSummary />
-    <div>
-        <label>Username</label>
-        <InputText @bind-Value="credentials.UserName" />
-    </div>
-    <div>
-        <label>Password</label>
-        <InputText @bind-Value="credentials.Password" type="password" />
-    </div>
-    <div style="margin-top:1rem">
-        <button type="submit">Sign in</button>
-    </div>
-</EditForm>
-
-@if (!string.IsNullOrEmpty(Error))
-{
-    <div class="error">@Error</div>
-}
+    @if (!string.IsNullOrEmpty(Error))
+    {
+        <div class="error">@Error</div>
+    }
+</div>
 
 @code {
     private LoginRequestDto credentials { get; set; } = new LoginRequestDto();
@@ -46,12 +54,14 @@
                 Error = "Login failed. Check credentials.";
                 return;
             }
+            else
+            {
+                Navigation.NavigateTo("/");
+            }
         }
         catch(Exception ex)
         {
             Error = ex.Message;
         }
-
-        //Navigation.NavigateTo("/");
     }
 }

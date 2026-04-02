@@ -1,11 +1,13 @@
 ﻿using DashLib.Interfaces.Logging;
 using DashLib.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using web.Services;
 
 namespace web.Controllers
 {
     [ApiController]
+    [Authorize]
     public class LogsController(ILoggingRepository loggingRepository, LoggingService loggingService) : Controller
     {
         private readonly ILoggingRepository _loggingRepository = loggingRepository;

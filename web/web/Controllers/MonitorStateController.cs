@@ -4,6 +4,7 @@ using DashLib.Interfaces.Monitoring;
 using DashLib.Models.Monitoring;
 using DashLib.Models.Network;
 using DashLib.Models.Settings;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -17,6 +18,7 @@ using web.Services;
 namespace web.Controllers
 {
     [ApiController]
+    [Authorize]
     public class MonitorStateController(IMonitorStateRepository monitoringRepository, MonitorService monitor) : Controller
     {
         private readonly IMonitorStateRepository _dbRepo = monitoringRepository;

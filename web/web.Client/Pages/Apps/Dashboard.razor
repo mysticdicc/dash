@@ -2,7 +2,8 @@
 @inject IMonitorTargetAPI SubnetsService
 @inject IJSRuntime JSRuntime
 
-@page "/"
+@attribute [Authorize]
+@page "/home"
 @using System.Text.Json
 
 <PageTitle>dashboard</PageTitle>

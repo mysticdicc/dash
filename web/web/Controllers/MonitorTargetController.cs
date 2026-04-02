@@ -8,10 +8,12 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using DashLib.Models.Network;
 using DashLib.Interfaces.Monitoring;
+using Microsoft.AspNetCore.Authorization;
 
 namespace web.Controllers
 {
     [ApiController]
+    [Authorize]
     public class MonitorTargetController(DiscoveryService discoveryService, IMonitorTargetRepository subnetRepository) : Controller
     {
         private readonly DiscoveryService _discoveryService = discoveryService;

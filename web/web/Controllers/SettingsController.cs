@@ -1,5 +1,6 @@
 ﻿using DashLib.Models.Settings;
 using DashLib.Models.Settings.Monitoring;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using System.Text.Json;
@@ -8,6 +9,7 @@ using web.Services;
 namespace web.Controllers
 {
     [ApiController]
+    [Authorize]
     public class SettingsController : Controller
     {
         private readonly MonitorService _monitorService;

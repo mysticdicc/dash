@@ -2,6 +2,8 @@
 @inject IJSRuntime JSRuntime
 
 @page "/settings/home"
+@attribute [Authorize]
+
 @using DashComponents.Settings
 @using DashLib.Interfaces
 @using System.Text.Json
@@ -34,7 +36,7 @@
         <SubnetSettingsDisplay CurrentSettings="@_currentSettings.SubnetSettings"/>
         <DashboardSettingsDisplay CurrentSettings="@_currentSettings.DashboardSettings"/>
         <OtherSettingsDisplay ResetClicked="@OnClickResetToDefault"/>
-    </content>
+    </content>        
     <footer>
 
     </footer>

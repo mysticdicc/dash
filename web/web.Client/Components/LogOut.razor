@@ -1,7 +1,9 @@
 ﻿@inject web.Client.Auth.AuthApiService AuthApi
-@inject Microsoft.AspNetCore.Components.NavigationManager Navigation
+@inject NavigationManager Navigation
 
-<button @onclick="OnLogout">Logout</button>
+<button @onclick="OnLogout" title="Log Out">
+    <span class="material-symbols-outlined">logout</span>
+</button>
 
 @code {
     private async Task OnLogout()

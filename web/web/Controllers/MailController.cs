@@ -4,6 +4,7 @@ using DashLib.Models.Settings;
 using DashLib.Models.Settings.Monitoring;
 using MailKit;
 using MailKit.Net.Smtp;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -14,6 +15,7 @@ using web.Services;
 namespace web.Controllers
 {
     [ApiController]
+    [Authorize]
     public class MailController(IDbContextFactory<DashDbContext> dbContext, web.Services.MailService mailService) : Controller
     {
         private readonly IDbContextFactory<DashDbContext> _dbFactory = dbContext;

@@ -148,7 +148,8 @@ app.UseStaticFiles();
 app.MapStaticAssets();
 app.MapRazorComponents<App>()
     .AddInteractiveWebAssemblyRenderMode()
-    .AddAdditionalAssemblies(typeof(web.Client._Imports).Assembly);
+    .AddAdditionalAssemblies(typeof(web.Client._Imports).Assembly)
+    .AllowAnonymous();
 
 app.MapControllers();
 app.MapHub<LogHub>("/loghub");

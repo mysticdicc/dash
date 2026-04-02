@@ -36,6 +36,10 @@
     padding: 5px;
 }
 
+.navlink_match {
+    background-color: var(--grey) !important;
+}
+
 .body {
     background-color: var(--black);
     margin: 0;
@@ -52,8 +56,26 @@
         box-shadow: 0px 0px 5px rgba(0,0,0,0.3);
         height: 2.8rem;
 
-        button {
+        a, button {
+            padding: 0.5rem;
             background-color: var(--black);
+            height: 100%;
+            border-color: rgba(0,0,0,0);
+            color: var(--white);
+            text-wrap: nowrap;
+            display: flex;
+            align-items: center;
+            text-decoration: none;
+
+            .material-symbols-outlined, .material-icons {
+                padding: 0;
+                font-size: 17px;
+            }
+        }
+
+        a, button:hover {
+            transform: scale(1.02);
+            color: white;
         }
 
         > img {
@@ -63,13 +85,15 @@
             padding: 10px;
         }
 
-        > a {
-            align-self: center;
+        button:last-of-type {
+            margin-right: auto;
         }
+    }
 
-            > a:last-of-type {
-                margin-right: auto;
-            }
+    .body > header:not(:has(button)) {
+        a:last-of-type {
+            margin-right: auto;
+        }
     }
 
     .body > content {
@@ -1395,6 +1419,28 @@ div#statusdashcard {
 
         span {
             margin: auto;
+        }
+    }
+}
+
+.login_wrapper {
+    margin: auto;
+    background-color: var(--grey-transparent);
+    padding: 2rem;
+    border-radius: 10px;
+    box-shadow: 0px 0px 5px rgba(0,0,0,0.5);
+
+    table {
+        font-size: 20px;
+
+        td {
+            padding: 4px;
+
+            button {
+                margin-top: 5px;
+                margin-left: auto;
+                margin-right: auto;
+            }
         }
     }
 }
