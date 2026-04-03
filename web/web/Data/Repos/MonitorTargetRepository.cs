@@ -1,5 +1,6 @@
 ﻿using dankweb.API;
 using DashLib.Interfaces.Monitoring;
+using DashLib.Models.MonitoringTargetContainers;
 using DashLib.Models.Network;
 using Microsoft.EntityFrameworkCore;
 using Org.BouncyCastle.Asn1.X509;

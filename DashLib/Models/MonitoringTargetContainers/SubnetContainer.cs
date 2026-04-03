@@ -1,4 +1,5 @@
-﻿using NetTools;
+﻿using DashLib.Models.Network;
+using NetTools;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -8,7 +9,7 @@ using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace DashLib.Models.Network
+namespace DashLib.Models.MonitoringTargetContainers
 {
     public class SubnetContainer : BaseMonitoringTargetContainer<IpMonitoringTarget>
     {

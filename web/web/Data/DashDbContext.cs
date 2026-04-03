@@ -3,6 +3,7 @@ using DashLib.Models;
 using DashLib.Models.Auth;
 using DashLib.Models.Dashboard;
 using DashLib.Models.Monitoring;
+using DashLib.Models.MonitoringTargetContainers;
 using DashLib.Models.Network;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;

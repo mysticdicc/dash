@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using Microsoft.AspNetCore.Components.Web;
 using DashLib.Models.Network;
 using DashLib.Interfaces.Monitoring;
+using DashLib.Models.MonitoringTargetContainers;
 
 public class SubnetEditorTest : BunitContext
 {

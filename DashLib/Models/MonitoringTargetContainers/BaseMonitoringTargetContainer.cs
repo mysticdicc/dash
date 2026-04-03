@@ -1,10 +1,11 @@
-﻿using System;
+﻿using DashLib.Models.Network;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Text;
 
-namespace DashLib.Models.Network
+namespace DashLib.Models.MonitoringTargetContainers
 {
     public abstract class BaseMonitoringTargetContainer<TChild> : BaseMonitoringTargetContainer
         where TChild : BaseMonitoringTarget

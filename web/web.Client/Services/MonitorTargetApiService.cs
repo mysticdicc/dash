@@ -1,5 +1,6 @@
 using DashLib.DankAPI;
 using DashLib.Interfaces.Monitoring;
+using DashLib.Models.MonitoringTargetContainers;
 using DashLib.Models.Network;
 using System.ComponentModel;
 using System.Net;

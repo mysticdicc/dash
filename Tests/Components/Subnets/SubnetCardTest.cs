@@ -1,5 +1,6 @@
 using DashComponents.Subnets;
 using DashLib.Interfaces.Monitoring;
+using DashLib.Models.MonitoringTargetContainers;
 using DashLib.Models.Network;
 using Microsoft.JSInterop;
 using Moq;

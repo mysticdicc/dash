@@ -12,6 +12,7 @@ using DashLib.Models.Monitoring;
 using DashLib.Models.Dashboard;
 using DashLib.Interfaces.Monitoring;
 using System.Net.Sockets;
+using DashLib.Models.MonitoringTargetContainers;
 
 namespace DashLib.Models.Network
 {

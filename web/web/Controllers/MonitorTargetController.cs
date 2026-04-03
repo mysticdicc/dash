@@ -9,6 +9,7 @@ using System.Text.Json.Serialization;
 using DashLib.Models.Network;
 using DashLib.Interfaces.Monitoring;
 using Microsoft.AspNetCore.Authorization;
+using DashLib.Models.MonitoringTargetContainers;
 
 namespace web.Controllers
 {

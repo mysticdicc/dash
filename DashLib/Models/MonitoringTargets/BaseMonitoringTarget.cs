@@ -1,6 +1,7 @@
 ﻿using DashLib.Interfaces.Monitoring;
 using DashLib.Models.Dashboard;
 using DashLib.Models.Monitoring;
+using DashLib.Models.MonitoringTargetContainers;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;

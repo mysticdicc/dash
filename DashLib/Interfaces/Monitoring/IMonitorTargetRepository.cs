@@ -1,4 +1,5 @@
-﻿using DashLib.Models.Network;
+﻿using DashLib.Models.MonitoringTargetContainers;
+using DashLib.Models.Network;
 using System;
 using System.Collections.Generic;
 using System.Text;

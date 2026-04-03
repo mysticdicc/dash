@@ -1,3 +1,4 @@
+using DashLib.Models.MonitoringTargetContainers;
 using DashLib.Models.Network;
 
 namespace DashLib.Interfaces.Monitoring

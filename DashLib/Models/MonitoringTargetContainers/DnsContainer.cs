@@ -1,9 +1,10 @@
-﻿using System;
+﻿using DashLib.Models.Network;
+using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Text.Json.Serialization;
 
-namespace DashLib.Models.Network
+namespace DashLib.Models.MonitoringTargetContainers
 {
     public class DnsContainer : BaseMonitoringTargetContainer<DnsMonitoringTarget>
     {
