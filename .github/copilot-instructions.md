@@ -9,3 +9,4 @@
 - If I am referencing a current application issue, try to fetch debug logs to find clues. Even if I say I cannot see any logs for the issues, you are an LLM you are better at analysing large dumps of log files than me.
 - You should literally never be asking me to paste parts of files or show you files, just get them and look at them if you are going to reccomend I get you bits of them to look at anyway.
 - I never want to use the modernization agent process, do not suggest it.
+- Do not include comments in your code examples, if you need to explain something about a specific line of code extract it into the chat and explain it. Do not use comments.

@@ -1,5 +1,7 @@
 ﻿using System.Net;
 using System.Net.Http.Headers;
+using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Authorization;
 using web.Client.Services;
 
 namespace web.Client.Auth
@@ -8,11 +10,19 @@ namespace web.Client.Auth
     {
         private readonly AuthTokenService _tokenService;
         private readonly RefreshTokenService _refreshService;
+        private readonly NavigationManager _navigationManager;
+        private readonly AuthenticationStateProvider _authStateProvider;
 
-        public AuthMessageHandler(AuthTokenService tokenService, RefreshTokenService refreshService)
+        public AuthMessageHandler(
+            AuthTokenService tokenService,
+            RefreshTokenService refreshService,
+            NavigationManager navigationManager,
+            AuthenticationStateProvider authStateProvider)
         {
             _tokenService = tokenService;
             _refreshService = refreshService;
+            _navigationManager = navigationManager;
+            _authStateProvider = authStateProvider;
         }
 
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
@@ -30,7 +40,16 @@ namespace web.Client.Auth
 
             var refreshed = await _refreshService.TryRefreshAsync(cancellationToken);
             if (!refreshed)
+            {
+                await _tokenService.ClearTokenAsync();
+
+                if (_authStateProvider is JwtAuthStateProvider jwtProvider)
+                    jwtProvider.NotifyAuthStateChanged();
+
+                _navigationManager.NavigateTo("/login", forceLoad: true);
+
                 return response;
+            }
 
             response.Dispose();
 

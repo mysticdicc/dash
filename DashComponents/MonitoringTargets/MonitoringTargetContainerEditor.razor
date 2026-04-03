@@ -185,7 +185,7 @@
 
     override protected async Task OnParametersSetAsync()
     {
-        if (MonitoringTargetContainer.Id != _monitoringTargetContainer.Id)
+        if (MonitoringTargetContainer != _monitoringTargetContainer)
         {
             _monitoringTargetContainer = MonitoringTargetContainer;
 
